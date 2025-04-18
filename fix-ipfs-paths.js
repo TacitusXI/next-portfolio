@@ -455,28 +455,27 @@ const createIpfsCompatibleFiles = () => {
       // Fix GitHub API redirect issue more aggressively
       // Add a direct reference to the GitHub API endpoint on the page
       const script = document.createElement('script');
-      script.textContent = `
-        // Direct GitHub API data
-        window.GITHUB_DATA = ${JSON.stringify({
+      script.textContent = 
+        '// Direct GitHub API data\n' +
+        'window.GITHUB_DATA = ' + JSON.stringify({
           user: { login: "TacitusXI", name: "Ivan Leskov" },
           repos: [],
           contributions: { totalCount: 0, weeks: [] }
-        })};
-        
-        // Override fetch for GitHub API to use local data
-        const origFetch = window.fetch;
-        window.fetch = function(...args) {
-          const url = args[0]?.toString() || '';
-          if (url.includes('/api/github') || url.includes('github.com/')) {
-            console.log('Intercepting GitHub API request:', url);
-            return Promise.resolve(new Response(
-              JSON.stringify(window.GITHUB_DATA),
-              { headers: { 'Content-Type': 'application/json' } }
-            ));
-          }
-          return origFetch.apply(this, args);
-        };
-      `;
+        }) + ';\n' +
+        '\n' +
+        '// Override fetch for GitHub API to use local data\n' +
+        'const origFetch = window.fetch;\n' +
+        'window.fetch = function(...args) {\n' +
+        '  const url = args[0]?.toString() || "";\n' +
+        '  if (url.includes("/api/github") || url.includes("github.com/")) {\n' +
+        '    console.log("Intercepting GitHub API request:", url);\n' +
+        '    return Promise.resolve(new Response(\n' +
+        '      JSON.stringify(window.GITHUB_DATA),\n' +
+        '      { headers: { "Content-Type": "application/json" } }\n' +
+        '    ));\n' +
+        '  }\n' +
+        '  return origFetch.apply(this, args);\n' +
+        '};';
       document.head.appendChild(script);
     }
     
