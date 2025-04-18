@@ -331,6 +331,26 @@ const createIpfsCompatibleFiles = () => {
           el.setAttribute(attr, './_next/' + parts[1]);
         }
       });
+
+      // Fix project images
+      document.querySelectorAll('img[data-project-image]').forEach(el => {
+        if (el.src.indexOf('/images/projects/') !== -1) {
+          el.src = './images/projects/' + el.src.split('/images/projects/')[1];
+        }
+      });
+
+      // Fix API duplications (prevents ERR_TOO_MANY_REDIRECTS)
+      if (window.location.href.indexOf('/api/api/') !== -1) {
+        // Replace all links pointing to /api/api/ with /api/
+        document.querySelectorAll('a[href*="/api/api/"]').forEach(el => {
+          el.href = el.href.replace('/api/api/', '/api/');
+        });
+        
+        // If we're on a duplicated API path, redirect
+        if (window.location.pathname.indexOf('/api/api/') === 0) {
+          window.location.pathname = window.location.pathname.replace('/api/api/', '/api/');
+        }
+      }
     }
     
     // Run immediately and again after load
@@ -545,8 +565,15 @@ const createFallbackResources = () => {
             /url\(['"]?\/_next\/static\/media\/([^'"]+)['"]?\)/g, 
             "url('./_next/static/media/$1')"
           );
-          if (fixedCss !== style.textContent) {
-            style.textContent = fixedCss;
+          
+          // Fix nested paths in CSS (this was causing 404s)
+          const doubleFix = fixedCss.replace(
+            /_next\/static\/css\/_next\/static\/media\//g, 
+            '_next/static/media/'
+          );
+          
+          if (doubleFix !== style.textContent) {
+            style.textContent = doubleFix;
             style.dataset.fixed = 'true';
             console.log('Fixed font paths in style tag');
           }
@@ -568,8 +595,62 @@ const createFallbackResources = () => {
   htmlFiles.forEach(file => {
     let content = fs.readFileSync(file, 'utf8');
     content = content.replace('</head>', `<script>${fontFixScript}</script></head>`);
+    
+    // Add a service worker for intercepting font requests
+    const swScript = `
+    <script>
+    // Register service worker to fix font loading issues
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(registration => {
+          console.log('ServiceWorker registration successful');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+    </script>
+    `;
+    
+    // Add service worker script before closing body tag
+    content = content.replace('</body>', `${swScript}</body>`);
     fs.writeFileSync(file, content);
   });
+  
+  // Create service worker file
+  const serviceWorkerCode = `
+  // Service worker to intercept font requests
+  self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+    
+    // Handle font files with problematic paths
+    if (url.pathname.includes('_next/static/css/_next/static/media') && 
+        (url.pathname.endsWith('.woff2') || url.pathname.endsWith('.woff') || url.pathname.endsWith('.ttf'))) {
+      
+      // Redirect to correct path
+      const correctPath = url.pathname.replace('/_next/static/css/_next/static/media/', '/_next/static/media/');
+      const newUrl = new URL(correctPath, url.origin);
+      
+      event.respondWith(
+        fetch(newUrl)
+          .catch(() => fetch('./_next/static/media/' + url.pathname.split('/').pop()))
+      );
+      return;
+    }
+    
+    // Handle API redirects
+    if (url.pathname.startsWith('/api/api/')) {
+      const correctPath = url.pathname.replace('/api/api/', '/api/');
+      const newUrl = new URL(correctPath, url.origin);
+      
+      event.respondWith(fetch(newUrl));
+      return;
+    }
+  });
+  `;
+  
+  fs.writeFileSync(path.join(outputDir, 'sw.js'), serviceWorkerCode);
+  console.log('Created service worker for font request interception');
   
   console.log('Created fallback resources');
 };
