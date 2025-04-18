@@ -348,7 +348,7 @@ const createIpfsCompatibleFiles = () => {
             const bgUrl = el.style.backgroundImage.match(/url\(['"]?([^'"]+)['"]?\)/);
             if (bgUrl && bgUrl[1]) {
               const newUrl = bgUrl[1].replace(/^\/images\//, './images/');
-              el.style.backgroundImage = `url('${newUrl}')`;
+              el.style.backgroundImage = 'url(\'' + newUrl + '\')';
             }
           }
         }
