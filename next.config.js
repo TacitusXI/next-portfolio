@@ -7,8 +7,9 @@ const nextConfig = {
     domains: ['github.com', 'raw.githubusercontent.com'],
   },
   output: 'export',
-  assetPrefix: '/',
+  assetPrefix: '',
   basePath: '',
+  transpilePackages: ['next/font']
 }
 
 module.exports = nextConfig 
