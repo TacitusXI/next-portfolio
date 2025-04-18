@@ -340,11 +340,70 @@ const createIpfsCompatibleFiles = () => {
         }
       });
       
+      // Fix specifically the sc-kEzwgR hOcaMd elements (project cards)
+      document.querySelectorAll('.sc-kEzwgR.hOcaMd, .sc-kEzwgR, .hOcaMd').forEach(el => {
+        // Check background image style
+        if (el.style && el.style.backgroundImage) {
+          if (el.style.backgroundImage.includes('/images/')) {
+            const bgUrl = el.style.backgroundImage.match(/url\(['"]?([^'"]+)['"]?\)/);
+            if (bgUrl && bgUrl[1]) {
+              const newUrl = bgUrl[1].replace(/^\/images\//, './images/');
+              el.style.backgroundImage = `url('${newUrl}')`;
+            }
+          }
+        }
+        
+        // Also check for img children
+        el.querySelectorAll('img').forEach(img => {
+          if (img.src.includes('/images/')) {
+            img.src = img.src.replace(/^https?:\/\/[^\/]+\/images\//, './images/');
+            img.src = img.src.replace(/^\/images\//, './images/');
+          }
+        });
+        
+        // Check for background-image in inline style
+        if (el.getAttribute('style') && el.getAttribute('style').includes('background-image')) {
+          const style = el.getAttribute('style');
+          if (style.includes('/images/')) {
+            const newStyle = style.replace(/(url\(['"]?)\/images\//g, '$1./images/');
+            el.setAttribute('style', newStyle);
+          }
+        }
+      });
+      
       // Fix music player - target audio elements and music files
       document.querySelectorAll('audio, [src*=".mp3"], [src*=".wav"], [src*=".ogg"]').forEach(el => {
         if (el.src && el.src.startsWith('/')) {
           el.src = '.' + el.src;
         }
+      });
+      
+      // Special fix for TacitusFM component
+      document.querySelectorAll('#music-player, .music-player, [id*="music"], [class*="music"], div[id*="tacitus-fm"], div[class*="tacitus-fm"], div[id*="TacitusFM"], div[class*="TacitusFM"]').forEach(el => {
+        // Fix audio elements inside the music player
+        el.querySelectorAll('audio, source').forEach(audioEl => {
+          if (audioEl.src && audioEl.src.startsWith('/')) {
+            audioEl.src = '.' + audioEl.src;
+          } else if (audioEl.src && audioEl.src.includes('/ipfs/')) {
+            const parts = audioEl.src.split('/ipfs/');
+            if (parts.length > 1 && parts[1].includes('/')) {
+              const subParts = parts[1].split('/');
+              if (subParts.length > 1) {
+                audioEl.src = './' + subParts.slice(1).join('/');
+              }
+            }
+          }
+        });
+        
+        // Check for data-* attributes that might contain audio sources
+        Array.from(el.attributes).forEach(attr => {
+          if (attr.name.startsWith('data-') && typeof attr.value === 'string') {
+            if (attr.value.startsWith('/') && 
+                (attr.value.endsWith('.mp3') || attr.value.endsWith('.wav') || attr.value.endsWith('.ogg'))) {
+              el.setAttribute(attr.name, '.' + attr.value);
+            }
+          }
+        });
       });
       
       // Fix navbar links to prevent external redirects
@@ -705,6 +764,36 @@ const createFallbackResources = () => {
         event.respondWith(fetch(newUrl));
         return;
       }
+    }
+    
+    // Handle project images (specific for the sc-kEzwgR hOcaMd class)
+    if (url.pathname.startsWith('/images/projects/')) {
+      event.respondWith(
+        fetch('./images/projects/' + url.pathname.substring('/images/projects/'.length))
+          .catch(err => {
+            console.warn('Failed to load project image:', url.pathname, err);
+            // Try other paths as fallback
+            return fetch('./_next/static/media/' + url.pathname.split('/').pop());
+          })
+      );
+      return;
+    }
+    
+    // Handle all other image files
+    if (url.pathname.startsWith('/images/') && 
+        (url.pathname.endsWith('.jpg') || url.pathname.endsWith('.jpeg') || 
+         url.pathname.endsWith('.png') || url.pathname.endsWith('.gif') || 
+         url.pathname.endsWith('.webp') || url.pathname.endsWith('.svg'))) {
+      
+      event.respondWith(
+        fetch('./images/' + url.pathname.substring('/images/'.length))
+          .catch(err => {
+            console.warn('Failed to load image:', url.pathname, err);
+            // Try other paths as fallback
+            return fetch('.' + url.pathname);
+          })
+      );
+      return;
     }
   });
   `;
