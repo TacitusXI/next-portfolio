@@ -70,6 +70,14 @@ const fixAssetPaths = (filePath) => {
     content = content.replace(/(['"])(\/\?_rsc=[^'"]*?)(['"])/g, '$1./$2$3');
     content = content.replace(/(https:\/\/ipfs\.tech\/index\.txt\?_rsc=)/g, './index.txt?_rsc=');
     content = content.replace(/(https:\/\/ipfs\.io\/index\.txt\?_rsc=)/g, './index.txt?_rsc=');
+    
+    // Fix image paths in public directory
+    content = content.replace(/(src=["'])(\/images\/)/g, '$1./images/');
+    content = content.replace(/(src=["'])(\/profile\.jpg)/g, '$1./profile.jpg');
+    
+    // Fix preloaded fonts that have nested paths
+    content = content.replace(/(href=["'][^"']*?\/_next\/static\/media\/[^"']+\.)(woff2|woff|ttf)(["'])/g, 
+      '$1$2$3 onerror="this.onerror=null; this.href=this.href.replace(\'/_next/\', \'./_next/\')"');
   }
   
   // Write fixed content back to file
@@ -161,8 +169,8 @@ const createIpfsCompatibleFiles = () => {
       if (typeof url !== 'string') return url;
       
       // Fix nested _next paths first
-      if (url.match(/\/_next\/.*?\/_next\//)) {
-        url = url.replace(/(\/_next\/[^"']*?)(\/_next\/)/g, '$1/');
+      if (url.indexOf('/_next/') !== -1 && url.indexOf('/_next/', url.indexOf('/_next/') + 7) !== -1) {
+        url = url.replace(/(\\/\\_next\\/[^"']*?)(\\/\\_next\\/)/g, '$1/');
       }
       
       // Handle direct /_next/ URLs
@@ -176,7 +184,7 @@ const createIpfsCompatibleFiles = () => {
       }
       
       // Handle https://ipfs.io/ipfs/<CID>/_next/
-      if (url.match(/https:\\/\\/ipfs\\.io\\/ipfs\\/[a-zA-Z0-9]+\\/_next\\//)) {
+      if (url.indexOf('https://ipfs.io/ipfs/') !== -1 && url.indexOf('/_next/') !== -1) {
         const parts = url.split('/_next/');
         if (parts.length > 1) {
           return './_next/' + parts[1];
@@ -188,17 +196,26 @@ const createIpfsCompatibleFiles = () => {
         return './_next/' + url.substring(21);
       }
       
+      // Handle image paths
+      if (url.startsWith('/images/')) {
+        return './images/' + url.substring(8);
+      }
+      
+      if (url === '/profile.jpg') {
+        return './profile.jpg';
+      }
+      
       // Handle API requests
       if (url.startsWith('/api/')) {
         return './api/' + url.substring(5);
       }
       
-      if (url.includes('/api/github')) {
+      if (url.indexOf('/api/github') !== -1) {
         return './api/github/index.json';
       }
       
       // Handle RSC requests
-      if (url.includes('?_rsc=')) {
+      if (url.indexOf('?_rsc=') !== -1) {
         return './index.txt?_rsc=' + url.split('?_rsc=')[1];
       }
       
@@ -213,11 +230,11 @@ const createIpfsCompatibleFiles = () => {
         arguments[0] = fixAssetUrl(arguments[0]);
         
         // Special handling for GitHub API or RSC requests that might fail
-        if (origUrl.includes('/api/github') || origUrl.includes('?_rsc=')) {
+        if (origUrl.indexOf('/api/github') !== -1 || origUrl.indexOf('?_rsc=') !== -1) {
           return originalFetch.apply(this, arguments).catch(err => {
             console.warn('Fetch error, falling back to static data:', err);
             // For GitHub API, return static data
-            if (origUrl.includes('/api/github')) {
+            if (origUrl.indexOf('/api/github') !== -1) {
               return new Response(JSON.stringify({
                 user: { login: "TacitusXI", name: "Ivan Leskov" },
                 repos: [],
@@ -228,7 +245,7 @@ const createIpfsCompatibleFiles = () => {
               });
             }
             // For RSC requests, return basic data
-            if (origUrl.includes('?_rsc=')) {
+            if (origUrl.indexOf('?_rsc=') !== -1) {
               return new Response('OK', {
                 status: 200,
                 headers: { 'Content-Type': 'text/plain' }
@@ -246,20 +263,53 @@ const createIpfsCompatibleFiles = () => {
       // Fix font and media paths - special case for nested paths
       document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
         const href = el.getAttribute('href');
-        const fixedHref = href.replace(/(_next\/static\/css\/)_next\//, '$1');
+        const fixedHref = href.replace(/(_next\\/static\\/css\\/)_next\\//, '$1');
         el.setAttribute('href', fixedHref);
       });
       
+      // Fix preloaded fonts
+      document.querySelectorAll('link[rel="preload"][as="font"]').forEach(el => {
+        if (el.href.indexOf('/_next/') !== -1) {
+          el.href = './' + el.href.substring(el.href.indexOf('_next/'));
+        } else if (el.href.indexOf('https://ipfs.io/ipfs/') !== -1 && el.href.indexOf('/_next/') !== -1) {
+          const parts = el.href.split('/_next/');
+          if (parts.length > 1) {
+            el.href = './_next/' + parts[1];
+          }
+        }
+      });
+      
+      // Fix images from public directory
+      document.querySelectorAll('img[src^="/images/"]').forEach(el => {
+        el.src = './images/' + el.src.substring(el.src.indexOf('/images/') + 8);
+      });
+      
+      document.querySelectorAll('img[src="/profile.jpg"]').forEach(el => {
+        el.src = './profile.jpg';
+      });
+      
+      // Fix paths with /_next/
       document.querySelectorAll('[src^="/_next/"], [href^="/_next/"]').forEach(el => {
         const attr = el.hasAttribute('src') ? 'src' : 'href';
         const value = el.getAttribute(attr);
         el.setAttribute(attr, './' + value);
       });
       
+      // Fix IPFS paths
       document.querySelectorAll('[src^="https://ipfs.io/_next/"], [href^="https://ipfs.io/_next/"]').forEach(el => {
         const attr = el.hasAttribute('src') ? 'src' : 'href';
         const value = el.getAttribute(attr);
         el.setAttribute(attr, './_next/' + value.split('/_next/')[1]);
+      });
+      
+      // Handle full IPFS gateway URLs with CIDs
+      document.querySelectorAll('[src*="ipfs.io/ipfs/"][src*="/_next/"], [href*="ipfs.io/ipfs/"][href*="/_next/"]').forEach(el => {
+        const attr = el.hasAttribute('src') ? 'src' : 'href';
+        const value = el.getAttribute(attr);
+        const parts = value.split('/_next/');
+        if (parts.length > 1) {
+          el.setAttribute(attr, './_next/' + parts[1]);
+        }
       });
     }
     
@@ -296,12 +346,13 @@ const createIpfsCompatibleFiles = () => {
   fs.writeFileSync(path.join(ipfsDir, 'ipfs-fix.js'), fixScript);
   console.log('Created IPFS fix script at _ipfs/ipfs-fix.js');
   
-  // Add the script to all HTML files
+  // Add the script to all HTML files and make it execute BEFORE other scripts
   const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
   htmlFiles.forEach(file => {
     let content = fs.readFileSync(file, 'utf8');
     if (!content.includes('ipfs-fix.js')) {
-      content = content.replace('</head>', '<script src="./_ipfs/ipfs-fix.js"></script></head>');
+      // Insert at the start of the head to ensure it loads first
+      content = content.replace('<head>', '<head><script src="./_ipfs/ipfs-fix.js"></script>');
       fs.writeFileSync(file, content);
       console.log(`Added IPFS fix script to ${file}`);
     }
@@ -338,6 +389,39 @@ const fixAssetFilenames = () => {
       }
     });
   }
+  
+  // Copy public images to root for accessibility
+  const publicImagesDir = path.join(outputDir, 'images');
+  if (fs.existsSync(publicImagesDir)) {
+    console.log('Copying key images to root for better accessibility');
+    
+    // List of critical images that should be directly accessible
+    ['profile.jpg'].forEach(filename => {
+      const sourcePaths = [
+        path.join(publicImagesDir, filename),
+        path.join(outputDir, 'public', 'images', filename),
+        path.join(outputDir, 'public', filename)
+      ];
+      
+      let sourceFile = null;
+      for (const srcPath of sourcePaths) {
+        if (fs.existsSync(srcPath)) {
+          sourceFile = srcPath;
+          break;
+        }
+      }
+      
+      if (sourceFile) {
+        const destFile = path.join(outputDir, filename);
+        try {
+          fs.copyFileSync(sourceFile, destFile);
+          console.log(`Copied ${filename} to root directory for better image access`);
+        } catch (err) {
+          console.error(`Failed to copy ${filename}:`, err.message);
+        }
+      }
+    });
+  }
 };
 
 // Function to fix _next directory structure
@@ -370,6 +454,106 @@ const fixNextDirectory = () => {
   }
 };
 
+// Function to create standalone fallback resources
+const createFallbackResources = () => {
+  console.log('Creating fallback resources');
+  
+  // Create a basic fallback for the font file
+  const fontDir = path.join(outputDir, '_next', 'static', 'media');
+  if (!fs.existsSync(fontDir)) {
+    fs.mkdirSync(fontDir, { recursive: true });
+  }
+  
+  // Try to find the Inter font file
+  let interFontFile = null;
+  const possibleFontFiles = findHtmlFiles(outputDir).filter(file => 
+    file.includes('static/media') && (file.endsWith('.woff2') || file.endsWith('.woff'))
+  );
+  
+  if (possibleFontFiles.length > 0) {
+    interFontFile = possibleFontFiles[0];
+    const fontFilename = path.basename(interFontFile);
+    
+    // Copy the font to multiple locations for better accessibility
+    [
+      path.join(outputDir, fontFilename),
+      path.join(outputDir, '_next', fontFilename),
+      path.join(outputDir, '_next', 'static', fontFilename)
+    ].forEach(destPath => {
+      try {
+        fs.copyFileSync(interFontFile, destPath);
+        console.log(`Copied font to ${destPath} for better access`);
+      } catch (err) {
+        console.error(`Failed to copy font to ${destPath}:`, err.message);
+      }
+    });
+  }
+  
+  // Add standalone font loading script
+  const fontFixScript = `
+  // Font loading fix
+  (function() {
+    function checkAndFixFonts() {
+      // Find any font that failed to load and fix its path
+      document.querySelectorAll('link[rel="preload"][as="font"]').forEach(link => {
+        if (!link.dataset.fixed) {
+          // Create a new link with a fixed path
+          const newLink = document.createElement('link');
+          newLink.rel = 'preload';
+          newLink.as = 'font';
+          newLink.type = 'font/' + (link.href.endsWith('.woff2') ? 'woff2' : 'woff');
+          newLink.crossOrigin = 'anonymous';
+          
+          // Try different relative paths
+          if (link.href.indexOf('/_next/static/media/') !== -1) {
+            const fontName = link.href.split('/').pop();
+            newLink.href = './_next/static/media/' + fontName;
+          } else {
+            newLink.href = './' + link.href.split('/').pop();
+          }
+          
+          newLink.dataset.fixed = 'true';
+          document.head.appendChild(newLink);
+          console.log('Added fallback font link:', newLink.href);
+        }
+      });
+      
+      // Also fix style tags that reference fonts
+      document.querySelectorAll('style').forEach(style => {
+        if (!style.dataset.fixed && style.textContent.indexOf('@font-face') !== -1) {
+          const fixedCss = style.textContent.replace(
+            /url\(['"]?\/_next\/static\/media\/([^'"]+)['"]?\)/g, 
+            "url('./_next/static/media/$1')"
+          );
+          if (fixedCss !== style.textContent) {
+            style.textContent = fixedCss;
+            style.dataset.fixed = 'true';
+            console.log('Fixed font paths in style tag');
+          }
+        }
+      });
+    }
+    
+    // Run the fix after everything has loaded
+    if (document.readyState === 'complete') {
+      checkAndFixFonts();
+    } else {
+      window.addEventListener('load', checkAndFixFonts);
+    }
+  })();
+  `;
+  
+  // Add this script to all HTML files
+  const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
+  htmlFiles.forEach(file => {
+    let content = fs.readFileSync(file, 'utf8');
+    content = content.replace('</head>', `<script>${fontFixScript}</script></head>`);
+    fs.writeFileSync(file, content);
+  });
+  
+  console.log('Created fallback resources');
+};
+
 // Main function
 const main = () => {
   console.log('Starting post-build IPFS path fix');
@@ -388,6 +572,9 @@ const main = () => {
   
   // Fix asset filenames
   fixAssetFilenames();
+  
+  // Create standalone fallback resources
+  createFallbackResources();
   
   // Create IPFS-specific files
   createIpfsCompatibleFiles();
