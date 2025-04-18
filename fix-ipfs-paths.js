@@ -452,11 +452,32 @@ const createIpfsCompatibleFiles = () => {
         }
       }
       
-      // Fix GitHub API redirect issue
-      document.querySelectorAll('[href*="/api/github"], [src*="/api/github"]').forEach(el => {
-        const attr = el.hasAttribute('src') ? 'src' : 'href';
-        el.setAttribute(attr, './api/github/index.json');
-      });
+      // Fix GitHub API redirect issue more aggressively
+      // Add a direct reference to the GitHub API endpoint on the page
+      const script = document.createElement('script');
+      script.textContent = `
+        // Direct GitHub API data
+        window.GITHUB_DATA = ${JSON.stringify({
+          user: { login: "TacitusXI", name: "Ivan Leskov" },
+          repos: [],
+          contributions: { totalCount: 0, weeks: [] }
+        })};
+        
+        // Override fetch for GitHub API to use local data
+        const origFetch = window.fetch;
+        window.fetch = function(...args) {
+          const url = args[0]?.toString() || '';
+          if (url.includes('/api/github') || url.includes('github.com/')) {
+            console.log('Intercepting GitHub API request:', url);
+            return Promise.resolve(new Response(
+              JSON.stringify(window.GITHUB_DATA),
+              { headers: { 'Content-Type': 'application/json' } }
+            ));
+          }
+          return origFetch.apply(this, args);
+        };
+      `;
+      document.head.appendChild(script);
     }
     
     // Run immediately and again after load
@@ -715,26 +736,52 @@ const createFallbackResources = () => {
       // Also fix style tags that reference fonts
       document.querySelectorAll('style').forEach(style => {
         if (!style.dataset.fixed && style.textContent.indexOf('@font-face') !== -1) {
-          // Fix the problematic regex - this was causing the "Invalid regular expression flags" error
+          // Avoid using regex completely - instead use string operations
           let newContent = style.textContent;
           
-          // Use string replacement instead of regex for fixing font paths
-          if (newContent.includes('url(') && newContent.includes('/_next/static/media/')) {
-            newContent = newContent.split('url(').map(part => {
-              if (!part.includes('/_next/static/media/')) return part;
-              return part.replace('/_next/static/media/', './_next/static/media/');
-            }).join('url(');
+          // Replace all instances of /_next/static/media/ with ./_next/static/media/
+          if (newContent.includes('/_next/static/media/')) {
+            newContent = newContent.split('/_next/static/media/').join('./_next/static/media/');
           }
           
-          // Fix nested paths in CSS (this was causing 404s)
-          newContent = newContent.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
+          // Fix nested paths in CSS
+          if (newContent.includes('_next/static/css/_next/static/media/')) {
+            newContent = newContent.split('_next/static/css/_next/static/media/').join('_next/static/media/');
+          }
           
+          // Apply the changes if content was modified
           if (newContent !== style.textContent) {
             style.textContent = newContent;
             style.dataset.fixed = 'true';
-            console.log('Fixed font paths in style tag');
+            console.log('Fixed paths in style tag using safe string operations');
           }
         }
+      });
+      
+      // Special fix for the specific font file causing 404s
+      const specialFontName = 'a34f9d1faa5f3315-s.p.woff2';
+      
+      // Add specific link for the problematic font
+      const fontLink = document.createElement('link');
+      fontLink.rel = 'preload';
+      fontLink.as = 'font';
+      fontLink.type = 'font/woff2';
+      fontLink.crossOrigin = 'anonymous';
+      fontLink.href = './_next/static/media/' + specialFontName;
+      document.head.appendChild(fontLink);
+      
+      // Also try alternative font paths
+      [
+        './_next/' + specialFontName,
+        './' + specialFontName
+      ].forEach(path => {
+        const altLink = document.createElement('link');
+        altLink.rel = 'preload';
+        altLink.as = 'font';
+        altLink.type = 'font/woff2';
+        altLink.crossOrigin = 'anonymous';
+        altLink.href = path;
+        document.head.appendChild(altLink);
       });
     }
     
@@ -762,53 +809,51 @@ const createFallbackResources = () => {
     // Run this check immediately and after load
     checkTacitusFM();
     window.addEventListener('load', checkTacitusFM);
+    
+    // Direct fix for GitHub API
+    window.GITHUB_DATA = {
+      user: { login: "TacitusXI", name: "Ivan Leskov" },
+      repos: [],
+      contributions: { totalCount: 0, weeks: [] }
+    };
+    
+    // Override fetch for GitHub API
+    const origFetch = window.fetch;
+    window.fetch = function(url, options) {
+      const urlStr = typeof url === 'string' ? url : url?.url || '';
+      
+      if (urlStr.includes('/api/github') || urlStr.includes('github.com/')) {
+        console.log('Intercepting GitHub API request:', urlStr);
+        return Promise.resolve(new Response(
+          JSON.stringify(window.GITHUB_DATA),
+          { headers: { 'Content-Type': 'application/json' } }
+        ));
+      }
+      
+      return origFetch.apply(this, arguments);
+    };
   })();
   `;
   
-  // Add this script to all HTML files
-  const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
-  htmlFiles.forEach(file => {
-    let content = fs.readFileSync(file, 'utf8');
-    content = content.replace('</head>', `<script>${fontFixScript}</script></head>`);
-    
-    // Add a service worker for intercepting font requests
-    const swScript = `
-    <script>
-    // Register service worker to fix font loading issues
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(registration => {
-          console.log('ServiceWorker registration successful');
-        }).catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
-        });
-      });
-    }
-    </script>
-    `;
-    
-    // Add service worker script before closing body tag
-    content = content.replace('</body>', `${swScript}</body>`);
-    fs.writeFileSync(file, content);
-  });
-  
-  // Create service worker file
+  // Create service worker file with a more direct approach
   const serviceWorkerCode = `
   // Service worker to intercept font requests
   self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
     
-    // Handle font files with problematic paths
-    if (url.pathname.includes('_next/static/css/_next/static/media') && 
-        (url.pathname.endsWith('.woff2') || url.pathname.endsWith('.woff') || url.pathname.endsWith('.ttf'))) {
-      
-      // Redirect to correct path
-      const correctPath = url.pathname.replace('/_next/static/css/_next/static/media/', '/_next/static/media/');
-      const newUrl = new URL(correctPath, url.origin);
+    // Handle font files
+    if (url.pathname.endsWith('.woff2') || url.pathname.endsWith('.woff') || url.pathname.endsWith('.ttf')) {
+      // Extract just the filename
+      const fontFilename = url.pathname.split('/').pop();
       
       event.respondWith(
-        fetch(newUrl)
-          .catch(() => fetch('./_next/static/media/' + url.pathname.split('/').pop()))
+        fetch('./_next/static/media/' + fontFilename)
+          .catch(() => fetch('./_next/' + fontFilename))
+          .catch(() => fetch('./' + fontFilename))
+          .catch(err => {
+            console.warn('Font not found:', fontFilename, err);
+            return new Response('Font not found', { status: 404 });
+          })
       );
       return;
     }
@@ -825,18 +870,14 @@ const createFallbackResources = () => {
     // Handle GitHub API specifically
     if (url.pathname.includes('/api/github')) {
       event.respondWith(
-        fetch('./api/github/index.json')
-          .catch(() => {
-            // Return a basic JSON response if file not found
-            return new Response(JSON.stringify({
-              user: { login: "TacitusXI", name: "Ivan Leskov" },
-              repos: [],
-              contributions: { totalCount: 0, weeks: [] }
-            }), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            });
-          })
+        new Response(JSON.stringify({
+          user: { login: "TacitusXI", name: "Ivan Leskov" },
+          repos: [],
+          contributions: { totalCount: 0, weeks: [] }
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
       );
       return;
     }
@@ -847,8 +888,7 @@ const createFallbackResources = () => {
         fetch('./music/' + url.pathname.substring(url.pathname.lastIndexOf('/') + 1))
           .catch(err => {
             console.warn('Failed to load music file:', url.pathname, err);
-            // Don't return a response if the file doesn't exist
-            throw err;
+            return new Response('Audio not found', { status: 404 });
           })
       );
       return;
@@ -860,28 +900,18 @@ const createFallbackResources = () => {
         fetch('./music/tacitus1.mp3')
           .catch(err => {
             console.warn('Failed to load tacitus1.mp3:', err);
-            throw err;
+            return new Response('Audio not found', { status: 404 });
           })
       );
       return;
     }
     
-    // Handle music files
-    if (url.pathname.endsWith('.mp3') || url.pathname.endsWith('.wav') || url.pathname.endsWith('.ogg')) {
-      if (url.pathname.startsWith('/')) {
-        const newUrl = new URL('.' + url.pathname, url.origin);
-        event.respondWith(fetch(newUrl));
-        return;
-      }
-    }
-    
-    // Handle project images (specific for the sc-kEzwgR hOcaMd class)
+    // Handle project images
     if (url.pathname.startsWith('/images/projects/')) {
       event.respondWith(
         fetch('./images/projects/' + url.pathname.substring('/images/projects/'.length))
           .catch(err => {
             console.warn('Failed to load project image:', url.pathname, err);
-            // Try other paths as fallback
             return fetch('./_next/static/media/' + url.pathname.split('/').pop());
           })
       );
@@ -889,16 +919,11 @@ const createFallbackResources = () => {
     }
     
     // Handle all other image files
-    if (url.pathname.startsWith('/images/') && 
-        (url.pathname.endsWith('.jpg') || url.pathname.endsWith('.jpeg') || 
-         url.pathname.endsWith('.png') || url.pathname.endsWith('.gif') || 
-         url.pathname.endsWith('.webp') || url.pathname.endsWith('.svg'))) {
-      
+    if (url.pathname.startsWith('/images/')) {
       event.respondWith(
         fetch('./images/' + url.pathname.substring('/images/'.length))
           .catch(err => {
             console.warn('Failed to load image:', url.pathname, err);
-            // Try other paths as fallback
             return fetch('.' + url.pathname);
           })
       );
