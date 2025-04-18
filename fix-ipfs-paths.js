@@ -487,27 +487,29 @@ const createIpfsCompatibleFiles = () => {
       
       // Fix GitHub API redirect issue more aggressively
       // Add a direct reference to the GitHub API endpoint on the page
+      const githubData = {
+        user: { login: "TacitusXI", name: "Ivan Leskov" },
+        repos: [],
+        contributions: { totalCount: 0, weeks: [] }
+      };
+      
       const script = document.createElement('script');
       script.textContent = 
         '// Direct GitHub API data\n' +
-        'window.GITHUB_DATA = ' + JSON.stringify({
-          user: { login: "TacitusXI", name: "Ivan Leskov" },
-          repos: [],
-          contributions: { totalCount: 0, weeks: [] }
-        }) + ';\n' +
+        'window.GITHUB_DATA = ' + JSON.stringify(githubData) + ';\n' +
         '\n' +
-        '// Override fetch for GitHub API to use local data\n' +
+        '// Override fetch for GitHub API\n' +
         'const origFetch = window.fetch;\n' +
-        'window.fetch = function(...args) {\n' +
-        '  const url = args[0]?.toString() || "";\n' +
-        '  if (url.includes("/api/github") || url.includes("github.com/")) {\n' +
-        '    console.log("Intercepting GitHub API request:", url);\n' +
+        'window.fetch = function(url) {\n' +
+        '  const urlStr = typeof url === "string" ? url : url ? url.url || "" : "";\n' +
+        '  if (urlStr.includes("/api/github") || urlStr.includes("github.com/")) {\n' +
+        '    console.log("Intercepting GitHub API request");\n' +
         '    return Promise.resolve(new Response(\n' +
         '      JSON.stringify(window.GITHUB_DATA),\n' +
         '      { headers: { "Content-Type": "application/json" } }\n' +
         '    ));\n' +
         '  }\n' +
-        '  return origFetch.apply(this, args);\n' +
+        '  return origFetch.apply(this, arguments);\n' +
         '};';
       document.head.appendChild(script);
     }
@@ -869,8 +871,8 @@ const createFallbackResources = () => {
   
   // Create service worker file with a more direct approach
   const serviceWorkerCode = `
-  // Service worker to intercept font requests
-  self.addEventListener('fetch', event => {
+  // Service worker to intercept requests
+  self.addEventListener('fetch', function(event) {
     const url = new URL(event.request.url);
     
     // Handle font files
@@ -880,10 +882,10 @@ const createFallbackResources = () => {
       
       event.respondWith(
         fetch('./_next/static/media/' + fontFilename)
-          .catch(() => fetch('./_next/' + fontFilename))
-          .catch(() => fetch('./' + fontFilename))
-          .catch(err => {
-            console.warn('Font not found:', fontFilename, err);
+          .catch(function() { return fetch('./_next/' + fontFilename); })
+          .catch(function() { return fetch('./' + fontFilename); })
+          .catch(function(err) {
+            console.warn('Font not found:', fontFilename);
             return new Response('Font not found', { status: 404 });
           })
       );
@@ -901,12 +903,14 @@ const createFallbackResources = () => {
     
     // Handle GitHub API specifically
     if (url.pathname.includes('/api/github')) {
+      const githubData = {
+        user: { login: "TacitusXI", name: "Ivan Leskov" },
+        repos: [],
+        contributions: { totalCount: 0, weeks: [] }
+      };
+      
       event.respondWith(
-        new Response(JSON.stringify({
-          user: { login: "TacitusXI", name: "Ivan Leskov" },
-          repos: [],
-          contributions: { totalCount: 0, weeks: [] }
-        }), {
+        new Response(JSON.stringify(githubData), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
         })
@@ -918,8 +922,8 @@ const createFallbackResources = () => {
     if (url.pathname.includes('/music/')) {
       event.respondWith(
         fetch('./music/' + url.pathname.substring(url.pathname.lastIndexOf('/') + 1))
-          .catch(err => {
-            console.warn('Failed to load music file:', url.pathname, err);
+          .catch(function(err) {
+            console.warn('Failed to load music file:', url.pathname);
             return new Response('Audio not found', { status: 404 });
           })
       );
@@ -930,8 +934,8 @@ const createFallbackResources = () => {
     if (url.pathname.includes('tacitus1.mp3')) {
       event.respondWith(
         fetch('./music/tacitus1.mp3')
-          .catch(err => {
-            console.warn('Failed to load tacitus1.mp3:', err);
+          .catch(function(err) {
+            console.warn('Failed to load tacitus1.mp3');
             return new Response('Audio not found', { status: 404 });
           })
       );
@@ -942,8 +946,8 @@ const createFallbackResources = () => {
     if (url.pathname.startsWith('/images/projects/')) {
       event.respondWith(
         fetch('./images/projects/' + url.pathname.substring('/images/projects/'.length))
-          .catch(err => {
-            console.warn('Failed to load project image:', url.pathname, err);
+          .catch(function(err) {
+            console.warn('Failed to load project image:', url.pathname);
             return fetch('./_next/static/media/' + url.pathname.split('/').pop());
           })
       );
@@ -954,8 +958,8 @@ const createFallbackResources = () => {
     if (url.pathname.startsWith('/images/')) {
       event.respondWith(
         fetch('./images/' + url.pathname.substring('/images/'.length))
-          .catch(err => {
-            console.warn('Failed to load image:', url.pathname, err);
+          .catch(function(err) {
+            console.warn('Failed to load image:', url.pathname);
             return fetch('.' + url.pathname);
           })
       );
