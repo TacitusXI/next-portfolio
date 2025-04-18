@@ -210,6 +210,11 @@ const createIpfsCompatibleFiles = () => {
         return './profile.jpg';
       }
       
+      // Handle music files
+      if (url.startsWith('/music/')) {
+        return './music/' + url.substring(7);
+      }
+      
       // Handle API requests
       if (url.startsWith('/api/')) {
         return './api/' + url.substring(5);
@@ -392,8 +397,19 @@ const createIpfsCompatibleFiles = () => {
                 audioEl.src = './' + subParts.slice(1).join('/');
               }
             }
+          } else if (audioEl.src && audioEl.src.includes('ipfs.io/music/')) {
+            // Handle direct music URLs
+            audioEl.src = './music/' + audioEl.src.split('ipfs.io/music/')[1];
           }
         });
+        
+        // Direct fix for tacitus1.mp3
+        const playableTracks = el.querySelectorAll('audio[src*="tacitus1.mp3"], [src*="tacitus1.mp3"]');
+        if (playableTracks.length > 0) {
+          playableTracks.forEach(track => {
+            track.src = './music/tacitus1.mp3';
+          });
+        }
         
         // Check for data-* attributes that might contain audio sources
         Array.from(el.attributes).forEach(attr => {
@@ -401,6 +417,8 @@ const createIpfsCompatibleFiles = () => {
             if (attr.value.startsWith('/') && 
                 (attr.value.endsWith('.mp3') || attr.value.endsWith('.wav') || attr.value.endsWith('.ogg'))) {
               el.setAttribute(attr.name, '.' + attr.value);
+            } else if (attr.value.includes('ipfs.io/music/')) {
+              el.setAttribute(attr.name, './music/' + attr.value.split('ipfs.io/music/')[1]);
             }
           }
         });
@@ -592,6 +610,54 @@ const createFallbackResources = () => {
     fs.mkdirSync(fontDir, { recursive: true });
   }
   
+  // Create music directory for audio files
+  const musicDir = path.join(outputDir, 'music');
+  if (!fs.existsSync(musicDir)) {
+    fs.mkdirSync(musicDir, { recursive: true });
+    
+    // Create a placeholder MP3 file for tacitus1.mp3
+    // This is just a small MP3 file with silence
+    const placeholderMP3 = 'SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAAFmAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwAgAAAAAAAAAAABRAJAhXQQAAgAAABZjrTJuiAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxBYAAANIAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxCoAAANIAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxDYAAANIAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+    
+    fs.writeFileSync(path.join(musicDir, 'tacitus1.mp3'), Buffer.from(placeholderMP3, 'base64'));
+    console.log('Created placeholder MP3 file for tacitus1.mp3');
+  }
+  
+  // Try to find any music files in the workspace and copy them to the music directory
+  try {
+    const publicDir = path.join(process.cwd(), 'public');
+    const possibleMusicDirs = [
+      path.join(publicDir, 'music'),
+      path.join(publicDir, 'audio'),
+      path.join(publicDir, 'assets', 'music'),
+      path.join(publicDir, 'assets', 'audio'),
+      path.join(process.cwd(), 'assets', 'music'),
+      path.join(process.cwd(), 'assets', 'audio')
+    ];
+    
+    for (const dir of possibleMusicDirs) {
+      if (fs.existsSync(dir)) {
+        console.log(`Found music directory: ${dir}`);
+        
+        // Copy all audio files to the output music directory
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+          if (file.endsWith('.mp3') || file.endsWith('.wav') || file.endsWith('.ogg')) {
+            const sourceFile = path.join(dir, file);
+            const destFile = path.join(musicDir, file);
+            
+            fs.copyFileSync(sourceFile, destFile);
+            console.log(`Copied music file: ${file}`);
+          }
+        }
+        
+        break;
+      }
+    }
+  } catch (err) {
+    console.error('Error copying music files:', err.message);
+  }
+  
   // Try to find the Inter font file
   let interFontFile = null;
   const possibleFontFiles = findHtmlFiles(outputDir).filter(file => 
@@ -652,7 +718,7 @@ const createFallbackResources = () => {
           // Fix the problematic regex - this was causing the "Invalid regular expression flags" error
           let newContent = style.textContent;
           
-          // Replace URL patterns without using complex regex
+          // Use string replacement instead of regex for fixing font paths
           if (newContent.includes('url(') && newContent.includes('/_next/static/media/')) {
             newContent = newContent.split('url(').map(part => {
               if (!part.includes('/_next/static/media/')) return part;
@@ -678,6 +744,24 @@ const createFallbackResources = () => {
     } else {
       window.addEventListener('load', checkAndFixFonts);
     }
+    
+    // Add additional check for TacitusFM
+    const checkTacitusFM = () => {
+      // Fix any audio elements that might be trying to load from ipfs.io/music
+      document.querySelectorAll('audio[src*="ipfs.io/music"], [src*="ipfs.io/music"]').forEach(audio => {
+        const newSrc = './music/' + audio.src.substring(audio.src.lastIndexOf('/') + 1);
+        audio.src = newSrc;
+      });
+      
+      // Specific fix for tacitus1.mp3
+      document.querySelectorAll('audio[src*="tacitus1.mp3"], [src*="tacitus1.mp3"]').forEach(audio => {
+        audio.src = './music/tacitus1.mp3';
+      });
+    };
+    
+    // Run this check immediately and after load
+    checkTacitusFM();
+    window.addEventListener('load', checkTacitusFM);
   })();
   `;
   
@@ -752,6 +836,31 @@ const createFallbackResources = () => {
               status: 200,
               headers: { 'Content-Type': 'application/json' }
             });
+          })
+      );
+      return;
+    }
+    
+    // Handle music files specifically
+    if (url.pathname.includes('/music/')) {
+      event.respondWith(
+        fetch('./music/' + url.pathname.substring(url.pathname.lastIndexOf('/') + 1))
+          .catch(err => {
+            console.warn('Failed to load music file:', url.pathname, err);
+            // Don't return a response if the file doesn't exist
+            throw err;
+          })
+      );
+      return;
+    }
+    
+    // Special case for tacitus1.mp3
+    if (url.pathname.includes('tacitus1.mp3')) {
+      event.respondWith(
+        fetch('./music/tacitus1.mp3')
+          .catch(err => {
+            console.warn('Failed to load tacitus1.mp3:', err);
+            throw err;
           })
       );
       return;
