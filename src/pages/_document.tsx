@@ -5,36 +5,40 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Add a script that rewrites asset URLs at runtime for IPFS compatibility */}
+        {/* Inline script that runs immediately to rewrite asset paths */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Patch all Next.js asset URLs to be relative for IPFS compatibility
               (function() {
-                // Function to fix asset paths for IPFS
-                function fixIPFSAssetPaths() {
-                  // Find all script and link elements
-                  const scripts = document.querySelectorAll('script[src^="/_next/"]');
-                  const links = document.querySelectorAll('link[href^="/_next/"]');
-                  
-                  // Fix script src attributes
-                  scripts.forEach(script => {
-                    const src = script.getAttribute('src');
-                    if (src && src.startsWith('/_next/')) {
-                      script.setAttribute('src', '.' + src);
-                    }
-                  });
-                  
-                  // Fix link href attributes
-                  links.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && href.startsWith('/_next/')) {
-                      link.setAttribute('href', '.' + href);
-                    }
-                  });
-                }
-                
-                // Run on DOMContentLoaded
-                document.addEventListener('DOMContentLoaded', fixIPFSAssetPaths);
+                // Override the fetch function to fix URLs
+                const originalFetch = window.fetch;
+                window.fetch = function(url, options) {
+                  if (typeof url === 'string' && url.startsWith('/_next/')) {
+                    url = '.' + url;
+                  }
+                  return originalFetch.call(this, url, options);
+                };
+
+                // Create a custom element prototype method to intercept setting src and href attributes
+                const originalsetAttribute = Element.prototype.setAttribute;
+                Element.prototype.setAttribute = function(name, value) {
+                  if ((name === 'src' || name === 'href') && 
+                      typeof value === 'string' && 
+                      value.startsWith('/_next/')) {
+                    value = '.' + value;
+                  }
+                  originalSetAttribute.call(this, name, value);
+                };
+
+                // Patch the document.write method
+                const originalDocumentWrite = document.write;
+                document.write = function(html) {
+                  if (typeof html === 'string') {
+                    html = html.replace(/([src|href])="\\/_next\\//g, '$1="./_next/');
+                  }
+                  originalDocumentWrite.call(this, html);
+                };
               })();
             `,
           }}
