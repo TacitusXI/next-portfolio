@@ -243,7 +243,7 @@ const createIpfsCompatibleFiles = () => {
       // Fix background images
       document.querySelectorAll('[style*="background"]').forEach(function(el) {
         if (el.style.backgroundImage && el.style.backgroundImage.indexOf('/images/') !== -1) {
-          var urlMatch = el.style.backgroundImage.match(/url\\(['"]?([^'"\\)]+)['"]?\\)/);
+          var urlMatch = el.style.backgroundImage.match(/url\(['"]?([^'"\)]+)['"]?\)/);
           if (urlMatch && urlMatch[1]) {
             var imgPath = urlMatch[1];
             if (imgPath.startsWith('/images/')) {
