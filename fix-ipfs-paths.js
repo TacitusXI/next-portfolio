@@ -332,10 +332,33 @@ const createIpfsCompatibleFiles = () => {
         }
       });
 
-      // Fix project images
-      document.querySelectorAll('img[data-project-image]').forEach(el => {
-        if (el.src.indexOf('/images/projects/') !== -1) {
-          el.src = './images/projects/' + el.src.split('/images/projects/')[1];
+      // Fix project images more aggressively - target all images in projects section
+      document.querySelectorAll('.project img, [data-project] img, [data-project-image]').forEach(el => {
+        // Check if the image is a relative or absolute path to the projects directory
+        if (el.src.includes('/images/projects/')) {
+          el.src = './images/projects/' + el.src.split('/images/projects/').pop();
+        }
+      });
+      
+      // Fix music player - target audio elements and music files
+      document.querySelectorAll('audio, [src*=".mp3"], [src*=".wav"], [src*=".ogg"]').forEach(el => {
+        if (el.src && el.src.startsWith('/')) {
+          el.src = '.' + el.src;
+        }
+      });
+      
+      // Fix navbar links to prevent external redirects
+      document.querySelectorAll('nav a, header a, .navbar a, .nav-link').forEach(el => {
+        // Don't modify external links (those starting with http that aren't IPFS gateways)
+        if (el.href && (el.href.includes('ipfs.tech') || el.href.includes('ipfs.io'))) {
+          // Extract the path from the URL
+          const url = new URL(el.href);
+          const path = url.pathname;
+          
+          // If it's an internal path, make it relative
+          if (!path.startsWith('http')) {
+            el.href = '.' + (path.startsWith('/') ? path : '/' + path);
+          }
         }
       });
 
@@ -351,6 +374,12 @@ const createIpfsCompatibleFiles = () => {
           window.location.pathname = window.location.pathname.replace('/api/api/', '/api/');
         }
       }
+      
+      // Fix GitHub API redirect issue
+      document.querySelectorAll('[href*="/api/github"], [src*="/api/github"]').forEach(el => {
+        const attr = el.hasAttribute('src') ? 'src' : 'href';
+        el.setAttribute(attr, './api/github/index.json');
+      });
     }
     
     // Run immediately and again after load
@@ -561,19 +590,22 @@ const createFallbackResources = () => {
       // Also fix style tags that reference fonts
       document.querySelectorAll('style').forEach(style => {
         if (!style.dataset.fixed && style.textContent.indexOf('@font-face') !== -1) {
-          const fixedCss = style.textContent.replace(
-            /url\(['"]?\/_next\/static\/media\/([^'"]+)['"]?\)/g, 
-            "url('./_next/static/media/$1')"
-          );
+          // Fix the problematic regex - this was causing the "Invalid regular expression flags" error
+          let newContent = style.textContent;
+          
+          // Replace URL patterns without using complex regex
+          if (newContent.includes('url(') && newContent.includes('/_next/static/media/')) {
+            newContent = newContent.split('url(').map(part => {
+              if (!part.includes('/_next/static/media/')) return part;
+              return part.replace('/_next/static/media/', './_next/static/media/');
+            }).join('url(');
+          }
           
           // Fix nested paths in CSS (this was causing 404s)
-          const doubleFix = fixedCss.replace(
-            /_next\/static\/css\/_next\/static\/media\//g, 
-            '_next/static/media/'
-          );
+          newContent = newContent.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
           
-          if (doubleFix !== style.textContent) {
-            style.textContent = doubleFix;
+          if (newContent !== style.textContent) {
+            style.textContent = newContent;
             style.dataset.fixed = 'true';
             console.log('Fixed font paths in style tag');
           }
@@ -645,6 +677,34 @@ const createFallbackResources = () => {
       
       event.respondWith(fetch(newUrl));
       return;
+    }
+    
+    // Handle GitHub API specifically
+    if (url.pathname.includes('/api/github')) {
+      event.respondWith(
+        fetch('./api/github/index.json')
+          .catch(() => {
+            // Return a basic JSON response if file not found
+            return new Response(JSON.stringify({
+              user: { login: "TacitusXI", name: "Ivan Leskov" },
+              repos: [],
+              contributions: { totalCount: 0, weeks: [] }
+            }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          })
+      );
+      return;
+    }
+    
+    // Handle music files
+    if (url.pathname.endsWith('.mp3') || url.pathname.endsWith('.wav') || url.pathname.endsWith('.ogg')) {
+      if (url.pathname.startsWith('/')) {
+        const newUrl = new URL('.' + url.pathname, url.origin);
+        event.respondWith(fetch(newUrl));
+        return;
+      }
     }
   });
   `;
