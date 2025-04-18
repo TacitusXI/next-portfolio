@@ -7,12 +7,8 @@ const nextConfig = {
     domains: ['github.com', 'raw.githubusercontent.com'],
   },
   output: 'export',
-  assetPrefix: './',
+  assetPrefix: '/',
   basePath: '',
-  experimental: {
-    // This enables the export to strip all URLs and make them relative
-    optimizeUniversalDefaults: true
-  }
 }
 
 module.exports = nextConfig 
