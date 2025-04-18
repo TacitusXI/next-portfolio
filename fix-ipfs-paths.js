@@ -288,8 +288,11 @@ const createIpfsCompatibleFiles = () => {
       // Fix font and media paths - special case for nested paths
       document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
         const href = el.getAttribute('href');
-        const fixedHref = href.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
-        el.setAttribute('href', fixedHref);
+        // Use string operations instead of regex to avoid flag issues
+        if (href.includes('_next/static/css/_next/static/media/')) {
+          const fixedHref = href.split('_next/static/css/_next/static/media/').join('_next/static/media/');
+          el.setAttribute('href', fixedHref);
+        }
       });
       
       // Fix preloaded fonts
@@ -350,10 +353,18 @@ const createIpfsCompatibleFiles = () => {
         // Check background image style
         if (el.style && el.style.backgroundImage) {
           if (el.style.backgroundImage.includes('/images/')) {
-            const bgUrl = el.style.backgroundImage.match(/url\(['"]?([^'"]+)['"]?\)/);
-            if (bgUrl && bgUrl[1]) {
-              const newUrl = bgUrl[1].replace(/^\/images\//, './images/');
-              el.style.backgroundImage = 'url(\'' + newUrl + '\')';
+            // Use safer string operations instead of regex
+            const bgUrlStart = el.style.backgroundImage.indexOf('url(');
+            if (bgUrlStart !== -1) {
+              const startQuote = el.style.backgroundImage.indexOf("'", bgUrlStart);
+              const endQuote = el.style.backgroundImage.indexOf("'", startQuote + 1);
+              if (startQuote !== -1 && endQuote !== -1) {
+                const url = el.style.backgroundImage.substring(startQuote + 1, endQuote);
+                if (url.startsWith('/images/')) {
+                  const newUrl = './images/' + url.substring(8);
+                  el.style.backgroundImage = 'url(\'' + newUrl + '\')';
+                }
+              }
             }
           }
         }
@@ -361,8 +372,13 @@ const createIpfsCompatibleFiles = () => {
         // Also check for img children
         el.querySelectorAll('img').forEach(img => {
           if (img.src.includes('/images/')) {
-            img.src = img.src.replace(/^https?:\/\/[^\/]+\/images\//, './images/');
-            img.src = img.src.replace(/^\/images\//, './images/');
+            // Use safer string operations
+            if (img.src.includes('://')) {
+              const pathPart = img.src.substring(img.src.indexOf('/images/'));
+              img.src = '.' + pathPart;
+            } else if (img.src.startsWith('/images/')) {
+              img.src = './images/' + img.src.substring(8);
+            }
           }
         });
         
@@ -370,7 +386,24 @@ const createIpfsCompatibleFiles = () => {
         if (el.getAttribute('style') && el.getAttribute('style').includes('background-image')) {
           const style = el.getAttribute('style');
           if (style.includes('/images/')) {
-            const newStyle = style.replace(/(url\(['"]?)\/images\//g, '$1./images/');
+            // Use safer string operations
+            let newStyle = style;
+            if (style.includes('url(') && style.includes('/images/')) {
+              // Find all url() instances
+              const parts = style.split('url(');
+              for (let i = 1; i < parts.length; i++) {
+                if (parts[i].includes('/images/')) {
+                  const imagePath = parts[i].substring(parts[i].indexOf('/images/'));
+                  const endPos = imagePath.indexOf(')');
+                  if (endPos > 0) {
+                    const path = imagePath.substring(0, endPos);
+                    const newPath = './images/' + path.substring(8);
+                    parts[i] = parts[i].replace(path, newPath);
+                  }
+                }
+              }
+              newStyle = parts.join('url(');
+            }
             el.setAttribute('style', newStyle);
           }
         }
