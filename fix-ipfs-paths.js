@@ -170,7 +170,12 @@ const createIpfsCompatibleFiles = () => {
       
       // Fix nested _next paths first
       if (url.indexOf('/_next/') !== -1 && url.indexOf('/_next/', url.indexOf('/_next/') + 7) !== -1) {
-        url = url.replace(/(\\/\\_next\\/[^"']*?)(\\/\\_next\\/)/g, '$1/');
+        // Use string methods instead of regex where possible
+        const firstNextIndex = url.indexOf('/_next/');
+        const secondNextIndex = url.indexOf('/_next/', firstNextIndex + 7);
+        if (secondNextIndex !== -1) {
+          url = url.substring(0, secondNextIndex) + '/' + url.substring(secondNextIndex + 7);
+        }
       }
       
       // Handle direct /_next/ URLs
@@ -227,32 +232,47 @@ const createIpfsCompatibleFiles = () => {
     window.fetch = function(url, options) {
       if (arguments.length >= 1) {
         const origUrl = arguments[0];
-        arguments[0] = fixAssetUrl(arguments[0]);
+        // Check if origUrl is a string before using string methods
+        const isString = typeof origUrl === 'string';
         
-        // Special handling for GitHub API or RSC requests that might fail
-        if (origUrl.indexOf('/api/github') !== -1 || origUrl.indexOf('?_rsc=') !== -1) {
-          return originalFetch.apply(this, arguments).catch(err => {
-            console.warn('Fetch error, falling back to static data:', err);
-            // For GitHub API, return static data
-            if (origUrl.indexOf('/api/github') !== -1) {
-              return new Response(JSON.stringify({
-                user: { login: "TacitusXI", name: "Ivan Leskov" },
-                repos: [],
-                contributions: { totalCount: 0, weeks: [] }
-              }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-              });
-            }
-            // For RSC requests, return basic data
-            if (origUrl.indexOf('?_rsc=') !== -1) {
-              return new Response('OK', {
-                status: 200,
-                headers: { 'Content-Type': 'text/plain' }
-              });
-            }
-            throw err;
-          });
+        // Only proceed with URL fixing if it's a string
+        if (isString) {
+          arguments[0] = fixAssetUrl(arguments[0]);
+          
+          // Special handling for GitHub API or RSC requests that might fail
+          if (origUrl.indexOf('/api/github') !== -1 || origUrl.indexOf('?_rsc=') !== -1) {
+            return originalFetch.apply(this, arguments).catch(err => {
+              console.warn('Fetch error, falling back to static data:', err);
+              // For GitHub API, return static data
+              if (origUrl.indexOf('/api/github') !== -1) {
+                return new Response(JSON.stringify({
+                  user: { login: "TacitusXI", name: "Ivan Leskov" },
+                  repos: [],
+                  contributions: { totalCount: 0, weeks: [] }
+                }), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+              // For RSC requests, return basic data
+              if (origUrl.indexOf('?_rsc=') !== -1) {
+                return new Response('OK', {
+                  status: 200,
+                  headers: { 'Content-Type': 'text/plain' }
+                });
+              }
+              throw err;
+            });
+          }
+        } else if (origUrl instanceof Request) {
+          // Handle Request objects
+          const requestUrl = origUrl.url;
+          const fixedUrl = fixAssetUrl(requestUrl);
+          
+          if (fixedUrl !== requestUrl) {
+            // Create a new Request with the fixed URL
+            arguments[0] = new Request(fixedUrl, origUrl);
+          }
         }
       }
       return originalFetch.apply(this, arguments);
@@ -263,7 +283,7 @@ const createIpfsCompatibleFiles = () => {
       // Fix font and media paths - special case for nested paths
       document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
         const href = el.getAttribute('href');
-        const fixedHref = href.replace(/(_next\\/static\\/css\\/)_next\\//, '$1');
+        const fixedHref = href.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
         el.setAttribute('href', fixedHref);
       });
       
@@ -278,7 +298,7 @@ const createIpfsCompatibleFiles = () => {
           }
         }
       });
-      
+
       // Fix images from public directory
       document.querySelectorAll('img[src^="/images/"]').forEach(el => {
         el.src = './images/' + el.src.substring(el.src.indexOf('/images/') + 8);
@@ -287,12 +307,12 @@ const createIpfsCompatibleFiles = () => {
       document.querySelectorAll('img[src="/profile.jpg"]').forEach(el => {
         el.src = './profile.jpg';
       });
-      
+
       // Fix paths with /_next/
       document.querySelectorAll('[src^="/_next/"], [href^="/_next/"]').forEach(el => {
         const attr = el.hasAttribute('src') ? 'src' : 'href';
         const value = el.getAttribute(attr);
-        el.setAttribute(attr, './' + value);
+        el.setAttribute(attr, './' + value.substring(1));
       });
       
       // Fix IPFS paths
@@ -301,7 +321,7 @@ const createIpfsCompatibleFiles = () => {
         const value = el.getAttribute(attr);
         el.setAttribute(attr, './_next/' + value.split('/_next/')[1]);
       });
-      
+
       // Handle full IPFS gateway URLs with CIDs
       document.querySelectorAll('[src*="ipfs.io/ipfs/"][src*="/_next/"], [href*="ipfs.io/ipfs/"][href*="/_next/"]').forEach(el => {
         const attr = el.hasAttribute('src') ? 'src' : 'href';
