@@ -33,6 +33,18 @@ const fixAssetPaths = (filePath) => {
   
   // Fix different path patterns
   if (fileExt === '.html' || fileExt === '.js' || fileExt === '.css') {
+    // Fix hash links in HTML files specifically (important to do this first)
+    if (fileExt === '.html') {
+      // Replace any link with href="https://ipfs.tech/#something" to href="#something"
+      content = content.replace(/(href=["'])(https:\/\/ipfs\.tech\/|https:\/\/ipfs\.io\/)(#[^"']+)(["'])/g, '$1$3$4');
+      
+      // Replace any link in navbar with full URLs to just hash
+      content = content.replace(/(<nav[^>]*>(?:(?!<\/nav>).)*?)href=["'](https?:\/\/[^"']+\/)(#[^"']+)["']/gs, '$1href="$3"');
+      
+      // Fix any onClick handlers that might redirect
+      content = content.replace(/onClick=["']window\.location\.href=['"](https:\/\/ipfs\.tech\/|https:\/\/ipfs\.io\/)[^'"]*["']/g, 'onClick="return false;"');
+    }
+    
     // Fix nested _next paths first (important to do this before other replacements)
     content = content.replace(/(\/_next\/[^"']*?)(\/_next\/)/g, '$1/');
     content = content.replace(/(_next\/[^"']*?)(_next\/)/g, '$1');
@@ -280,6 +292,38 @@ const createIpfsCompatibleFiles = () => {
 
     // Fix all elements with src or href
     function fixAllElements() {
+      // Aggressive fix for any navigation link in the navbar
+      document.querySelectorAll('nav a, header a, .navbar a, .nav a').forEach(link => {
+        // Check if this is a link to a section (hash)
+        const href = link.getAttribute('href');
+        if (!href) return;
+        
+        // Always remove any ipfs.tech or ipfs.io parts from the URL
+        if (href.includes('ipfs.tech') || href.includes('ipfs.io')) {
+          // If it has a hash, extract it
+          if (href.includes('#')) {
+            const hash = href.substring(href.indexOf('#'));
+            link.setAttribute('href', hash);
+          } else {
+            // If it's a link to the main domain with no hash, make it link to current page
+            link.setAttribute('href', './');
+          }
+        }
+        
+        // Handle all hash links for smooth scrolling
+        if (href.startsWith('#')) {
+          link.onclick = function(e) {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth' });
+              history.pushState(null, null, href);
+            }
+            return false;
+          };
+        }
+      });
+      
       // Fix font and media paths - special case for nested paths
       document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
         const href = el.getAttribute('href');
@@ -713,6 +757,51 @@ const createFallbackResources = () => {
         });
       });
     }
+
+    // Global navigation interceptor
+    document.addEventListener('click', function(e) {
+      // Look for any clicked link element
+      let target = e.target;
+      while (target && target.tagName !== 'A') {
+        target = target.parentElement;
+      }
+      
+      // If this is a link
+      if (target && target.tagName === 'A') {
+        const href = target.getAttribute('href');
+        
+        // If it's a link to ipfs.tech or ipfs.io
+        if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // If it contains a hash, navigate to the hash
+          if (href.includes('#')) {
+            const hash = href.substring(href.indexOf('#'));
+            const element = document.querySelector(hash);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+              history.pushState(null, null, hash);
+            }
+          } else {
+            // Otherwise stay on the current page
+            console.log('Prevented navigation to:', href);
+          }
+          return false;
+        }
+
+        // Special handling for navbar links that should scroll to sections
+        if (target.closest('nav, header, .navbar, .nav') && href && href.startsWith('#')) {
+          e.preventDefault();
+          const element = document.querySelector(href);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            history.pushState(null, null, href);
+          }
+          return false;
+        }
+      }
+    }, true); // Use capture phase to intercept before other handlers
     </script>
     `;
     
