@@ -440,6 +440,18 @@ export default function Navbar() {
     return pathname === path;
   };
 
+  // Handler for section links
+  const handleSectionClick = (e: React.MouseEvent, sectionId: string) => {
+    e.preventDefault();
+    // Only access document on the client side
+    if (typeof document !== 'undefined') {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   // Mobile menu content component
   const MobileMenuContent = ({ onClose }: { onClose: () => void }) => {
     const handleSectionClick = (sectionId: string) => {
@@ -521,8 +533,13 @@ export default function Navbar() {
           <DesktopNav>
             {routes.map((route) => (
               <NavItemContainer key={route.path}>
-                <Link href={route.path} passHref legacyBehavior>
+                {route.path.includes('#') ? (
                   <NavItem
+                    href={route.path}
+                    onClick={(e) => {
+                      const sectionId = route.path.substring(route.path.indexOf('#') + 1);
+                      handleSectionClick(e, sectionId);
+                    }}
                     $isActive={isActive(route.path)}
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.95 }}
@@ -530,7 +547,18 @@ export default function Navbar() {
                     {route.icon}
                     <span className="hide-on-mobile">{route.label}</span>
                   </NavItem>
-                </Link>
+                ) : (
+                  <Link href={route.path} passHref legacyBehavior>
+                    <NavItem
+                      $isActive={isActive(route.path)}
+                      whileHover={{ y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {route.icon}
+                      <span className="hide-on-mobile">{route.label}</span>
+                    </NavItem>
+                  </Link>
+                )}
               </NavItemContainer>
             ))}
           </DesktopNav>
