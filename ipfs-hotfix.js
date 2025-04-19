@@ -22,7 +22,7 @@
   }
   
   // ----------------------------------------
-  // Fix GitHub data structure exactly as expected by the component
+  // Fix GitHub data structure with a much simpler approach
   // ----------------------------------------
   window.GITHUB_DATA = {
     user: {
@@ -59,119 +59,97 @@
         forks_count: 3,
         language: "Solidity"
       }
-    ],
-    contributions: {
-      contributionCalendar: {
-        totalContributions: 650,
-        weeks: []
+    ]
+  };
+  
+  // Directly inject working mock data that the component can definitely use
+  window.MOCK_CONTRIBUTION_DATA = {
+    data: {
+      user: {
+        contributionsCollection: {
+          contributionCalendar: {
+            totalContributions: 650,
+            weeks: generateContributionWeeks()
+          }
+        }
       }
     }
   };
   
-  // Generate contribution data with exact structure needed
-  (function generateContributions() {
-    // Only generate once
-    if (window.GITHUB_DATA.contributions.contributionCalendar.weeks.length > 0) return;
-    
-    // Create full year of data (52 weeks)
+  // Generate realistic GitHub contribution data
+  function generateContributionWeeks() {
+    const weeks = [];
     const today = new Date();
     let date = new Date(today);
-    date.setDate(date.getDate() - (52 * 7)); // Go back 52 weeks
+    date.setDate(date.getDate() - (51 * 7)); // Go back 51 weeks
     
-    for (let week = 0; week < 52; week++) {
+    for (let i = 0; i < 52; i++) {
       const days = [];
       
-      // Create 7 days per week
-      for (let day = 0; day < 7; day++) {
+      for (let j = 0; j < 7; j++) {
         date.setDate(date.getDate() + 1);
+        const count = Math.floor(Math.random() * 5);
+        
         days.push({
-          contributionCount: Math.floor(Math.random() * 5),
-          date: date.toISOString().split('T')[0], // Format as YYYY-MM-DD
-          color: "#196127" // GitHub green color
+          contributionCount: count,
+          date: date.toISOString().split('T')[0],
+          color: count === 0 ? "#ebedf0" : 
+                 count < 2 ? "#9be9a8" : 
+                 count < 3 ? "#40c463" : 
+                 count < 4 ? "#30a14e" : "#216e39"
         });
       }
       
-      window.GITHUB_DATA.contributions.contributionCalendar.weeks.push({
-        contributionDays: days
+      weeks.push({
+        contributionDays: days,
+        firstDay: days[0].date
       });
     }
-  })();
+    
+    return weeks;
+  }
   
   // ----------------------------------------
-  // Fix font issues with inline Base64 encoding
+  // Fix font issues by using system fonts only
   // ----------------------------------------
   function fixFonts() {
-    // Only add font style once
-    if (document.getElementById('ipfs-font-fix')) return;
+    // Only add system font style once
+    if (document.getElementById('ipfs-system-fonts')) return;
     
-    // Use inline base64 encoded fonts to prevent loading errors
+    // Complete removal of custom font loading to avoid any issues
     const fontStyle = document.createElement('style');
-    fontStyle.id = 'ipfs-font-fix';
-    
-    // Base64 snippet of Inter Regular (truncated to save size)
-    const interRegularBase64 = 'AAEAAAASAQAABAAgR0RFRgBKADIAAIdoAAAAFkdQT1MF4i1hAACHgAAAADBHU1VCDToM7AAAh7AAAAAgT1MvMlZdZ2YAAIKEAAAAYGNVY3Brj1GkAACCiAAAAFxjbWFwALMBUQAAg1wAAAB0Z2FzcAAAABAAAAAAAAAAAABAAAAAAAAAMAA=';
-    
-    // Base64 snippet of Inter Bold (truncated to save size)
-    const interBoldBase64 = 'AAEAAAASAQAABAAgR0RFRgBKADIAAYcgAAAAFkdQT1MF4jOPAAGHOAAAADBHU1VCDToM7AABh2gAAAAgT1MvMldxYHUAAIdIAAAAYGNVY3Brj1GkAACSGAAAAFxjbWFwAR4BbQAAh5AAAACMZ2FzcAAAABAAAAAAAAAAAABAAAAAAAAAMAA=';
-    
+    fontStyle.id = 'ipfs-system-fonts';
     fontStyle.textContent = `
-      @font-face {
-        font-family: 'Inter';
-        font-style: normal;
-        font-weight: 400;
-        font-display: swap;
-        src: url(data:font/woff2;base64,${interRegularBase64}) format('woff2');
+      /* System font stack that works well on all platforms */
+      body, input, button, textarea, select, p, div, span, a, h1, h2, h3, h4, h5, h6 {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
       }
       
-      @font-face {
-        font-family: 'Inter';
-        font-style: normal;
-        font-weight: 700;
-        font-display: swap;
-        src: url(data:font/woff2;base64,${interBoldBase64}) format('woff2');
+      /* Headings with correct weights */
+      h1, h2, h3, h4, h5, h6, strong, b {
+        font-weight: 600 !important;
       }
       
-      /* Add system font fallback */
-      body, input, button, textarea, select {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif !important;
-      }
-      
-      /* Ensure main heading fonts are visible immediately */
-      h1, h2, h3, h4, h5, h6 {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif !important;
-        font-weight: 700 !important;
+      /* Fix any potential font-related layout shifting */
+      * {
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
     `;
     document.head.appendChild(fontStyle);
     
-    // Fix font paths in CSS - only do this once per element
-    document.querySelectorAll('link[href*="_next/static/css/"]:not([data-ipfs-fixed])').forEach(function(style) {
-      var href = style.getAttribute('href');
-      if (href && href.indexOf('_next/static/css/_next/static/media/') !== -1) {
-        style.setAttribute('href', href.replace('_next/static/css/_next/static/media/', '_next/static/media/'));
-        style.setAttribute('data-ipfs-fixed', 'true');
-      }
-    });
-    
-    // Remove problematic font preload links
-    document.querySelectorAll('link[rel="preload"][as="font"]').forEach(link => {
+    // Remove all font loading links to prevent 404s
+    document.querySelectorAll('link[rel="preload"][as="font"], link[href*=".woff"], link[href*=".woff2"]').forEach(link => {
       link.remove();
     });
     
-    // Stop all in-progress font downloads
-    if (window.performance && window.performance.getEntriesByType) {
-      const resources = window.performance.getEntriesByType('resource');
-      if (resources) {
-        resources.forEach(resource => {
-          if (resource.name && (resource.name.includes('.woff') || resource.name.includes('.woff2'))) {
-            // Create an empty image to abort the request (hacky but works)
-            const img = new Image();
-            img.src = resource.name;
-            img.onload = img.onerror = () => img.remove();
-          }
-        });
+    // Fix any style tags that might be trying to load fonts
+    document.querySelectorAll('style').forEach(style => {
+      if (style.textContent.includes('@font-face')) {
+        style.textContent = style.textContent.replace(/@font-face\s*{[^}]*}/g, '');
       }
-    }
+    });
   }
   
   // ----------------------------------------
@@ -240,10 +218,22 @@
         console.log('Fixed double-slash API path:', url);
       }
       
-      // Handle GitHub API requests
+      // Handle GitHub API requests - respond with the right data structure
       if (url.includes('/api/github')) {
         console.log('Intercepting GitHub API request:', url);
-        // Use cached data to avoid regenerating each time
+        
+        // If the URL contains 'contributions', return the contribution data
+        if (url.includes('contributions')) {
+          return Promise.resolve(new Response(
+            JSON.stringify(window.MOCK_CONTRIBUTION_DATA),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            }
+          ));
+        }
+        
+        // Otherwise return the user and repo data
         return Promise.resolve(new Response(
           JSON.stringify(window.GITHUB_DATA),
           {
@@ -264,7 +254,7 @@
         ));
       }
       
-      // Block font file requests - we're using inline base64 now
+      // Block font file requests completely
       if (url.includes('.woff2') || url.includes('.woff') || url.includes('.ttf')) {
         return Promise.resolve(new Response('', { status: 200 }));
       }
@@ -325,6 +315,46 @@
   }
   
   // ----------------------------------------
+  // Fix any React components directly
+  // ----------------------------------------
+  function fixReactComponents() {
+    // Add a helper function to window to fix GitHub contribution chart
+    window.fixGitHubContributionData = function(reactElement) {
+      try {
+        if (!reactElement || !reactElement.props) return reactElement;
+        
+        // For GitHub contribution charts - inject our mock data
+        if (reactElement.props && reactElement.props.data === null && 
+            reactElement.type && reactElement.type.name === 'GitHubCalendar') {
+          console.log('Fixing GitHub contribution chart with mock data');
+          return {
+            ...reactElement,
+            props: {
+              ...reactElement.props,
+              data: window.MOCK_CONTRIBUTION_DATA.data.user.contributionsCollection.contributionCalendar
+            }
+          };
+        }
+        
+        return reactElement;
+      } catch (e) {
+        console.error('Error fixing React component:', e);
+        return reactElement;
+      }
+    };
+    
+    // Try to monkey patch React createElement
+    if (window.React && window.React.createElement) {
+      const originalCreateElement = window.React.createElement;
+      window.React.createElement = function() {
+        const element = originalCreateElement.apply(this, arguments);
+        return window.fixGitHubContributionData(element);
+      };
+      console.log('React.createElement has been patched to fix components');
+    }
+  }
+  
+  // ----------------------------------------
   // Apply all fixes with safety measures
   // ----------------------------------------
   function applyAllFixes() {
@@ -336,6 +366,7 @@
       // One-time setup functions
       setupNavigationFix();
       setupNetworkFix();
+      fixReactComponents();
       
       // Repeatable fix functions that modify the DOM
       fixFonts();
