@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="en" style="overflow-x:hidden"><head><script src="./_ipfs/ipfs-fix.js"></script><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" href="./_next/static/media/a34f9d1faa5f3315-s.p.woff2" onerror="this.onerror=null; this.href=this.href.replace('/_next/', './_next/')" as="font" crossorigin="" type="font/woff2"/><link rel="stylesheet" href="./_next/static/css/1c7a15da381ff72e.css" crossorigin="" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="./_next/static/chunks/webpack-a6d96ed3a803bcc5.js" crossorigin=""/><script src="./_next/static/chunks/fd9d1056-d2a1b38e69101e91.js" async="" crossorigin=""></script><script src="./_next/static/chunks/69-84a18bf395e552ef.js" async="" crossorigin=""></script><script src="./_next/static/chunks/main-app-7097612489e94b57.js" async="" crossorigin=""></script><script src="./_next/static/chunks/941-dcdb9e337a4c3dbc.js" async=""></script><script src="./_next/static/chunks/app/layout-a515411762a8ca3e.js" async=""></script><title>404: This page could not be found.</title><title>Ivan Leskov | Blockchain &amp; Web3 Engineer</title><meta name="description" content="Solidity developer with focus on smart contract architecture and secure blockchain applications"/><meta name="next-size-adjust"/><script src="./_next/static/chunks/polyfills-c67a75d1b6f99dc8.js" crossorigin="" noModule=""></script><script>
+  // Font loading fix
+  (function() {
+    function checkAndFixFonts() {
+      // Find any font that failed to load and fix its path
+      document.querySelectorAll('link[rel="preload"][as="font"]').forEach(link => {
+        if (!link.dataset.fixed) {
+          // Create a new link with a fixed path
+          const newLink = document.createElement('link');
+          newLink.rel = 'preload';
+          newLink.as = 'font';
+          newLink.type = 'font/' + (link.href.endsWith('.woff2') ? 'woff2' : 'woff');
+          newLink.crossOrigin = 'anonymous';
+          
+          // Try different relative paths
+          if (link.href.indexOf('/_next/static/media/') !== -1) {
+            const fontName = link.href.split('/').pop();
+            newLink.href = './_next/static/media/' + fontName;
+          } else {
+            newLink.href = './' + link.href.split('/').pop();
+          }
+          
+          newLink.dataset.fixed = 'true';
+          document.head.appendChild(newLink);
+          console.log('Added fallback font link:', newLink.href);
+        }
+      });
+      
+      // Also fix style tags that reference fonts
+      document.querySelectorAll('style').forEach(style => {
+        if (!style.dataset.fixed && style.textContent.indexOf('@font-face') !== -1) {
+          const fixedCss = style.textContent.replace(
+            /url(['"]?/_next/static/media/([^'"]+)['"]?)/g, 
+            "url('./_next/static/media/$1')"
+          );
+          
+          // Fix nested paths in CSS (this was causing 404s)
+          const doubleFix = fixedCss.replace(
+            /_next/static/css/_next/static/media//g, 
+            '_next/static/media/'
+          );
+          
+          if (doubleFix !== style.textContent) {
+            style.textContent = doubleFix;
+            style.dataset.fixed = 'true';
+            console.log('Fixed font paths in style tag');
+          }
+        }
+      });
+    }
+    
+    // Run the fix after everything has loaded
+    if (document.readyState === 'complete') {
+      checkAndFixFonts();
+    } else {
+      window.addEventListener('load', checkAndFixFonts);
+    }
+  })();
+  </script></head><body class="__className_d65c78" style="overflow-x:hidden"><div style="font-family:system-ui,&quot;Segoe UI&quot;,Roboto,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;;height:100vh;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center"><div><style>body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}</style><h1 class="next-error-h1" style="display:inline-block;margin:0 20px 0 0;padding:0 23px 0 0;font-size:24px;font-weight:500;vertical-align:top;line-height:49px">404</h1><div style="display:inline-block"><h2 style="font-size:14px;font-weight:400;line-height:49px;margin:0">This page could not be found.</h2></div></div></div><script src="./_next/static/chunks/webpack-a6d96ed3a803bcc5.js" crossorigin="" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])</script><script>self.__next_f.push([1,"1:HL[\"./_next/static/media/a34f9d1faa5f3315-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n2:HL[\"./_next/static/css/1c7a15da381ff72e.css\",\"style\",{\"crossOrigin\":\"\"}]\n0:\"$L3\"\n"])</script><script>self.__next_f.push([1,"4:I[7690,[],\"\"]\n6:I[6866,[\"941\",\"static/chunks/941-dcdb9e337a4c3dbc.js\",\"185\",\"static/chunks/app/layout-a515411762a8ca3e.js\"],\"\"]\n7:I[5613,[],\"\"]\n8:I[1778,[],\"\"]\ne:I[8955,[],\"\"]\n9:{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"}\na:{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"f"])</script><script>self.__next_f.push([1,"ontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"}\nb:{\"display\":\"inline-block\"}\nc:{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0}\nf:[]\n"])</script><script>self.__next_f.push([1,"3:[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"./_next/static/css/1c7a15da381ff72e.css\",\"precedence\":\"next\",\"crossOrigin\":\"\"}]],[\"$\",\"$L4\",null,{\"buildId\":\"JmsTYGL4H3GHGS-vhECQz\",\"assetPrefix\":\"\",\"initialCanonicalUrl\":\"/_not-found/\",\"initialTree\":[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",true],\"initialSeedData\":[\"\",{\"children\":[\"__PAGE__\",{},[\"$L5\",[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":\"404\"}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],null]]},[null,[\"$\",\"html\",null,{\"lang\":\"en\",\"style\":{\"overflowX\":\"hidden\"},\"children\":[\"$\",\"body\",null,{\"className\":\"__className_d65c78\",\"style\":{\"overflowX\":\"hidden\"},\"children\":[\"$\",\"$L6\",null,{\"children\":[\"$\",\"$L7\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\"],\"loading\":\"$undefined\",\"loadingStyles\":\"$undefined\",\"loadingScripts\":\"$undefined\",\"hasLoading\":false,\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L8\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":\"$9\",\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":\"$a\",\"children\":\"404\"}],[\"$\",\"div\",null,{\"style\":\"$b\",\"children\":[\"$\",\"h2\",null,{\"style\":\"$c\",\"children\":\"This page could not be found.\"}]}]]}]}]],\"notFoundStyles\":[],\"styles\":null}]}]}]}],null]],\"initialHead\":[false,\"$Ld\"],\"globalErrorComponent\":\"$e\",\"missingSlots\":\"$Wf\"}]]\n"])</script><script>self.__next_f.push([1,"d:[[\"$\",\"meta\",\"0\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"1\",{\"charSet\":\"utf-8\"}],[\"$\",\"title\",\"2\",{\"children\":\"Ivan Leskov | Blockchain \u0026 Web3 Engineer\"}],[\"$\",\"meta\",\"3\",{\"name\":\"description\",\"content\":\"Solidity developer with focus on smart contract architecture and secure blockchain applications\"}],[\"$\",\"meta\",\"4\",{\"name\":\"next-size-adjust\"}]]\n5:null\n"])</script><script>self.__next_f.push([1,""])</script>
+    <script>
+    // Register service worker to fix font loading issues
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(registration => {
+          console.log('ServiceWorker registration successful');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+    </script>
+    </body></html>

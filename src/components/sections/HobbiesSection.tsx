@@ -213,19 +213,19 @@ export default function HobbiesSection() {
             $isActive={activeTab === 'chess'}
             onClick={() => setActiveTab('chess')}
           >
-            <Image src="./images/hobby_icons/chess.png" alt="Chess" width={16} height={16} /> Chess
+            <Image src="/images/hobby_icons/chess.png" alt="Chess" width={16} height={16} /> Chess
           </Tab>
           <Tab
             $isActive={activeTab === 'reading'}
             onClick={() => setActiveTab('reading')}
           >
-            <Image src="./images/hobby_icons/books.png" alt="Reading" width={16} height={16} /> Reading
+            <Image src="/images/hobby_icons/books.png" alt="Reading" width={16} height={16} /> Reading
           </Tab>
           <Tab
             $isActive={activeTab === 'gym'}
             onClick={() => setActiveTab('gym')}
           >
-            <Image src="./images/hobby_icons/weight.png" alt="Gym" width={16} height={16} /> Gym
+            <Image src="/images/hobby_icons/weight.png" alt="Gym" width={16} height={16} /> Gym
           </Tab>
         </TabsContainer>
         
@@ -243,7 +243,7 @@ export default function HobbiesSection() {
                 {reading.map((book, index) => (
                   <Book key={index}>
                     <BookCover style={{ 
-                      backgroundImage: `url(./images/books/${book.title === 'The Dao of Capital' ? 'DAO_of_Capital.png' : 
+                      backgroundImage: `url(/images/books/${book.title === 'The Dao of Capital' ? 'DAO_of_Capital.png' : 
                         book.title === 'Python for Finance' ? 'Python_in_Finance.png' :
                         book.title === 'High Performance Trading' ? 'High_Performance_trading.png' :
                         book.title === 'The 10X Rule' ? 'The_10x_rule.png' : ''}`
