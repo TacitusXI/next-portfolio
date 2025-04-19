@@ -292,6 +292,75 @@ const createIpfsCompatibleFiles = () => {
 
     // Fix all elements with src or href
     function fixAllElements() {
+      // Specifically fix the styled components mentioned by the user
+      document.querySelectorAll('.sc-dTUlgT, .gZyElt').forEach(el => {
+        // Check if it's a link or has a click handler
+        if (el.tagName === 'A') {
+          // If it has href, modify it
+          if (el.hasAttribute('href')) {
+            const href = el.getAttribute('href');
+            
+            // If it links to ipfs.tech, change it to a hash or prevent navigation
+            if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
+              if (href.includes('#')) {
+                el.setAttribute('href', href.substring(href.indexOf('#')));
+              } else {
+                el.setAttribute('href', 'javascript:void(0)');
+              }
+            }
+          }
+          
+          // Add a click handler that prevents default and stops propagation
+          el.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // If we know what section it should navigate to, do that
+            if (el.closest('[data-section]')) {
+              const section = el.closest('[data-section]').getAttribute('data-section');
+              const target = document.getElementById(section) || document.querySelector('[id="' + section + '"]');
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+                history.pushState(null, null, '#' + section);
+              }
+            }
+            
+            return false;
+          }, true);
+        } else {
+          // For non-link elements, still prevent click-based navigation
+          el.addEventListener('click', function(e) {
+            // Check if this might navigate to ipfs.tech
+            setTimeout(function() {
+              if (window.location.href.includes('ipfs.tech') || window.location.href.includes('ipfs.io')) {
+                // Go back to the current page
+                history.back();
+              }
+            }, 50);
+          }, true);
+        }
+      });
+      
+      // Also fix any parent elements that might contain these classes
+      document.querySelectorAll('[class*="sc-"]').forEach(el => {
+        // If this is a possible styled-component
+        if (el.className && (el.className.includes('sc-dTUlgT') || el.className.includes('gZyElt'))) {
+          // Find all anchors within this element
+          el.querySelectorAll('a').forEach(link => {
+            // Disable any navigation to ipfs.tech
+            link.addEventListener('click', function(e) {
+              const href = link.getAttribute('href');
+              if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Prevented navigation from styled component');
+                return false;
+              }
+            }, true);
+          });
+        }
+      });
+      
       // Aggressive fix for any navigation link in the navbar
       document.querySelectorAll('nav a, header a, .navbar a, .nav a').forEach(link => {
         // Check if this is a link to a section (hash)
@@ -523,6 +592,114 @@ const createIpfsCompatibleFiles = () => {
       childList: true, 
       subtree: true 
     });
+
+    // Global navigation interceptor
+    document.addEventListener('click', function(e) {
+      // Look for any clicked link element
+      let target = e.target;
+      while (target && target.tagName !== 'A') {
+        target = target.parentElement;
+      }
+      
+      // If this is a link
+      if (target && target.tagName === 'A') {
+        const href = target.getAttribute('href');
+        
+        // If it's a link to ipfs.tech or ipfs.io
+        if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // If it contains a hash, navigate to the hash
+          if (href.includes('#')) {
+            const hash = href.substring(href.indexOf('#'));
+            const element = document.querySelector(hash);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+              history.pushState(null, null, hash);
+            }
+          } else {
+            // Otherwise stay on the current page
+            console.log('Prevented navigation to:', href);
+          }
+          return false;
+        }
+
+        // Special handling for navbar links that should scroll to sections
+        if (target.closest('nav, header, .navbar, .nav') && href && href.startsWith('#')) {
+          e.preventDefault();
+          const element = document.querySelector(href);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            history.pushState(null, null, href);
+          }
+          return false;
+        }
+      }
+      
+      // Handle styled-components that might be redirecting
+      // sc-dTUlgT gZyElt and similar classes
+      if (target && (
+          target.className.includes('sc-') || 
+          (target.parentElement && target.parentElement.className.includes('sc-'))
+      )) {
+        // Get the current URL to check if we're about to navigate away
+        const currentLocation = window.location.href;
+        
+        // Set a timeout to check if navigation was attempted
+        setTimeout(function() {
+          if (window.location.href !== currentLocation && 
+              (window.location.href.includes('ipfs.tech') || window.location.href.includes('ipfs.io'))) {
+            // Navigate back to the hash if there was one
+            if (currentLocation.includes('#')) {
+              const hash = currentLocation.substring(currentLocation.indexOf('#'));
+              window.location.href = hash;
+            } else {
+              // Go back to current page
+              window.location.href = currentLocation;
+            }
+          }
+        }, 50);
+      }
+    }, true); // Use capture phase to intercept before other handlers
+    
+    // Intercept programmatic navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    // Override history.pushState
+    history.pushState = function() {
+      // Check if the URL contains ipfs.tech
+      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
+          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
+        
+        // If it has a hash, extract it
+        if (arguments[2].includes('#')) {
+          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
+        } else {
+          // Otherwise prevent navigation completely
+          return;
+        }
+      }
+      return originalPushState.apply(this, arguments);
+    };
+    
+    // Override history.replaceState
+    history.replaceState = function() {
+      // Check if the URL contains ipfs.tech
+      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
+          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
+        
+        // If it has a hash, extract it
+        if (arguments[2].includes('#')) {
+          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
+        } else {
+          // Otherwise prevent navigation completely
+          return;
+        }
+      }
+      return originalReplaceState.apply(this, arguments);
+    };
   })();
   `;
   
@@ -801,7 +978,70 @@ const createFallbackResources = () => {
           return false;
         }
       }
+      
+      // Handle styled-components that might be redirecting
+      // sc-dTUlgT gZyElt and similar classes
+      if (target && (
+          target.className.includes('sc-') || 
+          (target.parentElement && target.parentElement.className.includes('sc-'))
+      )) {
+        // Get the current URL to check if we're about to navigate away
+        const currentLocation = window.location.href;
+        
+        // Set a timeout to check if navigation was attempted
+        setTimeout(function() {
+          if (window.location.href !== currentLocation && 
+              (window.location.href.includes('ipfs.tech') || window.location.href.includes('ipfs.io'))) {
+            // Navigate back to the hash if there was one
+            if (currentLocation.includes('#')) {
+              const hash = currentLocation.substring(currentLocation.indexOf('#'));
+              window.location.href = hash;
+            } else {
+              // Go back to current page
+              window.location.href = currentLocation;
+            }
+          }
+        }, 50);
+      }
     }, true); // Use capture phase to intercept before other handlers
+
+    // Intercept programmatic navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    // Override history.pushState
+    history.pushState = function() {
+      // Check if the URL contains ipfs.tech
+      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
+          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
+        
+        // If it has a hash, extract it
+        if (arguments[2].includes('#')) {
+          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
+        } else {
+          // Otherwise prevent navigation completely
+          return;
+        }
+      }
+      return originalPushState.apply(this, arguments);
+    };
+    
+    // Override history.replaceState
+    history.replaceState = function() {
+      // Check if the URL contains ipfs.tech
+      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
+          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
+        
+        // If it has a hash, extract it
+        if (arguments[2].includes('#')) {
+          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
+        } else {
+          // Otherwise prevent navigation completely
+          return;
+        }
+      }
+      return originalReplaceState.apply(this, arguments);
+    };
     </script>
     `;
     
