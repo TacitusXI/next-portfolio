@@ -4,22 +4,85 @@
   // Very simple font file fix
   // ------------------------------------------
   function fixFonts() {
-    // Fix font paths in CSS
+    // A more aggressive font loading approach
+    console.log('Applying aggressive font fix');
+    
+    // 1. Remove problematic font CSS that might be causing redirects
+    document.querySelectorAll('style').forEach(function(style) {
+      if (style.textContent.includes('@font-face') && style.textContent.includes('url(')) {
+        // Store original for reference
+        const original = style.textContent;
+        
+        // Attempt to extract font-family names to reuse
+        const fontFamilyMatch = original.match(/font-family:\s*['"]([^'"]+)['"]/);
+        const fontFamily = fontFamilyMatch ? fontFamilyMatch[1] : 'Inter var';
+        
+        // Create a simplified font face definition
+        const simplifiedFontCSS = `
+          @font-face {
+            font-family: '${fontFamily}';
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: swap;
+            src: url('./_next/static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+          }
+        `;
+        
+        // Replace complex font loading with simplified version
+        style.textContent = style.textContent.replace(
+          /@font-face\s*\{[^}]*url\([^)]+\)[^}]*\}/g, 
+          simplifiedFontCSS
+        );
+      }
+    });
+
+    // 2. Inject additional style tag with direct font paths
+    const additionalFontStyle = document.createElement('style');
+    additionalFontStyle.textContent = `
+      @font-face {
+        font-family: 'Inter var';
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('./_next/static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2');
+      }
+    `;
+    document.head.appendChild(additionalFontStyle);
+
+    // 3. Try multiple font locations with preload
+    const fontLocations = [
+      './_next/static/media/a34f9d1faa5f3315-s.p.woff2',
+      './a34f9d1faa5f3315-s.p.woff2',
+      './_next/a34f9d1faa5f3315-s.p.woff2'
+    ];
+    
+    fontLocations.forEach(function(location) {
+      var fontLink = document.createElement('link');
+      fontLink.rel = 'preload';
+      fontLink.href = location;
+      fontLink.as = 'font';
+      fontLink.type = 'font/woff2';
+      fontLink.setAttribute('crossorigin', 'anonymous');
+      document.head.appendChild(fontLink);
+    });
+    
+    // 4. Create fallback font style to prevent layout shifts if font fails to load
+    const fallbackStyle = document.createElement('style');
+    fallbackStyle.textContent = `
+      body {
+        font-family: 'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      }
+    `;
+    document.head.appendChild(fallbackStyle);
+    
+    // Fix font paths in CSS for links
     document.querySelectorAll('link[href*="_next/static/css/"]').forEach(function(link) {
       var href = link.getAttribute('href');
       if (href && href.indexOf('_next/static/css/_next/static/media/') !== -1) {
         link.setAttribute('href', href.replace('_next/static/css/_next/static/media/', '_next/static/media/'));
       }
     });
-
-    // Preload the problematic font file directly
-    var fontLink = document.createElement('link');
-    fontLink.rel = 'preload';
-    fontLink.href = './_next/static/media/a34f9d1faa5f3315-s.p.woff2';
-    fontLink.as = 'font';
-    fontLink.type = 'font/woff2';
-    fontLink.setAttribute('crossorigin', 'anonymous');
-    document.head.appendChild(fontLink);
     
     // Fix font references in style tags
     document.querySelectorAll('style').forEach(function(style) {
@@ -47,9 +110,49 @@
     
     // Fix all links
     document.querySelectorAll('a').forEach(function(a) {
-      if (a.href.indexOf('ipfs.io') !== -1 || a.href.indexOf('ipfs.tech') !== -1) {
-        var url = new URL(a.href);
-        a.href = '.' + url.pathname;
+      // Extract hostname and pathname from link
+      var href = a.getAttribute('href');
+      if (!href) return;
+      
+      // Handle absolute URLs 
+      if (href.startsWith('http')) {
+        try {
+          var url = new URL(href);
+          
+          // Fix IPFS gateway links
+          if (url.hostname === 'ipfs.io' || url.hostname === 'ipfs.tech') {
+            // Instead of redirecting to IPFS, keep within our site
+            // If it's a fragment/hash link to another section
+            if (url.pathname === '/' && url.hash) {
+              a.href = url.hash; // Just use the hash part for local navigation
+            } else {
+              // If it has a path, make it relative to our site
+              a.href = '.' + url.pathname + url.hash;
+            }
+          }
+        } catch (e) {
+          console.error('Error fixing link:', href, e);
+        }
+      }
+      
+      // Fix internal navigation links that might be causing redirects
+      if (href.startsWith('/') && !href.startsWith('/_next/') && !href.startsWith('/api/')) {
+        a.href = '.' + href;
+      }
+      
+      // Prevent hash links from navigating to external sites
+      if (href.startsWith('#')) {
+        // Ensure hash links stay within the page
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          var targetId = href.substring(1);
+          var targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+          // Update URL hash without navigation
+          window.history.pushState(null, '', href);
+        });
       }
     });
     
@@ -100,54 +203,58 @@
       return;
     }
     
-    // Static GitHub API data
-    window.GITHUB_DATA = {
-      user: {
-        login: "TacitusXI",
-        name: "Ivan Leskov",
-        avatar_url: "./profile.jpg",
-        html_url: "https://github.com/TacitusXI",
-        public_repos: 20,
-        followers: 5,
-        following: 10
-      },
-      repos: [
-        {
-          name: "next-portfolio",
-          html_url: "https://github.com/TacitusXI/next-portfolio",
-          description: "Personal portfolio website built with Next.js",
-          stargazers_count: 5,
-          forks_count: 2,
-          language: "TypeScript"
+    // Provide default data to prevent "m is not iterable" error
+    if (!window.GITHUB_DATA) {
+      // Static GitHub API data
+      window.GITHUB_DATA = {
+        user: {
+          login: "TacitusXI",
+          name: "Ivan Leskov",
+          avatar_url: "./profile.jpg",
+          html_url: "https://github.com/TacitusXI",
+          public_repos: 20,
+          followers: 5,
+          following: 10
         },
-        {
-          name: "blockchain-projects",
-          html_url: "https://github.com/TacitusXI/blockchain-projects",
-          description: "Collection of blockchain and Web3 projects",
-          stargazers_count: 12,
-          forks_count: 4,
-          language: "Solidity"
-        },
-        {
-          name: "smart-contracts",
-          html_url: "https://github.com/TacitusXI/smart-contracts",
-          description: "EVM-compatible smart contract templates and examples",
-          stargazers_count: 8,
-          forks_count: 3,
-          language: "Solidity"
+        repos: [
+          {
+            name: "next-portfolio",
+            html_url: "https://github.com/TacitusXI/next-portfolio",
+            description: "Personal portfolio website built with Next.js",
+            stargazers_count: 5,
+            forks_count: 2,
+            language: "TypeScript"
+          },
+          {
+            name: "blockchain-projects",
+            html_url: "https://github.com/TacitusXI/blockchain-projects",
+            description: "Collection of blockchain and Web3 projects",
+            stargazers_count: 12,
+            forks_count: 4,
+            language: "Solidity"
+          },
+          {
+            name: "smart-contracts",
+            html_url: "https://github.com/TacitusXI/smart-contracts",
+            description: "EVM-compatible smart contract templates and examples",
+            stargazers_count: 8,
+            forks_count: 3,
+            language: "Solidity"
+          }
+        ],
+        contributions: {
+          totalCount: 650,
+          weeks: []
         }
-      ],
-      contributions: {
-        totalCount: 650,
-        weeks: []
+      };
+      
+      // Generate weeks data as an array to fix "not iterable" error
+      window.GITHUB_DATA.contributions.weeks = [];
+      for (var i = 0; i < 52; i++) {
+        window.GITHUB_DATA.contributions.weeks.push({
+          count: Math.floor(Math.random() * 10)
+        });
       }
-    };
-    
-    // Generate weeks data
-    for (var i = 0; i < 52; i++) {
-      window.GITHUB_DATA.contributions.weeks.push({
-        count: Math.floor(Math.random() * 10)
-      });
     }
     
     // Override fetch for GitHub API

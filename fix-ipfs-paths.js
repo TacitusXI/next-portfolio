@@ -462,6 +462,10 @@ const createIpfsCompatibleFiles = () => {
   })();
   `;
   
+  // Copy the hotfix script to the output directory
+  fs.copyFileSync('ipfs-hotfix.js', path.join(outputDir, 'ipfs-hotfix.js'));
+  console.log('Copied ipfs-hotfix.js to output directory');
+  
   const ipfsDir = path.join(outputDir, '_ipfs');
   if (!fs.existsSync(ipfsDir)) {
     fs.mkdirSync(ipfsDir);
@@ -664,7 +668,13 @@ const createIpfsCompatibleFiles = () => {
     let content = fs.readFileSync(file, 'utf8');
     let modified = false;
     
-    // Add navigation fix script first (before other scripts)
+    // Add emergency hotfix script first
+    if (!content.includes('ipfs-hotfix.js')) {
+      content = content.replace('<head>', '<head><script src="./ipfs-hotfix.js"></script>');
+      modified = true;
+    }
+    
+    // Add navigation fix script
     if (!content.includes('ipfs-nav-fix.js')) {
       content = content.replace('<head>', '<head><script src="./_ipfs/ipfs-nav-fix.js"></script>');
       modified = true;
