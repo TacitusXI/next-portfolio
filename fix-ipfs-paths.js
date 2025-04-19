@@ -287,7 +287,7 @@ const createIpfsCompatibleFiles = () => {
         el.setAttribute('href', fixedHref);
       });
       
-      // Fix preloaded fonts with proper path handling
+      // Fix preloaded fonts
       document.querySelectorAll('link[rel="preload"][as="font"]').forEach(el => {
         if (el.href.indexOf('/_next/') !== -1) {
           el.href = './' + el.href.substring(el.href.indexOf('_next/'));
@@ -296,15 +296,6 @@ const createIpfsCompatibleFiles = () => {
           if (parts.length > 1) {
             el.href = './_next/' + parts[1];
           }
-        }
-      });
-
-      // Fix font paths with a direct approach - a common issue with Next.js fonts on IPFS
-      document.querySelectorAll('link[href*="_next/static/css/_next/static/media"]').forEach(el => {
-        const href = el.getAttribute('href');
-        if (href) {
-          const fixedHref = href.replace(/_next\/static\/css\/_next\/static\/media/g, '_next/static/media');
-          el.setAttribute('href', fixedHref);
         }
       });
 
