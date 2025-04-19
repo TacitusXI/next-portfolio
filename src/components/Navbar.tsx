@@ -413,19 +413,19 @@ export default function Navbar() {
   
   // Navigation routes
   const routes: NavRoute[] = [
-    { path: '/#about', label: 'About', icon: <FaUser /> },
-    { path: '/#projects', label: 'Projects', icon: <FaCode /> },
-    { path: '/#experience', label: 'Experience', icon: <FaBriefcase /> },
-    { path: '/#skills', label: 'Skills', icon: <FaFlask /> },
-    { path: '/#github', label: 'GitHub', icon: <FaGithub /> },
-    { path: '/#publications', label: 'Publications', icon: <FaBook /> },
-    { path: '/#hobbies', label: 'Hobbies', icon: <FaGamepad /> },
-    { path: '/#contact', label: 'Contact', icon: <FaEnvelope /> },
+    { path: './#about', label: 'About', icon: <FaUser /> },
+    { path: './#projects', label: 'Projects', icon: <FaCode /> },
+    { path: './#experience', label: 'Experience', icon: <FaBriefcase /> },
+    { path: './#skills', label: 'Skills', icon: <FaFlask /> },
+    { path: './#github', label: 'GitHub', icon: <FaGithub /> },
+    { path: './#publications', label: 'Publications', icon: <FaBook /> },
+    { path: './#hobbies', label: 'Hobbies', icon: <FaGamepad /> },
+    { path: './#contact', label: 'Contact', icon: <FaEnvelope /> },
   ];
   
   // Check if a link is active
   const isActive = (path: string) => {
-    const sectionId = path.substring(2); // Remove '/#'
+    const sectionId = path.substring(path.indexOf('#') + 1); // Handle paths like ./#section
     if (pathname === '/' && sectionId) {
       // Only access document on the client side
       if (typeof document !== 'undefined') {
@@ -460,7 +460,7 @@ export default function Navbar() {
           whileTap={{ scale: 0.95 }}
         >
           <Image 
-            src="/images/tacitus_no_bg.png" 
+            src="./images/tacitus_no_bg.png" 
             alt="Tacitus Logo" 
             width={40} 
             height={40} 
@@ -475,7 +475,7 @@ export default function Navbar() {
                 $isActive={isActive(route.path)}
                 $isMobile={true}
                 onClick={() => {
-                  const sectionId = route.path.substring(2); // Remove '/#'
+                  const sectionId = route.path.substring(route.path.indexOf('#') + 1);
                   handleSectionClick(sectionId);
                 }}
                 whileTap={{ scale: 0.95 }}
@@ -511,7 +511,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
             >
               <LogoImage>
-                <img src="/images/tacitus_no_bg.png" alt="Tacitus" />
+                <img src="./images/tacitus_no_bg.png" alt="Tacitus" />
               </LogoImage>
               <LogoText className="tacitvs">TACITVS</LogoText>
               <LogoText className="highlight">I.Leskov</LogoText>
