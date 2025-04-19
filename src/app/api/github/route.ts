@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Set edge runtime configuration for Fleek compatibility
+export const runtime = 'edge';
+
 // GitHub GraphQL API endpoint
 const GITHUB_API = 'https://api.github.com/graphql';
 
