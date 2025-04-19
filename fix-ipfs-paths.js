@@ -251,8 +251,6 @@ const createIpfsCompatibleFiles = () => {
             if (targetElement) {
               targetElement.scrollIntoView({ behavior: 'smooth' });
             }
-            // Update URL hash without navigation
-            window.history.pushState(null, '', href);
           });
         }
       });
@@ -462,9 +460,12 @@ const createIpfsCompatibleFiles = () => {
   })();
   `;
   
-  // Copy the hotfix script to the output directory
-  fs.copyFileSync('ipfs-hotfix.js', path.join(outputDir, 'ipfs-hotfix.js'));
-  console.log('Copied ipfs-hotfix.js to output directory');
+  // Save the fix script to a file
+  fs.writeFileSync(path.join(outputDir, '_ipfs-fixes.js'), fixScript);
+  
+  // Copy the more advanced IPFS hotfix script
+  fs.copyFileSync('ipfs-hotfix-final.js', path.join(outputDir, 'ipfs-hotfix-final.js'));
+  console.log('Copied ipfs-hotfix-final.js to output directory');
   
   const ipfsDir = path.join(outputDir, '_ipfs');
   if (!fs.existsSync(ipfsDir)) {
@@ -669,8 +670,8 @@ const createIpfsCompatibleFiles = () => {
     let modified = false;
     
     // Add emergency hotfix script first
-    if (!content.includes('ipfs-hotfix.js')) {
-      content = content.replace('<head>', '<head><script src="./ipfs-hotfix.js"></script>');
+    if (!content.includes('ipfs-hotfix-final.js')) {
+      content = content.replace('<head>', '<head><script src="./ipfs-hotfix-final.js"></script>');
       modified = true;
     }
     
@@ -691,6 +692,8 @@ const createIpfsCompatibleFiles = () => {
       console.log(`Added IPFS fix scripts to ${file}`);
     }
   });
+  
+  console.log('Created IPFS compatibility files');
 };
 
 // Function to fix asset filenames with special prefixes
@@ -791,6 +794,22 @@ const fixNextDirectory = () => {
 // Function to create standalone fallback resources
 const createFallbackResources = () => {
   console.log('Creating fallback resources');
+  
+  // Identify and inject our hotfix script into HTML files
+  const htmlFiles = findHtmlFiles(outputDir);
+  
+  for (const htmlFile of htmlFiles) {
+    if (path.extname(htmlFile) !== '.html') continue;
+    
+    let content = fs.readFileSync(htmlFile, 'utf8');
+    
+    // Add our IPFS hotfix script to the head of each HTML file
+    if (!content.includes('ipfs-hotfix-final.js')) {
+      content = content.replace('<head>', '<head><script src="./ipfs-hotfix-final.js"></script>');
+      fs.writeFileSync(htmlFile, content);
+      console.log(`Added hotfix script to ${htmlFile}`);
+    }
+  }
   
   // Create a basic fallback for the font file
   const fontDir = path.join(outputDir, '_next', 'static', 'media');
