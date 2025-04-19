@@ -4,11 +4,23 @@
   // IMMEDIATELY FIX THE SPECIFIC ERROR - MUST BE THE VERY FIRST CODE TO RUN
   // Override av directly as a top-level non-configurable, non-writable property
   // This ensures it cannot be changed by any code after us
-  Object.defineProperty(window, 'av', { 
-    configurable: false,
-    writable: false,
-    value: function() { return []; }
-  });
+  try {
+    // Only define if not already defined with configurable:false
+    const avDescriptor = Object.getOwnPropertyDescriptor(window, 'av');
+    if (!avDescriptor || avDescriptor.configurable !== false) {
+      Object.defineProperty(window, 'av', { 
+        configurable: false,
+        writable: false,
+        value: function() { return []; }
+      });
+    }
+  } catch(e) {
+    console.warn('Could not override av property', e);
+    // Fallback - just set it if possible
+    if (typeof window.av !== 'function') {
+      window.av = function() { return []; };
+    }
+  }
   
   // Also try to preemptively fix the Symbol.iterator issue
   try {
@@ -24,15 +36,18 @@
     };
     
     // Create a safe version of Array.from that won't throw
-    const originalArrayFrom = Array.from;
-    Array.from = function(obj) {
-      if (obj === null || obj === undefined) return [];
-      try {
-        return originalArrayFrom.call(this, obj);
-      } catch (e) {
-        return [];
-      }
-    };
+    if (!Array.from.__patched) {
+      const originalArrayFrom = Array.from;
+      Array.from = function(obj) {
+        if (obj === null || obj === undefined) return [];
+        try {
+          return originalArrayFrom.call(this, obj);
+        } catch (e) {
+          return [];
+        }
+      };
+      Array.from.__patched = true;
+    }
     
     // Patch iterator methods directly
     const safeIterator = function() {
