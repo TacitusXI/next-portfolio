@@ -83,7 +83,142 @@
   if (window.__IPFS_HOTFIX_APPLIED) return;
   window.__IPFS_HOTFIX_APPLIED = true;
   
-  // STEP 1: KILL REACT COMPLETELY
+  // STEP 0: FIX PRELOADED RESOURCES WARNINGS
+  // =======================================
+  try {
+    // Fix for preloaded resources not being used
+    const preloadLinks = document.querySelectorAll('link[rel="preload"]');
+    preloadLinks.forEach(link => {
+      // Convert preload to prefetch to avoid warnings
+      link.setAttribute('rel', 'prefetch');
+      
+      // If it's a resource needed for animations, actually load it
+      const href = link.getAttribute('href');
+      if (href && (href.includes('rain') || href.includes('animation') || href.includes('crypto'))) {
+        const resourceType = link.getAttribute('as') || 'script';
+        
+        // Create appropriate element to actually load the resource
+        if (resourceType === 'script') {
+          const script = document.createElement('script');
+          script.src = href;
+          script.async = true;
+          document.head.appendChild(script);
+        } else if (resourceType === 'style') {
+          const style = document.createElement('link');
+          style.rel = 'stylesheet';
+          style.href = href;
+          document.head.appendChild(style);
+        }
+      }
+    });
+  } catch (e) {
+    console.warn('Error fixing preloaded resources:', e);
+  }
+  
+  // STEP 1: ENABLE CRYPTO RAIN ANIMATION
+  // ==================================
+  try {
+    // Create a style to ensure animations are visible
+    const animationStyle = document.createElement('style');
+    animationStyle.textContent = `
+      /* Ensure animations are visible */
+      canvas, 
+      [id*="rain"],
+      [class*="rain"],
+      [id*="animation"],
+      [class*="animation"],
+      [id*="canvas"],
+      [class*="canvas"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: 1000 !important;
+      }
+    `;
+    document.head.appendChild(animationStyle);
+    
+    // Attempt to find and initialize any rain animation
+    const initializeRain = function() {
+      // Look for common canvas or animation elements
+      const rainElements = document.querySelectorAll('canvas, [id*="rain"], [class*="rain"]');
+      
+      if (rainElements.length === 0) {
+        // If no rain elements found, create one
+        const canvas = document.createElement('canvas');
+        canvas.id = 'crypto-rain-canvas';
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.zIndex = '-1';
+        canvas.style.pointerEvents = 'none';
+        document.body.appendChild(canvas);
+        
+        // Simple matrix rain animation
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const characters = '01';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        // Initialize drops
+        for (let i = 0; i < columns; i++) {
+          drops[i] = 1;
+        }
+        
+        // Draw the characters
+        function draw() {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          ctx.fillStyle = '#0F0';
+          ctx.font = fontSize + 'px monospace';
+          
+          // Loop through drops
+          for (let i = 0; i < drops.length; i++) {
+            // Random character
+            const text = characters.charAt(Math.floor(Math.random() * characters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            
+            // Incrementing Y coordinate
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+              drops[i] = 0;
+            }
+            
+            drops[i]++;
+          }
+        }
+        
+        // Run animation
+        setInterval(draw, 33);
+      }
+    };
+    
+    // Init animation when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeRain);
+    } else {
+      initializeRain();
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const canvas = document.querySelector('#crypto-rain-canvas');
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+  } catch (e) {
+    console.warn('Error initializing rain animation:', e);
+  }
+  
+  // STEP 2: KILL REACT COMPLETELY (but preserve animations)
   // =============================
   
   // Stop React's event loop and render cycles
@@ -172,7 +307,7 @@
     };
   } catch (e) {}
   
-  // STEP 2: REMOVE PROBLEMATIC CONTENT
+  // STEP 3: REMOVE PROBLEMATIC CONTENT
   // =================================
   try {
     // Add styles to hide problem areas
@@ -267,7 +402,7 @@
     console.warn('Error setting up static content:', e);
   }
   
-  // STEP 3: BLOCK BAD NETWORK REQUESTS
+  // STEP 4: BLOCK BAD NETWORK REQUESTS
   // =================================
   
   // Block font requests completely
@@ -321,7 +456,7 @@
     console.warn('Error overriding fetch:', e);
   }
   
-  // STEP 4: COMPLETELY OVERRIDE CONSOLE.ERROR
+  // STEP 5: COMPLETELY OVERRIDE CONSOLE.ERROR
   // ======================================
   
   // Replace console.error to prevent error messages
@@ -350,7 +485,7 @@
     originalConsoleError.apply(this, args);
   };
   
-  // STEP 5: BLOCK ALL SCRIPTS THAT MIGHT CONTAIN THE PROBLEMATIC CODE
+  // STEP 6: BLOCK ALL SCRIPTS THAT MIGHT CONTAIN THE PROBLEMATIC CODE
   // ===============================================================
   try {
     // Find and disable problematic scripts
