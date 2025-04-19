@@ -505,7 +505,7 @@ export default function Navbar() {
         transition={{ duration: 0.4 }}
       >
         <NavContent>
-          <Link href="/" passHref legacyBehavior>
+          <Link href="./" passHref legacyBehavior>
             <LogoContainer
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
