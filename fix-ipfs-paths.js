@@ -287,6 +287,42 @@ const createIpfsCompatibleFiles = () => {
         el.setAttribute('href', fixedHref);
       });
       
+      // Fix navbar hash links - important to do this first to prevent incorrect redirects
+      document.querySelectorAll('a[href^="#"]').forEach(el => {
+        // Ensure hash links work properly by maintaining only the hash part
+        if (el.getAttribute('href').startsWith('#')) {
+          // These are internal page links, keep them as-is
+          const hash = el.getAttribute('href');
+          el.onclick = function(e) {
+            e.preventDefault();
+            const target = document.querySelector(hash);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth' });
+            }
+            // Update URL without causing a page reload
+            history.pushState(null, null, hash);
+          };
+        }
+      });
+      
+      // Fix links with paths that point to the same page with hash
+      document.querySelectorAll('a[href*="ipfs.tech/#"], a[href*="ipfs.io/#"]').forEach(el => {
+        const href = el.getAttribute('href');
+        const hashIndex = href.indexOf('#');
+        if (hashIndex !== -1) {
+          const hash = href.substring(hashIndex);
+          el.setAttribute('href', hash);
+          el.onclick = function(e) {
+            e.preventDefault();
+            const target = document.querySelector(hash);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth' });
+            }
+            history.pushState(null, null, hash);
+          };
+        }
+      });
+      
       // Fix preloaded fonts
       document.querySelectorAll('link[rel="preload"][as="font"]').forEach(el => {
         if (el.href.indexOf('/_next/') !== -1) {
@@ -356,6 +392,74 @@ const createIpfsCompatibleFiles = () => {
     // Run immediately and again after load
     fixAllElements();
     window.addEventListener('load', fixAllElements);
+    
+    // Fix navigation links on document ready
+    if (document.readyState === 'complete') {
+      fixNavigationLinks();
+    } else {
+      window.addEventListener('load', fixNavigationLinks);
+    }
+
+    // Special function to handle navigation link fixing
+    function fixNavigationLinks() {
+      // Get the current page URL without hash
+      const currentPageUrl = window.location.href.split('#')[0];
+      
+      // Fix any remaining links that might be causing redirects
+      document.querySelectorAll('a').forEach(link => {
+        const href = link.getAttribute('href');
+        
+        // Skip if no href or it's already a hash link (handled elsewhere)
+        if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+        
+        // If link contains hash and points to external domain when it shouldn't
+        if (href.includes('#') && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
+          const hash = href.substring(href.indexOf('#'));
+          link.setAttribute('href', hash);
+          
+          // Add click handler for smooth scrolling
+          link.onclick = function(e) {
+            e.preventDefault();
+            const target = document.querySelector(hash);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth' });
+              // Update URL without causing a page reload
+              history.pushState(null, null, hash);
+            }
+          };
+        }
+        
+        // Replace any absolute links that should be on the same page
+        if (href.startsWith('https://ipfs.tech') || href.startsWith('https://ipfs.io')) {
+          // If URL has no path or just points to index, it should be the current page
+          const urlPath = new URL(href).pathname;
+          if (urlPath === '/' || urlPath === '/index.html') {
+            link.setAttribute('href', './');
+          }
+        }
+      });
+      
+      // Special case for navbar links that might be using onClick handlers
+      document.querySelectorAll('nav a, header a, .navbar a, .nav a').forEach(link => {
+        // Ensure nav links don't have click handlers that redirect to ipfs.tech
+        const originalOnClick = link.onclick;
+        if (originalOnClick) {
+          link.onclick = function(e) {
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('#')) {
+              e.preventDefault();
+              const target = document.querySelector(href);
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+                history.pushState(null, null, href);
+              }
+              return false;
+            }
+            return originalOnClick.call(this, e);
+          };
+        }
+      });
+    }
     
     // Add a MutationObserver to catch dynamically added elements
     const observer = new MutationObserver(mutations => {
