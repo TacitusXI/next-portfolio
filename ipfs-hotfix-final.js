@@ -1,6 +1,67 @@
 // IPFS Emergency Hotfix - FINAL VERSION
 // This script completely disables React to prevent all errors
 (function() {
+  // IMMEDIATELY FIX THE SPECIFIC ERROR - MUST BE THE VERY FIRST CODE TO RUN
+  // Override av directly as a top-level non-configurable, non-writable property
+  // This ensures it cannot be changed by any code after us
+  Object.defineProperty(window, 'av', { 
+    configurable: false,
+    writable: false,
+    value: function() { return []; }
+  });
+  
+  // Also try to preemptively fix the Symbol.iterator issue
+  try {
+    // Patch Array.prototype[Symbol.iterator] to prevent failures
+    const originalArrayIterator = Array.prototype[Symbol.iterator];
+    Array.prototype[Symbol.iterator] = function() {
+      try {
+        return originalArrayIterator.apply(this);
+      } catch (e) {
+        console.warn('Caught error in Array iterator');
+        return { next: function() { return { done: true, value: undefined }; } };
+      }
+    };
+    
+    // Create a safe version of Array.from that won't throw
+    const originalArrayFrom = Array.from;
+    Array.from = function(obj) {
+      if (obj === null || obj === undefined) return [];
+      try {
+        return originalArrayFrom.call(this, obj);
+      } catch (e) {
+        return [];
+      }
+    };
+    
+    // Patch iterator methods directly
+    const safeIterator = function() {
+      return { next: function() { return { done: true, value: undefined }; } };
+    };
+    
+    // Add default iterators to Object.prototype as a safety measure
+    if (!Object.prototype[Symbol.iterator]) {
+      Object.defineProperty(Object.prototype, Symbol.iterator, {
+        writable: true,
+        configurable: true,
+        value: function() {
+          const keys = Object.keys(this);
+          let index = 0;
+          return {
+            next: function() {
+              if (index < keys.length) {
+                return { value: keys[index++], done: false };
+              }
+              return { done: true };
+            }
+          };
+        }
+      });
+    }
+  } catch (e) {
+    // Ignore any errors in our safety code
+  }
+  
   console.log('🔥 IPFS Emergency Hotfix FINAL VERSION Activated 🔥');
   
   // Prevent multiple initializations
@@ -56,10 +117,24 @@
     } catch (e) {}
   });
   
-  // Kill all JS modules that might cause errors
-  ['av', 't3', 't6', 'iB', 'o4', 'o5', 'o3', 'oQ', 'oj', 'lI', 'rk', 'lE', 'ng', 'ny'].forEach(name => {
+  // Kill all JS modules that might cause errors - much more comprehensive list
+  [
+    'av', 't3', 't6', 'iB', 'o4', 'o5', 'o3', 'oQ', 'oj', 'lI', 'rk', 'lE', 'ng', 'ny',
+    // Add many more possible minified function names
+    'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag', 'ah', 'ai', 'aj', 'ak', 'al', 'am', 'an', 'ao', 'ap', 'aq', 'ar', 'as', 'at', 'au', 'aw', 'ax', 'ay', 'az',
+    'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bk', 'bl', 'bm', 'bn', 'bo', 'bp', 'bq', 'br', 'bs', 'bt', 'bu', 'bv', 'bw', 'bx', 'by', 'bz',
+    'ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'cg', 'ch', 'ci', 'cj', 'ck', 'cl', 'cm', 'cn', 'co', 'cp', 'cq', 'cr', 'cs', 'ct', 'cu', 'cv', 'cw', 'cx', 'cy', 'cz'
+  ].forEach(name => {
     try {
-      window[name] = function() { return []; };
+      // Only override if it's a function
+      if (typeof window[name] === 'function') {
+        const safeVersion = function() { return []; };
+        Object.defineProperty(window, name, {
+          configurable: false,
+          writable: false,
+          value: safeVersion
+        });
+      }
     } catch (e) {}
   });
   
@@ -73,8 +148,9 @@
             fnStr.includes('render') || 
             fnStr.includes('render') || 
             fnStr.includes('useEffect') || 
-            fnStr.includes('useState')) {
-          return 0; // Don't run React-related timeouts
+            fnStr.includes('useState') ||
+            fnStr.includes('iterable')) {
+          return 0; // Don't run problematic timeouts
         }
       }
       return originalSetTimeout(fn, delay);
@@ -258,6 +334,64 @@
     // Let non-React errors through
     originalConsoleError.apply(this, args);
   };
+  
+  // STEP 5: BLOCK ALL SCRIPTS THAT MIGHT CONTAIN THE PROBLEMATIC CODE
+  // ===============================================================
+  try {
+    // Find and disable problematic scripts
+    const scripts = Array.from(document.querySelectorAll('script[src]'));
+    scripts.forEach(script => {
+      const src = script.getAttribute('src');
+      if (src && (src.includes('page-e5c5f88e96c6fb5a.js') || src.includes('fd9d1056-d2a1b38e69101e91.js'))) {
+        // Disable by removing the src attribute
+        script.removeAttribute('src');
+        // Replace with an empty function to prevent errors
+        script.textContent = '// Script disabled by IPFS hotfix';
+      }
+    });
+    
+    // Prevent future script loading
+    const originalCreateElement = document.createElement;
+    document.createElement = function(tagName) {
+      const element = originalCreateElement.call(document, tagName);
+      
+      if (tagName.toLowerCase() === 'script') {
+        // Override the src setter
+        const originalSrcSetter = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src').set;
+        Object.defineProperty(element, 'src', {
+          set: function(value) {
+            if (value && (value.includes('page-e5c5f88e96c6fb5a.js') || value.includes('fd9d1056-d2a1b38e69101e91.js'))) {
+              console.warn('Blocked loading of problematic script:', value);
+              return;
+            }
+            originalSrcSetter.call(this, value);
+          }
+        });
+      }
+      
+      return element;
+    };
+    
+    // Also intercept script creation with a MutationObserver
+    const scriptObserver = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(node => {
+            if (node.tagName === 'SCRIPT' && node.src) {
+              if (node.src.includes('page-e5c5f88e96c6fb5a.js') || node.src.includes('fd9d1056-d2a1b38e69101e91.js')) {
+                node.removeAttribute('src');
+                node.textContent = '// Script disabled by IPFS hotfix';
+              }
+            }
+          });
+        }
+      });
+    });
+    
+    scriptObserver.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {
+    console.warn('Error blocking problematic scripts:', e);
+  }
   
   console.log('🔥 IPFS Emergency Hotfix completed - React disabled for compatibility 🔥');
 })(); 

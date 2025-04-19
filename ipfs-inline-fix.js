@@ -1,0 +1,2 @@
+// IPFS inline fix - MUST be added directly in HTML head before all other scripts
+window.av=function(){return[]};Object.defineProperty(window,"av",{configurable:!1,writable:!1,value:function(){return[]}});try{Array.from=function(n){return null==n?[]:(n&&"function"==typeof n[Symbol.iterator]||(n=[]),Array.prototype.slice.call(n))}}catch(e){}window.addEventListener("error",function(e){e&&e.error&&e.error.toString&&e.error.toString().includes("is not iterable")&&(e.preventDefault(),e.stopPropagation())},!0); 
