@@ -22,7 +22,7 @@
   }
   
   // ----------------------------------------
-  // Fix GitHub data structure
+  // Fix GitHub data structure exactly as expected by the component
   // ----------------------------------------
   window.GITHUB_DATA = {
     user: {
@@ -61,27 +61,36 @@
       }
     ],
     contributions: {
-      totalCount: 650,
+      totalContributions: 650,
       weeks: []
     }
   };
   
-  // Generate contribution data once, not every time we intercept a request
+  // Generate contribution data with exact structure needed
   (function generateContributions() {
-    // Pre-generate all the contribution data at load time
+    // Only generate once
     if (window.GITHUB_DATA.contributions.weeks.length > 0) return;
     
-    for (let i = 0; i < 52; i++) {
+    // Create full year of data (52 weeks)
+    const today = new Date();
+    let date = new Date(today);
+    date.setDate(date.getDate() - (52 * 7)); // Go back 52 weeks
+    
+    for (let week = 0; week < 52; week++) {
+      const days = [];
+      
+      // Create 7 days per week
+      for (let day = 0; day < 7; day++) {
+        date.setDate(date.getDate() + 1);
+        days.push({
+          contributionCount: Math.floor(Math.random() * 5),
+          date: date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+          color: "#196127" // GitHub green color
+        });
+      }
+      
       window.GITHUB_DATA.contributions.weeks.push({
-        contributionDays: [
-          { contributionCount: Math.floor(Math.random() * 5) },
-          { contributionCount: Math.floor(Math.random() * 5) },
-          { contributionCount: Math.floor(Math.random() * 5) },
-          { contributionCount: Math.floor(Math.random() * 5) },
-          { contributionCount: Math.floor(Math.random() * 5) },
-          { contributionCount: Math.floor(Math.random() * 5) },
-          { contributionCount: Math.floor(Math.random() * 5) }
-        ]
+        contributionDays: days
       });
     }
   })();
@@ -93,7 +102,7 @@
     // Only add font style once
     if (document.getElementById('ipfs-font-fix')) return;
     
-    // Add Inter font directly to prevent font loading issues
+    // Try multiple possible font paths to ensure it works
     const fontStyle = document.createElement('style');
     fontStyle.id = 'ipfs-font-fix';
     fontStyle.textContent = `
@@ -102,14 +111,27 @@
         font-style: normal;
         font-weight: 400;
         font-display: swap;
-        src: url('./_next/static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2');
+        src: local('Inter'), 
+             url('./_next/static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2'),
+             url('./a34f9d1faa5f3315-s.p.woff2') format('woff2'),
+             url('./static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
       }
       @font-face {
         font-family: 'Inter';
         font-style: normal;
         font-weight: 700;
         font-display: swap;
-        src: url('./_next/static/media/52c5e3cfaafac80b-s.p.woff2') format('woff2');
+        src: local('Inter Bold'), local('InterBold'),
+             url('./_next/static/media/52c5e3cfaafac80b-s.p.woff2') format('woff2'),
+             url('./52c5e3cfaafac80b-s.p.woff2') format('woff2'),
+             url('./static/media/52c5e3cfaafac80b-s.p.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      
+      /* Add system font fallback */
+      body, input, button, textarea, select {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif !important;
       }
     `;
     document.head.appendChild(fontStyle);
@@ -120,6 +142,24 @@
       if (href && href.indexOf('_next/static/css/_next/static/media/') !== -1) {
         style.setAttribute('href', href.replace('_next/static/css/_next/static/media/', '_next/static/media/'));
         style.setAttribute('data-ipfs-fixed', 'true');
+      }
+    });
+    
+    // Preload font files - this helps with font loading issues
+    const fontFiles = [
+      { path: './_next/static/media/a34f9d1faa5f3315-s.p.woff2', weight: '400' },
+      { path: './_next/static/media/52c5e3cfaafac80b-s.p.woff2', weight: '700' }
+    ];
+    
+    fontFiles.forEach(font => {
+      if (!document.querySelector(`link[href="${font.path}"]`)) {
+        const preloadLink = document.createElement('link');
+        preloadLink.href = font.path;
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'font';
+        preloadLink.type = 'font/woff2';
+        preloadLink.crossOrigin = 'anonymous';
+        document.head.appendChild(preloadLink);
       }
     });
   }
@@ -203,6 +243,17 @@
         ));
       }
       
+      // Handle RSC requests that might be failing
+      if (url.includes('?_rsc=')) {
+        return Promise.resolve(new Response(
+          'RSC_CONTENT',
+          {
+            status: 200,
+            headers: { 'Content-Type': 'text/x-component' }
+          }
+        ));
+      }
+      
       // Fix _next paths
       if (typeof resource === 'string') {
         if (resource.startsWith('/_next/')) {
@@ -222,7 +273,18 @@
         }
       }
       
-      return originalFetch(resource, init);
+      return originalFetch(resource, init).catch(error => {
+        // Fallback for font files that might be in a different location
+        if (url.includes('.woff2') || url.includes('.woff') || url.includes('.ttf')) {
+          const fileName = url.split('/').pop();
+          return originalFetch('./_next/static/media/' + fileName).catch(() => {
+            return originalFetch('./static/media/' + fileName).catch(() => {
+              return originalFetch('./' + fileName);
+            });
+          });
+        }
+        throw error;
+      });
     };
   }
   
