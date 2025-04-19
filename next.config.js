@@ -7,9 +7,18 @@ const nextConfig = {
     domains: ['github.com', 'raw.githubusercontent.com'],
   },
   output: 'export',
-  assetPrefix: '/',
+  assetPrefix: './',
   basePath: '',
-  transpilePackages: ['next/font']
+  distDir: 'out',
+  experimental: {
+    mdxRs: true,
+  },
+  transpilePackages: ['next/font'],
+  exportPathMap: async function () {
+    return {
+      '/': { page: '/' },
+    };
+  },
 }
 
 module.exports = nextConfig 

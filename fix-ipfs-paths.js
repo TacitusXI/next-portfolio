@@ -33,18 +33,6 @@ const fixAssetPaths = (filePath) => {
   
   // Fix different path patterns
   if (fileExt === '.html' || fileExt === '.js' || fileExt === '.css') {
-    // Fix hash links in HTML files specifically (important to do this first)
-    if (fileExt === '.html') {
-      // Replace any link with href="https://ipfs.tech/#something" to href="#something"
-      content = content.replace(/(href=["'])(https:\/\/ipfs\.tech\/|https:\/\/ipfs\.io\/)(#[^"']+)(["'])/g, '$1$3$4');
-      
-      // Replace any link in navbar with full URLs to just hash
-      content = content.replace(/(<nav[^>]*>(?:(?!<\/nav>).)*?)href=["'](https?:\/\/[^"']+\/)(#[^"']+)["']/gs, '$1href="$3"');
-      
-      // Fix any onClick handlers that might redirect
-      content = content.replace(/onClick=["']window\.location\.href=['"](https:\/\/ipfs\.tech\/|https:\/\/ipfs\.io\/)[^'"]*["']/g, 'onClick="return false;"');
-    }
-    
     // Fix nested _next paths first (important to do this before other replacements)
     content = content.replace(/(\/_next\/[^"']*?)(\/_next\/)/g, '$1/');
     content = content.replace(/(_next\/[^"']*?)(_next\/)/g, '$1');
@@ -292,148 +280,11 @@ const createIpfsCompatibleFiles = () => {
 
     // Fix all elements with src or href
     function fixAllElements() {
-      // Specifically fix the styled components mentioned by the user
-      document.querySelectorAll('.sc-dTUlgT, .gZyElt').forEach(el => {
-        // Check if it's a link or has a click handler
-        if (el.tagName === 'A') {
-          // If it has href, modify it
-          if (el.hasAttribute('href')) {
-            const href = el.getAttribute('href');
-            
-            // If it links to ipfs.tech, change it to a hash or prevent navigation
-            if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
-              if (href.includes('#')) {
-                el.setAttribute('href', href.substring(href.indexOf('#')));
-              } else {
-                el.setAttribute('href', 'javascript:void(0)');
-              }
-            }
-          }
-          
-          // Add a click handler that prevents default and stops propagation
-          el.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // If we know what section it should navigate to, do that
-            if (el.closest('[data-section]')) {
-              const section = el.closest('[data-section]').getAttribute('data-section');
-              const target = document.getElementById(section) || document.querySelector('[id="' + section + '"]');
-              if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-                history.pushState(null, null, '#' + section);
-              }
-            }
-            
-            return false;
-          }, true);
-        } else {
-          // For non-link elements, still prevent click-based navigation
-          el.addEventListener('click', function(e) {
-            // Check if this might navigate to ipfs.tech
-            setTimeout(function() {
-              if (window.location.href.includes('ipfs.tech') || window.location.href.includes('ipfs.io')) {
-                // Go back to the current page
-                history.back();
-              }
-            }, 50);
-          }, true);
-        }
-      });
-      
-      // Also fix any parent elements that might contain these classes
-      document.querySelectorAll('[class*="sc-"]').forEach(el => {
-        // If this is a possible styled-component
-        if (el.className && (el.className.includes('sc-dTUlgT') || el.className.includes('gZyElt'))) {
-          // Find all anchors within this element
-          el.querySelectorAll('a').forEach(link => {
-            // Disable any navigation to ipfs.tech
-            link.addEventListener('click', function(e) {
-              const href = link.getAttribute('href');
-              if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Prevented navigation from styled component');
-                return false;
-              }
-            }, true);
-          });
-        }
-      });
-      
-      // Aggressive fix for any navigation link in the navbar
-      document.querySelectorAll('nav a, header a, .navbar a, .nav a').forEach(link => {
-        // Check if this is a link to a section (hash)
-        const href = link.getAttribute('href');
-        if (!href) return;
-        
-        // Always remove any ipfs.tech or ipfs.io parts from the URL
-        if (href.includes('ipfs.tech') || href.includes('ipfs.io')) {
-          // If it has a hash, extract it
-          if (href.includes('#')) {
-            const hash = href.substring(href.indexOf('#'));
-            link.setAttribute('href', hash);
-          } else {
-            // If it's a link to the main domain with no hash, make it link to current page
-            link.setAttribute('href', './');
-          }
-        }
-        
-        // Handle all hash links for smooth scrolling
-        if (href.startsWith('#')) {
-          link.onclick = function(e) {
-            e.preventDefault();
-            const target = document.querySelector(href);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth' });
-              history.pushState(null, null, href);
-            }
-            return false;
-          };
-        }
-      });
-      
       // Fix font and media paths - special case for nested paths
       document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
         const href = el.getAttribute('href');
         const fixedHref = href.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
         el.setAttribute('href', fixedHref);
-      });
-      
-      // Fix navbar hash links - important to do this first to prevent incorrect redirects
-      document.querySelectorAll('a[href^="#"]').forEach(el => {
-        // Ensure hash links work properly by maintaining only the hash part
-        if (el.getAttribute('href').startsWith('#')) {
-          // These are internal page links, keep them as-is
-          const hash = el.getAttribute('href');
-          el.onclick = function(e) {
-            e.preventDefault();
-            const target = document.querySelector(hash);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth' });
-            }
-            // Update URL without causing a page reload
-            history.pushState(null, null, hash);
-          };
-        }
-      });
-      
-      // Fix links with paths that point to the same page with hash
-      document.querySelectorAll('a[href*="ipfs.tech/#"], a[href*="ipfs.io/#"]').forEach(el => {
-        const href = el.getAttribute('href');
-        const hashIndex = href.indexOf('#');
-        if (hashIndex !== -1) {
-          const hash = href.substring(hashIndex);
-          el.setAttribute('href', hash);
-          el.onclick = function(e) {
-            e.preventDefault();
-            const target = document.querySelector(hash);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth' });
-            }
-            history.pushState(null, null, hash);
-          };
-        }
       });
       
       // Fix preloaded fonts
@@ -506,74 +357,6 @@ const createIpfsCompatibleFiles = () => {
     fixAllElements();
     window.addEventListener('load', fixAllElements);
     
-    // Fix navigation links on document ready
-    if (document.readyState === 'complete') {
-      fixNavigationLinks();
-    } else {
-      window.addEventListener('load', fixNavigationLinks);
-    }
-
-    // Special function to handle navigation link fixing
-    function fixNavigationLinks() {
-      // Get the current page URL without hash
-      const currentPageUrl = window.location.href.split('#')[0];
-      
-      // Fix any remaining links that might be causing redirects
-      document.querySelectorAll('a').forEach(link => {
-        const href = link.getAttribute('href');
-        
-        // Skip if no href or it's already a hash link (handled elsewhere)
-        if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
-        
-        // If link contains hash and points to external domain when it shouldn't
-        if (href.includes('#') && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
-          const hash = href.substring(href.indexOf('#'));
-          link.setAttribute('href', hash);
-          
-          // Add click handler for smooth scrolling
-          link.onclick = function(e) {
-            e.preventDefault();
-            const target = document.querySelector(hash);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth' });
-              // Update URL without causing a page reload
-              history.pushState(null, null, hash);
-            }
-          };
-        }
-        
-        // Replace any absolute links that should be on the same page
-        if (href.startsWith('https://ipfs.tech') || href.startsWith('https://ipfs.io')) {
-          // If URL has no path or just points to index, it should be the current page
-          const urlPath = new URL(href).pathname;
-          if (urlPath === '/' || urlPath === '/index.html') {
-            link.setAttribute('href', './');
-          }
-        }
-      });
-      
-      // Special case for navbar links that might be using onClick handlers
-      document.querySelectorAll('nav a, header a, .navbar a, .nav a').forEach(link => {
-        // Ensure nav links don't have click handlers that redirect to ipfs.tech
-        const originalOnClick = link.onclick;
-        if (originalOnClick) {
-          link.onclick = function(e) {
-            const href = link.getAttribute('href');
-            if (href && href.startsWith('#')) {
-              e.preventDefault();
-              const target = document.querySelector(href);
-              if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-                history.pushState(null, null, href);
-              }
-              return false;
-            }
-            return originalOnClick.call(this, e);
-          };
-        }
-      });
-    }
-    
     // Add a MutationObserver to catch dynamically added elements
     const observer = new MutationObserver(mutations => {
       let shouldFix = false;
@@ -592,114 +375,6 @@ const createIpfsCompatibleFiles = () => {
       childList: true, 
       subtree: true 
     });
-
-    // Global navigation interceptor
-    document.addEventListener('click', function(e) {
-      // Look for any clicked link element
-      let target = e.target;
-      while (target && target.tagName !== 'A') {
-        target = target.parentElement;
-      }
-      
-      // If this is a link
-      if (target && target.tagName === 'A') {
-        const href = target.getAttribute('href');
-        
-        // If it's a link to ipfs.tech or ipfs.io
-        if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // If it contains a hash, navigate to the hash
-          if (href.includes('#')) {
-            const hash = href.substring(href.indexOf('#'));
-            const element = document.querySelector(hash);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-              history.pushState(null, null, hash);
-            }
-          } else {
-            // Otherwise stay on the current page
-            console.log('Prevented navigation to:', href);
-          }
-          return false;
-        }
-
-        // Special handling for navbar links that should scroll to sections
-        if (target.closest('nav, header, .navbar, .nav') && href && href.startsWith('#')) {
-          e.preventDefault();
-          const element = document.querySelector(href);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-            history.pushState(null, null, href);
-          }
-          return false;
-        }
-      }
-      
-      // Handle styled-components that might be redirecting
-      // sc-dTUlgT gZyElt and similar classes
-      if (target && (
-          target.className.includes('sc-') || 
-          (target.parentElement && target.parentElement.className.includes('sc-'))
-      )) {
-        // Get the current URL to check if we're about to navigate away
-        const currentLocation = window.location.href;
-        
-        // Set a timeout to check if navigation was attempted
-        setTimeout(function() {
-          if (window.location.href !== currentLocation && 
-              (window.location.href.includes('ipfs.tech') || window.location.href.includes('ipfs.io'))) {
-            // Navigate back to the hash if there was one
-            if (currentLocation.includes('#')) {
-              const hash = currentLocation.substring(currentLocation.indexOf('#'));
-              window.location.href = hash;
-            } else {
-              // Go back to current page
-              window.location.href = currentLocation;
-            }
-          }
-        }, 50);
-      }
-    }, true); // Use capture phase to intercept before other handlers
-    
-    // Intercept programmatic navigation
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-    
-    // Override history.pushState
-    history.pushState = function() {
-      // Check if the URL contains ipfs.tech
-      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
-          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
-        
-        // If it has a hash, extract it
-        if (arguments[2].includes('#')) {
-          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
-        } else {
-          // Otherwise prevent navigation completely
-          return;
-        }
-      }
-      return originalPushState.apply(this, arguments);
-    };
-    
-    // Override history.replaceState
-    history.replaceState = function() {
-      // Check if the URL contains ipfs.tech
-      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
-          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
-        
-        // If it has a hash, extract it
-        if (arguments[2].includes('#')) {
-          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
-        } else {
-          // Otherwise prevent navigation completely
-          return;
-        }
-      }
-      return originalReplaceState.apply(this, arguments);
-    };
   })();
   `;
   
@@ -886,15 +561,16 @@ const createFallbackResources = () => {
       // Also fix style tags that reference fonts
       document.querySelectorAll('style').forEach(style => {
         if (!style.dataset.fixed && style.textContent.indexOf('@font-face') !== -1) {
+          // Fix the regex issue by explicitly adding the g flag and using String.replace
           const fixedCss = style.textContent.replace(
-            /url\(['"]?\/_next\/static\/media\/([^'"]+)['"]?\)/g, 
+            new RegExp("url\\(['\"]*\\/_next\\/static\\/media\\/([^'\"\\)]+)['\"]*\\)", "g"), 
             "url('./_next/static/media/$1')"
           );
           
           // Fix nested paths in CSS (this was causing 404s)
           const doubleFix = fixedCss.replace(
-            /_next\/static\/css\/_next\/static\/media\//g, 
-            '_next/static/media/'
+            new RegExp("_next\\/static\\/css\\/_next\\/static\\/media\\/", "g"), 
+            "_next/static/media/"
           );
           
           if (doubleFix !== style.textContent) {
@@ -934,114 +610,6 @@ const createFallbackResources = () => {
         });
       });
     }
-
-    // Global navigation interceptor
-    document.addEventListener('click', function(e) {
-      // Look for any clicked link element
-      let target = e.target;
-      while (target && target.tagName !== 'A') {
-        target = target.parentElement;
-      }
-      
-      // If this is a link
-      if (target && target.tagName === 'A') {
-        const href = target.getAttribute('href');
-        
-        // If it's a link to ipfs.tech or ipfs.io
-        if (href && (href.includes('ipfs.tech') || href.includes('ipfs.io'))) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // If it contains a hash, navigate to the hash
-          if (href.includes('#')) {
-            const hash = href.substring(href.indexOf('#'));
-            const element = document.querySelector(hash);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-              history.pushState(null, null, hash);
-            }
-          } else {
-            // Otherwise stay on the current page
-            console.log('Prevented navigation to:', href);
-          }
-          return false;
-        }
-
-        // Special handling for navbar links that should scroll to sections
-        if (target.closest('nav, header, .navbar, .nav') && href && href.startsWith('#')) {
-          e.preventDefault();
-          const element = document.querySelector(href);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-            history.pushState(null, null, href);
-          }
-          return false;
-        }
-      }
-      
-      // Handle styled-components that might be redirecting
-      // sc-dTUlgT gZyElt and similar classes
-      if (target && (
-          target.className.includes('sc-') || 
-          (target.parentElement && target.parentElement.className.includes('sc-'))
-      )) {
-        // Get the current URL to check if we're about to navigate away
-        const currentLocation = window.location.href;
-        
-        // Set a timeout to check if navigation was attempted
-        setTimeout(function() {
-          if (window.location.href !== currentLocation && 
-              (window.location.href.includes('ipfs.tech') || window.location.href.includes('ipfs.io'))) {
-            // Navigate back to the hash if there was one
-            if (currentLocation.includes('#')) {
-              const hash = currentLocation.substring(currentLocation.indexOf('#'));
-              window.location.href = hash;
-            } else {
-              // Go back to current page
-              window.location.href = currentLocation;
-            }
-          }
-        }, 50);
-      }
-    }, true); // Use capture phase to intercept before other handlers
-
-    // Intercept programmatic navigation
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-    
-    // Override history.pushState
-    history.pushState = function() {
-      // Check if the URL contains ipfs.tech
-      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
-          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
-        
-        // If it has a hash, extract it
-        if (arguments[2].includes('#')) {
-          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
-        } else {
-          // Otherwise prevent navigation completely
-          return;
-        }
-      }
-      return originalPushState.apply(this, arguments);
-    };
-    
-    // Override history.replaceState
-    history.replaceState = function() {
-      // Check if the URL contains ipfs.tech
-      if (arguments.length > 2 && typeof arguments[2] === 'string' && 
-          (arguments[2].includes('ipfs.tech') || arguments[2].includes('ipfs.io'))) {
-        
-        // If it has a hash, extract it
-        if (arguments[2].includes('#')) {
-          arguments[2] = arguments[2].substring(arguments[2].indexOf('#'));
-        } else {
-          // Otherwise prevent navigation completely
-          return;
-        }
-      }
-      return originalReplaceState.apply(this, arguments);
-    };
     </script>
     `;
     
