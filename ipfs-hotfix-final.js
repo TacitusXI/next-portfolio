@@ -266,9 +266,12 @@
             url.includes('.ttf') || 
             url.includes('fonts.gstatic') || 
             url.includes('fonts.googleapis')) {
+          // Create a proper Headers instance
+          const headers = new Headers();
+          headers.append('Content-Type', 'application/font-woff2');
           return Promise.resolve(new Response(new Blob(), { 
             status: 200,
-            headers: { 'Content-Type': 'application/font-woff2' }
+            headers: headers
           }));
         }
         
@@ -290,9 +293,12 @@
             }
           };
           
+          // Create a proper Headers instance
+          const headers = new Headers();
+          headers.append('Content-Type', 'application/json');
           return Promise.resolve(new Response(JSON.stringify(mockData), { 
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: headers
           }));
         }
         
@@ -313,25 +319,31 @@
           return originalFetch(resource, init).catch(error => {
             console.warn('Fetch failed:', url);
             // Return an empty response with correct headers
+            const headers = new Headers();
+            headers.append('Content-Type', 'application/json');
             return Promise.resolve(new Response('{}', { 
               status: 200, 
-              headers: new Headers({ 'Content-Type': 'application/json' })
+              headers: headers
             }));
           });
         } catch (e) {
           console.warn('Error in fetch call:', e);
           // Fallback response with correct headers
+          const headers = new Headers();
+          headers.append('Content-Type', 'application/json');
           return Promise.resolve(new Response('{}', { 
             status: 200, 
-            headers: new Headers({ 'Content-Type': 'application/json' })
+            headers: headers
           }));
         }
       } catch (e) {
         console.warn('Error in fetch override:', e);
         // Last resort fallback
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
         return Promise.resolve(new Response('{}', { 
           status: 200, 
-          headers: new Headers({ 'Content-Type': 'application/json' })
+          headers: headers
         }));
       }
     };
