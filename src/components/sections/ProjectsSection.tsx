@@ -271,17 +271,17 @@ export default function ProjectsSection() {
   const getProjectImage = (project: Project) => {
     // Map project titles to existing image files
     const imageMap: {[key: string]: string} = {
-      "TechnoirClub Marketplace": "/images/technoir-club.png",
-      "LeskoDEX": "/images/lesko-dex.png",
-      "LIQUID-DEX": "/images/liquid-dex.png",
-      "Tacitus Swap": "/images/tacitus-swap.png",
-      "DeFi IL Hedge Bot": "/images/defi-hedge-bot.png",
-      "Ledger Signer": "/images/ledger-project.png"
+      "TechnoirClub Marketplace": "./images/technoir-club.png",
+      "LeskoDEX": "./images/lesko-dex.png",
+      "LIQUID-DEX": "./images/liquid-dex.png",
+      "Tacitus Swap": "./images/tacitus-swap.png",
+      "DeFi IL Hedge Bot": "./images/defi-hedge-bot.png",
+      "Ledger Signer": "./images/ledger-project.png"
     };
     
     // Return the mapped image or fall back to a placeholder
     return imageMap[project.title] || 
-      `/images/projects/${project.title.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+      `./images/projects/${project.title.toLowerCase().replace(/\s+/g, '-')}.jpg`;
   };
   
   return (
