@@ -22,97 +22,113 @@
   }
   
   // ----------------------------------------
-  // DIRECT REPLACEMENT: Replace problematic GitHub calendar component
+  // COMPATIBILITY MODE: Create backup GitHub calendar that won't conflict with React
   // ----------------------------------------
-  function replaceGitHubCalendar() {
-    // Look for the GitHub contribution calendar container
-    const findCalendar = () => {
-      // Try to find the calendar by possible class names, IDs, or content
-      const possibleSelectors = [
-        // By common class names
-        '.github-calendar', 
-        '.contribution-graph', 
-        '.react-github-calendar',
-        // By typical container elements
-        '[class*="calendar"]', 
-        '[class*="contribution"]',
-        // By GitHub section
-        '#github-section .calendar',
-        '[id*="github"] .calendar',
-        // Generic containers that might hold the calendar
-        '.github-section',
-        '[id*="github"]',
-        // Very generic fallback
-        'section', 
-        'div[class*="github"]'
-      ];
-      
-      // Try each selector
-      for (const selector of possibleSelectors) {
-        const elements = document.querySelectorAll(selector);
-        for (const el of elements) {
-          // Look for calendar-like content
-          if (el.innerHTML.includes('contribution') || 
-              el.textContent.includes('contributions')) {
-            return el;
-          }
-        }
-      }
-      
-      return null;
-    };
+  function createBackupGitHubCalendar() {
+    // Check if we already created a backup calendar
+    if (document.getElementById('ipfs-backup-github-calendar')) return;
     
-    // Generate a simple HTML calendar as replacement
-    const createCalendarHTML = () => {
-      const contributionData = generateContributionWeeks();
-      const totalContributions = 650;
+    // Generate a simple HTML calendar
+    const contributionData = generateContributionWeeks();
+    const totalContributions = 650;
+    
+    // Create the backup calendar container
+    const backupCalendar = document.createElement('div');
+    backupCalendar.id = 'ipfs-backup-github-calendar';
+    backupCalendar.style.margin = '20px 0';
+    backupCalendar.style.padding = '20px';
+    backupCalendar.style.backgroundColor = '#f6f8fa';
+    backupCalendar.style.border = '1px solid #e1e4e8';
+    backupCalendar.style.borderRadius = '6px';
+    backupCalendar.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    
+    // Add title and contribution count
+    const title = document.createElement('h3');
+    title.textContent = 'GitHub Contributions';
+    title.style.marginBottom = '10px';
+    title.style.fontSize = '16px';
+    backupCalendar.appendChild(title);
+    
+    const count = document.createElement('div');
+    count.innerHTML = `<strong>${totalContributions}</strong> contributions in the last year`;
+    count.style.fontSize = '14px';
+    count.style.marginBottom = '15px';
+    backupCalendar.appendChild(count);
+    
+    // Create calendar grid
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(52, 1fr)';
+    grid.style.gap = '3px';
+    grid.style.marginBottom = '10px';
+    
+    // Add weeks and days
+    contributionData.forEach(week => {
+      const weekEl = document.createElement('div');
+      weekEl.style.display = 'grid';
+      weekEl.style.gridTemplateRows = 'repeat(7, 1fr)';
+      weekEl.style.gap = '3px';
       
-      // Create calendar grid HTML
-      let calendarHTML = `
-        <div class="github-contribution-calendar" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px 0; text-align: center;">
-          <h3 style="margin-bottom: 10px;">GitHub Contributions</h3>
-          <div style="font-size: 1.25rem; margin-bottom: 15px;">
-            <strong>${totalContributions}</strong> contributions in the last year
-          </div>
-          <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(52, 1fr); gap: 3px; margin-bottom: 10px;">
-      `;
-      
-      // Add contribution squares
-      contributionData.forEach(week => {
-        const weekContainer = `<div class="week" style="display: grid; grid-template-rows: repeat(7, 1fr); gap: 3px;">`;
-        
-        let daySquares = '';
-        week.contributionDays.forEach(day => {
-          daySquares += `<div 
-            class="day" 
-            style="width: 10px; height: 10px; background-color: ${day.color};" 
-            title="${day.date}: ${day.contributionCount} contributions"
-          ></div>`;
-        });
-        
-        calendarHTML += weekContainer + daySquares + '</div>';
+      week.contributionDays.forEach(day => {
+        const dayEl = document.createElement('div');
+        dayEl.classList.add('github-day');
+        dayEl.style.width = '10px';
+        dayEl.style.height = '10px';
+        dayEl.style.backgroundColor = day.color;
+        dayEl.title = `${day.date}: ${day.contributionCount} contributions`;
+        weekEl.appendChild(dayEl);
       });
       
-      calendarHTML += `
-          </div>
-          <div style="font-size: 0.8rem; color: #586069; margin-top: 5px;">
-            Contribution activity from past year (IPFS emergency backup data)
-          </div>
-        </div>
-      `;
+      grid.appendChild(weekEl);
+    });
+    
+    backupCalendar.appendChild(grid);
+    
+    // Add footer text
+    const footer = document.createElement('div');
+    footer.textContent = 'GitHub contribution activity (IPFS backup data)';
+    footer.style.fontSize = '12px';
+    footer.style.color = '#586069';
+    footer.style.marginTop = '5px';
+    backupCalendar.appendChild(footer);
+    
+    // Find insertion point - we'll try several strategies
+    const findInsertionPoint = () => {
+      // Try to find GitHub sections by ID or class
+      const githubSection = document.getElementById('github') || 
+                           document.querySelector('[id*="github"]') || 
+                           document.querySelector('.github-section') ||
+                           document.querySelector('[class*="github"]');
       
-      return calendarHTML;
+      // If we found a GitHub section, insert at the end of it
+      if (githubSection) {
+        githubSection.appendChild(backupCalendar);
+        return true;
+      }
+      
+      // If no GitHub section, look for main content area
+      const mainContent = document.querySelector('main') || 
+                         document.querySelector('.main-content') ||
+                         document.querySelector('[role="main"]');
+      
+      if (mainContent) {
+        mainContent.appendChild(backupCalendar);
+        return true;
+      }
+      
+      // Last resort: append to body
+      document.body.appendChild(backupCalendar);
+      return true;
     };
     
-    // Find and replace the calendar
-    const calendarElement = findCalendar();
-    if (calendarElement) {
-      console.log('Found GitHub calendar element, replacing with backup version');
-      calendarElement.innerHTML = createCalendarHTML();
+    // Only attempt to insert when DOM is fully loaded
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      return findInsertionPoint();
+    } else {
+      // Otherwise wait for DOM to be ready
+      document.addEventListener('DOMContentLoaded', findInsertionPoint);
       return true;
     }
-    
-    return false;
   }
   
   // ----------------------------------------
@@ -155,26 +171,6 @@
         language: "Solidity"
       }
     ]
-  };
-  
-  // Format 2: Direct format expected by GitHub calendar component
-  window.GITHUB_CONTRIB_DATA = {
-    totalContributions: 650,
-    weeks: generateContributionWeeks()
-  };
-  
-  // Format 3: Nested format expected by GraphQL API
-  window.GITHUB_GRAPHQL_DATA = {
-    data: {
-      user: {
-        contributionsCollection: {
-          contributionCalendar: {
-            totalContributions: 650,
-            weeks: generateContributionWeeks()
-          }
-        }
-      }
-    }
   };
   
   // Generate realistic GitHub contribution data
@@ -352,6 +348,28 @@
       if (url.includes('/api/github')) {
         console.log('Intercepting GitHub API request:', url);
         
+        // For GitHub API requests related to contributions, return empty data that won't cause errors
+        if (url.includes('contributions')) {
+          return Promise.resolve(new Response(
+            JSON.stringify({
+              data: {
+                user: {
+                  contributionsCollection: {
+                    contributionCalendar: {
+                      totalContributions: 0,
+                      weeks: []
+                    }
+                  }
+                }
+              }
+            }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            }
+          ));
+        }
+        
         // Return user and repo data
         return Promise.resolve(new Response(
           JSON.stringify(window.GITHUB_DATA),
@@ -434,31 +452,29 @@
   }
   
   // ----------------------------------------
-  // Add a special error handler to fix the "m is not iterable" error
+  // Add a special error handler to fix React-specific errors
   // ----------------------------------------
-  function setupErrorHandlers() {
-    // Add a global error handler
+  function setupReactErrorHandler() {
+    // Detect React errors and provide fallback content
     window.addEventListener('error', function(event) {
-      // Check if it's the specific error we're looking for
-      if (event.error && event.error.toString().includes('is not iterable')) {
-        console.log('Caught "is not iterable" error, trying to fix GitHub components');
+      // Check if it's a React error
+      if (event.error && 
+          (event.error.toString().includes('React') || 
+           event.error.toString().includes('is not iterable'))) {
+        console.log('Caught React error, creating backup GitHub calendar');
         
-        // Try to replace the GitHub calendar
-        const replaced = replaceGitHubCalendar();
-        
-        if (replaced) {
-          console.log('Successfully replaced GitHub calendar component');
-          event.preventDefault(); // Prevent the error from propagating
-        }
+        // Create backup GitHub calendar
+        createBackupGitHubCalendar();
       }
     }, true);
     
-    // Also handle unhandled promise rejections
+    // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', function(event) {
-      if (event.reason && event.reason.toString().includes('is not iterable')) {
-        console.log('Caught unhandled promise rejection with "is not iterable" error');
-        replaceGitHubCalendar();
-        event.preventDefault();
+      if (event.reason && 
+          (event.reason.toString().includes('React') || 
+           event.reason.toString().includes('is not iterable'))) {
+        console.log('Caught unhandled React promise rejection');
+        createBackupGitHubCalendar();
       }
     });
   }
@@ -474,10 +490,7 @@
     try {
       // High priority fixes first
       fixFonts(); // Fix fonts early to prevent 404s
-      setupErrorHandlers(); // Setup error handlers before anything else
-      
-      // Try to directly replace GitHub calendar to prevent error
-      replaceGitHubCalendar();
+      setupReactErrorHandler(); 
       
       // One-time setup functions
       setupNavigationFix();
@@ -500,9 +513,9 @@
   window.addEventListener('load', function() {
     applyAllFixes();
     
-    // Additional attempt to fix GitHub calendar after everything is loaded
+    // Create backup GitHub calendar after everything is loaded
     setTimeout(() => {
-      replaceGitHubCalendar();
+      createBackupGitHubCalendar();
       console.log('🔥 IPFS Emergency Hotfix completed successfully 🔥');
     }, 1000);
   });
