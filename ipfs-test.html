@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPFS Navigation Test</title>
+    <!-- Include our fixes before any other scripts -->
+    <script src="./ipfs-nav-fix.js"></script>
+    <script src="./ipfs-fix.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        nav {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin-right: 15px;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>IPFS Navigation Test</h1>
+    
+    <nav>
+        <a href="/">Home</a>
+        <a href="/github">GitHub</a>
+        <a href="/projects">Projects</a>
+        <a href="/skills">Skills</a>
+        <a href="/experience">Experience</a>
+        <a href="#test-section">Jump to Test Section</a>
+    </nav>
+    
+    <p>This page tests navigation in IPFS deployments.</p>
+    
+    <section>
+        <h2>How to properly fix navigation in IPFS deployments:</h2>
+        <ol>
+            <li>Include the ipfs-nav-fix.js script in the head of your HTML</li>
+            <li>Make sure to include ipfs-fix.js after it</li>
+            <li>Register the service worker with ipfs-sw.js</li>
+            <li>Test navigation links to ensure they stay within your site and don't redirect to ipfs.tech</li>
+        </ol>
+    </section>
+    
+    <section id="test-section">
+        <h2>Test Section</h2>
+        <p>This section can be accessed directly via the hash link in the navigation.</p>
+        <p>When properly configured, clicking the "Jump to Test Section" link should scroll to this section without navigating away from the page.</p>
+    </section>
+    
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./ipfs-sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Test fix
+        console.log('Testing IPFS navigation fixes...');
+        
+        // Rewrite all navigation links for IPFS compatibility
+        document.querySelectorAll('nav a').forEach(function(link) {
+            const href = link.getAttribute('href');
+            
+            // For site navigation paths that start with a slash, convert to relative
+            if (href && href.startsWith('/') && !href.startsWith('/#')) {
+                link.setAttribute('href', '.' + href);
+                console.log('Rewrote link:', href, 'to:', '.' + href);
+            }
+        });
+    </script>
+</body>
+</html> 

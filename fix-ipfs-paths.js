@@ -169,10 +169,10 @@ const createIpfsCompatibleFiles = () => {
     // ------------------------------------------
     function fixFonts() {
       // Fix font paths in CSS
-      document.querySelectorAll('link[href*="_next/static/css/"]').forEach(function(link) {
-        var href = link.getAttribute('href');
+      document.querySelectorAll('link[href*="_next/static/css/"]').forEach(function(style) {
+        var href = style.getAttribute('href');
         if (href && href.indexOf('_next/static/css/_next/static/media/') !== -1) {
-          link.setAttribute('href', href.replace('_next/static/css/_next/static/media/', '_next/static/media/'));
+          style.setAttribute('href', href.replace('_next/static/css/_next/static/media/', '_next/static/media/'));
         }
       });
 
@@ -190,9 +190,9 @@ const createIpfsCompatibleFiles = () => {
         if (style.textContent.indexOf('@font-face') !== -1 || style.textContent.indexOf('url(') !== -1) {
           var css = style.textContent;
           // Fix absolute paths
-          css = css.replace(/url\(["']?\/_next\//g, 'url("./_next/');
+          css = css.replace(/url\\(["']?\\/_next\\//g, 'url("./_next/');
           // Fix nested paths
-          css = css.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
+          css = css.replace(/_next\\/static\\/css\\/_next\\/static\\/media\\//g, '_next/static/media/');
           style.textContent = css;
         }
       });
@@ -211,9 +211,49 @@ const createIpfsCompatibleFiles = () => {
       
       // Fix all links
       document.querySelectorAll('a').forEach(function(a) {
-        if (a.href.indexOf('ipfs.io') !== -1 || a.href.indexOf('ipfs.tech') !== -1) {
-          var url = new URL(a.href);
-          a.href = '.' + url.pathname;
+        // Extract hostname and pathname from link
+        var href = a.getAttribute('href');
+        if (!href) return;
+        
+        // Handle absolute URLs 
+        if (href.startsWith('http')) {
+          try {
+            var url = new URL(href);
+            
+            // Fix IPFS gateway links
+            if (url.hostname === 'ipfs.io' || url.hostname === 'ipfs.tech') {
+              // Instead of redirecting to IPFS, keep within our site
+              // If it's a fragment/hash link to another section
+              if (url.pathname === '/' && url.hash) {
+                a.href = url.hash; // Just use the hash part for local navigation
+              } else {
+                // If it has a path, make it relative to our site
+                a.href = '.' + url.pathname + url.hash;
+              }
+            }
+          } catch (e) {
+            console.error('Error fixing link:', href, e);
+          }
+        }
+        
+        // Fix internal navigation links that might be causing redirects
+        if (href.startsWith('/') && !href.startsWith('/_next/') && !href.startsWith('/api/')) {
+          a.href = '.' + href;
+        }
+        
+        // Prevent hash links from navigating to external sites
+        if (href.startsWith('#')) {
+          // Ensure hash links stay within the page
+          a.addEventListener('click', function(e) {
+            e.preventDefault();
+            var targetId = href.substring(1);
+            var targetElement = document.getElementById(targetId);
+            if (targetElement) {
+              targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+            // Update URL hash without navigation
+            window.history.pushState(null, '', href);
+          });
         }
       });
       
@@ -243,7 +283,7 @@ const createIpfsCompatibleFiles = () => {
       // Fix background images
       document.querySelectorAll('[style*="background"]').forEach(function(el) {
         if (el.style.backgroundImage && el.style.backgroundImage.indexOf('/images/') !== -1) {
-          var urlMatch = el.style.backgroundImage.match(/url\(['"]?([^'"\)]+)['"]?\)/);
+          var urlMatch = el.style.backgroundImage.match(/url\\(["']?([^'"\\)]+)["']?\\)/);
           if (urlMatch && urlMatch[1]) {
             var imgPath = urlMatch[1];
             if (imgPath.startsWith('/images/')) {
@@ -430,6 +470,81 @@ const createIpfsCompatibleFiles = () => {
   fs.writeFileSync(path.join(ipfsDir, 'ipfs-fix.js'), fixScript);
   console.log('Created simplified IPFS fix script at _ipfs/ipfs-fix.js');
   
+  // Creating a dedicated navigation fix script
+  const navFixScript = `
+  // IPFS Navigation Fix - Must be included in <head> before other scripts
+  (function() {
+    // This function runs immediately when included in the page
+    function fixNavigation() {
+      // Check if we're on IPFS
+      const isIPFS = window.location.hostname === 'ipfs.io' || 
+                     window.location.hostname === 'ipfs.tech' ||
+                     window.location.hostname.includes('ipfs');
+      
+      if (!isIPFS) return; // Only apply fixes on IPFS
+  
+      // Intercept all link clicks on the page
+      document.addEventListener('click', function(e) {
+        // Find if click was on or inside an <a> tag
+        let el = e.target;
+        while (el && el.tagName !== 'A') {
+          el = el.parentNode;
+          if (!el || el === document.body) return;
+        }
+        
+        if (!el || !el.href) return;
+        
+        // For navigation links
+        const navPaths = ['/github', '/projects', '/skills', '/experience'];
+        const url = new URL(el.href);
+        
+        // If it's one of our nav links
+        if (navPaths.includes(url.pathname) || 
+            navPaths.some(path => url.pathname.startsWith(path + '/'))) {
+          e.preventDefault(); // Stop the default navigation
+          
+          // Rewrite to a relative path
+          const newPath = '.' + url.pathname;
+          console.log('Redirecting navigation to:', newPath);
+          window.location.href = newPath;
+          return;
+        }
+        
+        // For hash navigation within IPFS site
+        if (url.hostname === 'ipfs.io' || url.hostname === 'ipfs.tech') {
+          if (url.hash && (url.pathname === '/' || url.pathname === '')) {
+            e.preventDefault();
+            
+            // Extract the target ID from the hash
+            const targetId = url.hash.substring(1);
+            const targetEl = document.getElementById(targetId);
+            
+            if (targetEl) {
+              // Smooth scroll to element
+              targetEl.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              // Keep us on our site instead of going to ipfs.tech
+              window.location.href = '.' + (url.pathname === '/' ? '' : url.pathname) + url.hash;
+            }
+          }
+        }
+      }, true); // Use capture to catch events before they reach their targets
+    }
+    
+    // Run immediately and also after DOM is loaded
+    fixNavigation();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fixNavigation);
+    }
+    
+    // Also reapply when window loads
+    window.addEventListener('load', fixNavigation);
+  })();
+  `;
+  
+  fs.writeFileSync(path.join(ipfsDir, 'ipfs-nav-fix.js'), navFixScript);
+  console.log('Created IPFS navigation fix script at _ipfs/ipfs-nav-fix.js');
+  
   // Create a very simple service worker that just handles the critical paths
   const serviceWorkerCode = `
   // Simple service worker for IPFS compatibility
@@ -442,6 +557,38 @@ const createIpfsCompatibleFiles = () => {
         fetch('./_next/static/media/' + url.pathname.split('/').pop())
           .catch(function() {
             return fetch('./' + url.pathname.split('/').pop());
+          })
+      );
+      return;
+    }
+    
+    // Handle navigation requests to prevent redirects to ipfs.tech
+    if (url.hostname === 'ipfs.io' || url.hostname === 'ipfs.tech') {
+      // For navigation to /github or other internal pages
+      const pathsToIntercept = ['/github', '/projects', '/skills', '/experience'];
+      
+      for (const navPath of pathsToIntercept) {
+        if (url.pathname === navPath || url.pathname === navPath + '/') {
+          event.respondWith(
+            fetch('./' + navPath.substring(1) + '/index.html')
+              .catch(function() {
+                return fetch('./' + navPath.substring(1))
+                  .catch(function() {
+                    return fetch('./'); // Fallback to index
+                  });
+              })
+          );
+          return;
+        }
+      }
+    }
+    
+    // For hash navigation within the site that might be redirecting
+    if (url.hash && (url.pathname === '/' || url.pathname === '')) {
+      event.respondWith(
+        fetch('./' + (url.hash ? '#' + url.hash : ''))
+          .catch(function() {
+            return fetch('./');
           })
       );
       return;
@@ -511,15 +658,27 @@ const createIpfsCompatibleFiles = () => {
   fs.writeFileSync(path.join(outputDir, 'ipfs-sw.js'), serviceWorkerCode);
   console.log('Created simplified service worker at ipfs-sw.js');
   
-  // Add the script to all HTML files
+  // Add both scripts to all HTML files
   const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
   htmlFiles.forEach(file => {
     let content = fs.readFileSync(file, 'utf8');
+    let modified = false;
+    
+    // Add navigation fix script first (before other scripts)
+    if (!content.includes('ipfs-nav-fix.js')) {
+      content = content.replace('<head>', '<head><script src="./_ipfs/ipfs-nav-fix.js"></script>');
+      modified = true;
+    }
+    
+    // Then add the main IPFS fix script
     if (!content.includes('ipfs-fix.js')) {
-      // Insert at the start of the head to ensure it loads first
       content = content.replace('<head>', '<head><script src="./_ipfs/ipfs-fix.js"></script>');
+      modified = true;
+    }
+    
+    if (modified) {
       fs.writeFileSync(file, content);
-      console.log(`Added IPFS fix script to ${file}`);
+      console.log(`Added IPFS fix scripts to ${file}`);
     }
   });
 };
