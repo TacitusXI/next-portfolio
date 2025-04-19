@@ -19,10 +19,10 @@ interface LayoutProps {
 
 // TacitusFM playlist definition
 const tacitusPlaylist = [
-  "/music/tacitus1.mp3",
-  "/music/tacitus2.mp3",
-  "/music/tacitus3.mp3",
-  "/music/tacitus4.mp3",
+  "./music/tacitus1.mp3",
+  "./music/tacitus2.mp3",
+  "./music/tacitus3.mp3",
+  "./music/tacitus4.mp3",
   // Add more tracks as needed
 ];
 
