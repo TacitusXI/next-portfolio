@@ -791,23 +791,32 @@ const fixNextDirectory = () => {
   }
 };
 
-// Function to create standalone fallback resources
+// Function to create fallback resources to prevent 404s
 const createFallbackResources = () => {
   console.log('Creating fallback resources');
   
   // Identify and inject our hotfix script into HTML files
   const htmlFiles = findHtmlFiles(outputDir);
   
+  // Read the inline script that prevents the "m is not iterable" error
+  const inlineFixScript = fs.readFileSync('ipfs-inline-fix.js', 'utf8');
+  
   for (const htmlFile of htmlFiles) {
     if (path.extname(htmlFile) !== '.html') continue;
     
     let content = fs.readFileSync(htmlFile, 'utf8');
     
-    // Add our IPFS hotfix script to the head of each HTML file
-    if (!content.includes('ipfs-hotfix-final.js')) {
-      content = content.replace('<head>', '<head><script src="./ipfs-hotfix-final.js"></script>');
+    // Add the inline fix directly at the start of <head>
+    if (!content.includes('window.av=function')) {
+      content = content.replace('<head>', `<head><script>${inlineFixScript}</script>`);
+      
+      // Also make sure our main hotfix script is included
+      if (!content.includes('ipfs-hotfix-final.js')) {
+        content = content.replace('<head>', '<head><script src="./ipfs-hotfix-final.js"></script>');
+      }
+      
       fs.writeFileSync(htmlFile, content);
-      console.log(`Added hotfix script to ${htmlFile}`);
+      console.log(`Added inline fix and hotfix script to ${htmlFile}`);
     }
   }
   
