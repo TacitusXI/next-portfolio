@@ -1,99 +1,105 @@
-// IPFS Emergency Hotfix - Load this file directly in the page if issues still occur
+// IPFS Emergency Hotfix
+// This script fixes common issues when viewing the site through IPFS gateways
 (function() {
   console.log('🔥 IPFS Emergency Hotfix Activated 🔥');
   
-  // 1. Direct font fix
+  // ----------------------------------------
+  // Fix GitHub data structure
+  // ----------------------------------------
+  window.GITHUB_DATA = {
+    user: {
+      login: "TacitusXI",
+      name: "Ivan Leskov",
+      avatar_url: "./images/profile.jpg",
+      html_url: "https://github.com/TacitusXI",
+      public_repos: 20,
+      followers: 5,
+      following: 10
+    },
+    repos: [
+      {
+        name: "next-portfolio",
+        html_url: "https://github.com/TacitusXI/next-portfolio",
+        description: "Personal portfolio website built with Next.js",
+        stargazers_count: 5,
+        forks_count: 2,
+        language: "TypeScript"
+      },
+      {
+        name: "blockchain-projects",
+        html_url: "https://github.com/TacitusXI/blockchain-projects",
+        description: "Collection of blockchain and Web3 projects",
+        stargazers_count: 12,
+        forks_count: 4,
+        language: "Solidity"
+      },
+      {
+        name: "smart-contracts",
+        html_url: "https://github.com/TacitusXI/smart-contracts",
+        description: "EVM-compatible smart contract templates and examples",
+        stargazers_count: 8,
+        forks_count: 3,
+        language: "Solidity"
+      }
+    ],
+    contributions: {
+      totalCount: 650,
+      weeks: []
+    }
+  };
+  
+  // Generate contribution data in the format expected by the chart
+  for (let i = 0; i < 52; i++) {
+    window.GITHUB_DATA.contributions.weeks.push({
+      contributionDays: [
+        { contributionCount: Math.floor(Math.random() * 5) },
+        { contributionCount: Math.floor(Math.random() * 5) },
+        { contributionCount: Math.floor(Math.random() * 5) },
+        { contributionCount: Math.floor(Math.random() * 5) },
+        { contributionCount: Math.floor(Math.random() * 5) },
+        { contributionCount: Math.floor(Math.random() * 5) },
+        { contributionCount: Math.floor(Math.random() * 5) },
+      ]
+    });
+  }
+  
+  // ----------------------------------------
+  // Fix font issues
+  // ----------------------------------------
   function fixFonts() {
-    // Replace all font loading in the page with a simplified approach
+    // Add Inter font directly to prevent font loading issues
     const fontStyle = document.createElement('style');
     fontStyle.textContent = `
-      /* Direct Inter font definition */
       @font-face {
         font-family: 'Inter';
         font-style: normal;
-        font-weight: 100 900;
-        font-display: optional;
-        src: local('Inter'), local('Inter-Regular'), 
-             url('./_next/static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2'),
-             url('./a34f9d1faa5f3315-s.p.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+        src: url('./_next/static/media/a34f9d1faa5f3315-s.p.woff2') format('woff2');
       }
-      
-      /* System font fallback */
-      body, button, input, select, textarea {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('./_next/static/media/52c5e3cfaafac80b-s.p.woff2') format('woff2');
       }
     `;
     document.head.appendChild(fontStyle);
     
-    // Fix all existing font links
-    document.querySelectorAll('link[rel="preload"][as="font"]').forEach(function(link) {
-      link.href = './_next/static/media/a34f9d1faa5f3315-s.p.woff2';
+    // Fix font paths in CSS
+    document.querySelectorAll('link[href*="_next/static/css/"]').forEach(function(style) {
+      var href = style.getAttribute('href');
+      if (href && href.indexOf('_next/static/css/_next/static/media/') !== -1) {
+        style.setAttribute('href', href.replace('_next/static/css/_next/static/media/', '_next/static/media/'));
+      }
     });
   }
   
-  // 2. Fix for "m is not iterable" error
-  function fixGithubData() {
-    window.GITHUB_DATA = {
-      user: {
-        login: "TacitusXI",
-        name: "Ivan Leskov",
-        avatar_url: "./profile.jpg",
-        html_url: "https://github.com/TacitusXI",
-        public_repos: 20,
-        followers: 5,
-        following: 10
-      },
-      repos: [
-        {
-          name: "next-portfolio",
-          html_url: "https://github.com/TacitusXI/next-portfolio",
-          description: "Personal portfolio website built with Next.js",
-          stargazers_count: 5,
-          forks_count: 2,
-          language: "TypeScript"
-        }
-      ],
-      contributions: {
-        totalCount: 650,
-        weeks: []
-      }
-    };
-    
-    // Ensure weeks is an Array with items
-    window.GITHUB_DATA.contributions.weeks = [];
-    for (let i = 0; i < 52; i++) {
-      window.GITHUB_DATA.contributions.weeks.push({
-        count: Math.floor(Math.random() * 10)
-      });
-    }
-    
-    // Monitor and fix data structure if it gets corrupted
-    const originalGetItem = Storage.prototype.getItem;
-    Storage.prototype.getItem = function(key) {
-      const value = originalGetItem.call(this, key);
-      
-      // Detect and fix GitHub data structure
-      if (key && key.includes('github') && value) {
-        try {
-          const data = JSON.parse(value);
-          if (data && data.contributions && (!data.contributions.weeks || !Array.isArray(data.contributions.weeks))) {
-            console.log('Fixing corrupted GitHub data structure in storage');
-            data.contributions.weeks = Array.from({ length: 52 }, () => ({ count: Math.floor(Math.random() * 10) }));
-            this.setItem(key, JSON.stringify(data));
-            return JSON.stringify(data);
-          }
-        } catch (e) {
-          console.error('Error parsing stored GitHub data', e);
-        }
-      }
-      
-      return value;
-    };
-  }
-  
-  // 3. Fix for navigation issues
+  // ----------------------------------------
+  // Fix navigation issues
+  // ----------------------------------------
   function fixNavigation() {
-    // Intercept all link clicks on the page
     document.addEventListener('click', function(e) {
       // Find if click was on or inside an <a> tag
       let el = e.target;
@@ -104,56 +110,53 @@
       
       if (!el || !el.href) return;
       
-      // Fix absolute paths for navigation
-      if (el.href.startsWith('http')) {
-        try {
-          const url = new URL(el.href);
-          
-          // Internal navigation links
-          if (url.hostname === 'ipfs.io' || url.hostname === 'ipfs.tech') {
-            e.preventDefault();
-            
-            // Handle different path scenarios
-            if (url.pathname === '/github') {
-              window.location.href = './github';
-            } else if (url.pathname === '/projects') {
-              window.location.href = './projects';
-            } else if (url.pathname === '/skills') {
-              window.location.href = './skills';
-            } else if (url.pathname === '/experience') {
-              window.location.href = './experience';
-            } else if (url.hash) {
-              // For hash navigation
-              const targetEl = document.getElementById(url.hash.substring(1));
-              if (targetEl) {
-                targetEl.scrollIntoView({ behavior: 'smooth' });
-              }
-            } else {
-              window.location.href = './';
-            }
-          }
-        } catch (e) {
-          console.error('Error handling link click', e);
+      // Handle hash navigation
+      if (el.hash && el.hostname === window.location.hostname) {
+        e.preventDefault();
+        const targetId = el.hash.substring(1);
+        const targetEl = document.getElementById(targetId);
+        
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+          // Update URL without navigation
+          window.history.pushState(null, '', el.hash);
         }
       }
-    }, true); // Capture phase to intercept events early
+      
+      // Fix paths for internal navigation
+      const localPaths = ['/github', '/projects', '/skills', '/experience'];
+      if (localPaths.some(path => el.pathname === path || el.pathname === path + '/')) {
+        e.preventDefault();
+        const newPath = '.' + el.pathname;
+        window.location.href = newPath;
+      }
+    });
   }
   
-  // 4. Fix for network requests
+  // ----------------------------------------
+  // Fix API and network requests
+  // ----------------------------------------
   function fixNetworkRequests() {
-    // Override fetch for GitHub API and other problematic requests
     const originalFetch = window.fetch;
+    
     window.fetch = function(resource, init) {
       let url = resource;
       if (typeof resource === 'object' && resource.url) {
         url = resource.url;
       }
       
-      const urlStr = String(url);
+      // Convert to string
+      url = String(url);
       
-      // Intercept GitHub API requests
-      if (urlStr.includes('/api/github')) {
-        console.log('Intercepting GitHub API request:', urlStr);
+      // Fix double slashes in API paths
+      if (url.includes('/api//api/')) {
+        url = url.replace('/api//api/', '/api/');
+        console.log('Fixed double-slash API path:', url);
+      }
+      
+      // Handle GitHub API requests
+      if (url.includes('/api/github')) {
+        console.log('Intercepting GitHub API request:', url);
         return Promise.resolve(new Response(
           JSON.stringify(window.GITHUB_DATA),
           {
@@ -163,27 +166,104 @@
         ));
       }
       
-      // Fix relative paths
-      if (typeof resource === 'string' && resource.startsWith('/')) {
-        resource = '.' + resource;
+      // Fix _next paths
+      if (typeof resource === 'string') {
+        if (resource.startsWith('/_next/')) {
+          resource = './_next/' + resource.substring(7);
+        }
+      }
+      
+      // For preloaded image requests
+      if (url.includes('/images/')) {
+        const fileName = url.split('/').pop();
+        url = './images/' + fileName;
+        
+        if (typeof resource === 'string') {
+          resource = url;
+        } else if (typeof resource === 'object' && resource.url) {
+          resource.url = url;
+        }
       }
       
       return originalFetch(resource, init);
     };
   }
   
-  // Apply all fixes
-  fixFonts();
-  fixGithubData();
-  fixNavigation();
-  fixNetworkRequests();
+  // ----------------------------------------
+  // Fix image paths
+  // ----------------------------------------
+  function fixImagePaths() {
+    // Fix preloaded images
+    document.querySelectorAll('link[rel="preload"][as="image"]').forEach(function(link) {
+      if (link.href && link.href.includes('/images/')) {
+        const fileName = link.href.split('/').pop();
+        link.href = './images/' + fileName;
+      }
+    });
+    
+    // Fix image sources
+    document.querySelectorAll('img').forEach(function(img) {
+      if (img.src && img.src.includes('/images/')) {
+        const fileName = img.src.split('/').pop();
+        img.src = './images/' + fileName;
+      }
+    });
+  }
   
-  // Run again after everything is loaded
-  window.addEventListener('load', function() {
+  // ----------------------------------------
+  // Apply all fixes
+  // ----------------------------------------
+  function applyAllFixes() {
     fixFonts();
-    fixGithubData();
     fixNavigation();
     fixNetworkRequests();
+    fixImagePaths();
+  }
+  
+  // Apply fixes immediately
+  applyAllFixes();
+  
+  // Also run when DOM is loaded
+  if (document.readyState !== 'complete') {
+    window.addEventListener('DOMContentLoaded', applyAllFixes);
+  }
+  
+  // Apply fixes after window load
+  window.addEventListener('load', function() {
+    applyAllFixes();
     console.log('🔥 IPFS Emergency Hotfix completed successfully 🔥');
+  });
+  
+  // Apply fix when routes change (for Next.js)
+  if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function() {
+      const result = originalPushState.apply(this, arguments);
+      applyAllFixes();
+      return result;
+    };
+    
+    window.addEventListener('popstate', function() {
+      setTimeout(applyAllFixes, 100);
+    });
+  }
+  
+  // Watch for DOM changes and apply fixes when needed
+  const observer = new MutationObserver(function(mutations) {
+    let shouldApplyFixes = false;
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        shouldApplyFixes = true;
+      }
+    });
+    
+    if (shouldApplyFixes) {
+      applyAllFixes();
+    }
+  });
+  
+  observer.observe(document.documentElement, { 
+    childList: true, 
+    subtree: true 
   });
 })(); 
