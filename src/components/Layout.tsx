@@ -69,7 +69,8 @@ const Layout = ({ children }: LayoutProps) => {
 
   // Cyberpunk radio stations
   const stations = [
-    { name: "TacitusFM", url: tacitusPlaylist[currentTrackIndex], isPlaylist: true },
+    // Comment out TacitusFM for now - will use all other radios
+    // { name: "TacitusFM", url: tacitusPlaylist[currentTrackIndex], isPlaylist: true },
     { name: "NightrideFM", url: "https://stream.nightride.fm/nightride.m4a", isPlaylist: false },
     { name: "DarkSynth", url: "https://stream.nightride.fm/darksynth.m4a", isPlaylist: false },
     { name: "ChillSynth", url: "https://stream.nightride.fm/chillsynth.m4a", isPlaylist: false },
@@ -95,51 +96,32 @@ const Layout = ({ children }: LayoutProps) => {
     const newIndex = (stationIndex + direction + stations.length) % stations.length;
     setStationIndex(newIndex);
     
-    // Reset track index when switching away from TacitusFM
-    if (stationIndex === 0 && newIndex !== 0) {
-      setCurrentTrackIndex(0);
-    }
+    // TacitusFM is commented out, so no need for special handling
   };
   
   // Handle track ended (for playlist functionality)
   const handleTrackEnded = () => {
-    // Only handle auto-advance for TacitusFM playlist
-    if (stationIndex === 0) {
-      const nextTrackIndex = (currentTrackIndex + 1) % tacitusPlaylist.length;
-      setCurrentTrackIndex(nextTrackIndex);
-      
-      // Extract track name from file path for display
-      const trackPath = tacitusPlaylist[nextTrackIndex];
-      const fileName = trackPath.split('/').pop() || "";
-      const trackName = fileName.replace('.mp3', '').replace(/([a-z])([A-Z])/g, '$1 $2');
-      setTrackTitle(trackName);
-    }
+    // TacitusFM is commented out, so no special handling needed for playlists
+    // Regular streams will auto-continue
   };
   
   // Initialize track title on first render
   useEffect(() => {
-    if (stationIndex === 0) {
-      const trackPath = tacitusPlaylist[currentTrackIndex];
-      const fileName = trackPath.split('/').pop() || "";
-      const trackName = fileName.replace('.mp3', '').replace(/([a-z])([A-Z])/g, '$1 $2');
-      setTrackTitle(trackName);
-    } else {
-      setTrackTitle("");
-    }
+    // Since TacitusFM is commented out, we don't need to set track titles
+    setTrackTitle("");
   }, [stationIndex, currentTrackIndex]);
   
-  // Update audio src when station or track changes
+  // Update audio src when station changes
   useEffect(() => {
     if (audioRef.current) {
-      // Set the correct URL based on whether it's TacitusFM or other stations
-      const url = stationIndex === 0 ? tacitusPlaylist[currentTrackIndex] : currentStation.url;
-      audioRef.current.src = url;
+      // TacitusFM is commented out, so we always use currentStation.url
+      audioRef.current.src = currentStation.url;
       
       if (isPlaying) {
         audioRef.current.play().catch(err => console.error("Station change error:", err));
       }
     }
-  }, [stationIndex, currentTrackIndex, currentStation.url, isPlaying]);
+  }, [stationIndex, currentStation.url, isPlaying]);
   
   // Setup event listeners for the audio element
   useEffect(() => {
@@ -381,7 +363,7 @@ const Layout = ({ children }: LayoutProps) => {
         <audio
           ref={audioRef}
           style={{ display: 'none' }}
-          src={stationIndex === 0 ? tacitusPlaylist[currentTrackIndex] : currentStation.url}
+          src={currentStation.url}
           preload="auto"
         />
         
@@ -533,6 +515,7 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
             
             {/* Track title display (for TacitusFM) */}
+            {/* TacitusFM is commented out for now
             {stationIndex === 0 && trackTitle && (
               <div style={{
                 fontSize: '11px',
@@ -547,6 +530,7 @@ const Layout = ({ children }: LayoutProps) => {
                 ♫ {trackTitle}
               </div>
             )}
+            */}
             
             {/* Custom player controls */}
             <div style={{
@@ -556,6 +540,7 @@ const Layout = ({ children }: LayoutProps) => {
               gap: '15px'
             }}>
               {/* Skip back button for TacitusFM */}
+              {/* TacitusFM is commented out for now
               {stationIndex === 0 && (
                 <button
                   style={{
@@ -574,6 +559,7 @@ const Layout = ({ children }: LayoutProps) => {
                   ⏮
                 </button>
               )}
+              */}
               
               <button
                 style={{
@@ -596,6 +582,7 @@ const Layout = ({ children }: LayoutProps) => {
               </button>
               
               {/* Skip forward button for TacitusFM */}
+              {/* TacitusFM is commented out for now
               {stationIndex === 0 && (
                 <button
                   style={{
@@ -614,6 +601,7 @@ const Layout = ({ children }: LayoutProps) => {
                   ⏭
                 </button>
               )}
+              */}
             </div>
             
             {/* Volume control */}
@@ -656,11 +644,13 @@ const Layout = ({ children }: LayoutProps) => {
               ) : (
                 <span>SIGNAL READY</span>
               )}
+              {/* TacitusFM is commented out for now
               {stationIndex === 0 && (
                 <span style={{ marginLeft: '5px', fontSize: '9px' }}>
                   [{currentTrackIndex + 1}/{tacitusPlaylist.length}]
                 </span>
               )}
+              */}
             </div>
             
             <style dangerouslySetInnerHTML={{__html: `
