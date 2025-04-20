@@ -271,12 +271,12 @@ export default function ProjectsSection() {
   const getProjectImage = (project: Project) => {
     // Map project titles to existing image files
     const imageMap: {[key: string]: string} = {
-      "TechnoirClub Marketplace": "./images/technoir-club.png",
-      "LeskoDEX": "./images/lesko-dex.png",
-      "LIQUID-DEX": "./images/liquid-dex.png",
-      "Tacitus Swap": "./images/tacitus-swap.png",
-      "DeFi IL Hedge Bot": "./images/defi-hedge-bot.png",
-      "Ledger Signer": "./images/ledger-project.png"
+      "TechnoirClub Marketplace": "./images/technoir-club.webp",
+      "LeskoDEX": "./images/lesko-dex.webp",
+      "LIQUID-DEX": "./images/liquid-dex.webp",
+      "Tacitus Swap": "./images/tacitus-swap.webp",
+      "DeFi IL Hedge Bot": "./images/defi-hedge-bot.webp",
+      "Ledger Signer": "./images/ledger-project.webp"
     };
     
     // Return the mapped image or fall back to a placeholder

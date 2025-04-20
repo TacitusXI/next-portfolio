@@ -484,7 +484,7 @@ export default function AboutSection() {
         >
           <ImageContainer>
             <ProfileImage 
-              src="/images/tacitus.png" 
+              src="/images/tacitus.webp" 
               alt={personalInfo.name}
               width={400}
               height={600}

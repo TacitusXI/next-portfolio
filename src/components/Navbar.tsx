@@ -472,7 +472,7 @@ export default function Navbar() {
           whileTap={{ scale: 0.95 }}
         >
           <Image 
-            src="./images/tacitus_no_bg.png" 
+            src="./images/tacitus_no_bg.webp" 
             alt="Tacitus Logo" 
             width={40} 
             height={40} 
@@ -523,7 +523,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.98 }}
             >
               <LogoImage>
-                <img src="./images/tacitus_no_bg.png" alt="Tacitus" />
+                <img src="./images/tacitus_no_bg.webp" alt="Tacitus" />
               </LogoImage>
               <LogoText className="tacitvs">TACITVS</LogoText>
               <LogoText className="highlight">I.Leskov</LogoText>
