@@ -41,6 +41,8 @@ const Title = styled(motion.h1)`
   font-size: 4rem;
   margin-bottom: 1rem;
   color: white;
+  font-family: var(--font-primary-heading);
+  letter-spacing: -0.5px;
   
   @media (max-width: 768px) {
     font-size: 3rem;
@@ -60,6 +62,7 @@ const Subtitle = styled(motion.h2)`
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.5;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-primary-body);
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
@@ -71,6 +74,7 @@ const TypedText = styled.span`
   position: relative;
   font-weight: 700;
   text-shadow: 0 0 10px rgba(72, 191, 255, 0.3);
+  font-family: var(--font-monospace);
   
   &::after {
     content: '|';
@@ -108,6 +112,8 @@ const PrimaryButton = styled(motion.a)`
   display: inline-block;
   text-align: center;
   box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4);
+  font-family: var(--font-code);
+  letter-spacing: 0.5px;
 `;
 
 const SecondaryButton = styled(motion.a)`
@@ -123,6 +129,8 @@ const SecondaryButton = styled(motion.a)`
   display: inline-block;
   text-align: center;
   transition: all 0.3s ease;
+  font-family: var(--font-code);
+  letter-spacing: 0.5px;
   
   &:hover {
     border-color: #3a86ff;
@@ -160,7 +168,7 @@ const StatValue = styled.div`
   font-size: 2.8rem;
   font-weight: 800;
   color: rgb(72, 191, 255);
-  font-family: 'Chakra Petch', sans-serif;
+  font-family: var(--font-display);
   text-shadow: 0 0 8px rgba(72, 191, 255, 0.5);
   margin-bottom: 0.5rem;
   position: relative;
@@ -187,14 +195,15 @@ const StatValue = styled.div`
 
 const StatLabel = styled.div`
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   max-width: 140px;
   line-height: 1.4;
   display: flex;
   flex-direction: column;
+  font-family: var(--font-accent);
   
   span {
     display: block;
@@ -379,140 +388,142 @@ export default function HeroSection() {
   };
   
   return (
-    <HeroContainer id="home" ref={ref}>
-      <ContentWrapper className="content-section-enhanced">
-        <motion.div
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          variants={{
-            visible: {
-              transition: {
-                staggerChildren: 0.2
+    <>
+      <HeroContainer id="home" ref={ref}>
+        <ContentWrapper className="content-section-enhanced">
+          <motion.div
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.2
+                }
               }
-            }
-          }}
-        >
-          <Title 
-            variants={animationVariants}
-            className="cyberpunk-title cyberpunk-title-lg"
-            data-text={`Hi, I'm ${personalInfo.name}`}
+            }}
           >
-            Hi, I&apos;m {personalInfo.name}
-          </Title>
-          
-          <Subtitle
-            variants={animationVariants}
-            className="enhanced-text"
-          >
-            I&apos;m a <TypedText>{typedText}</TypedText>
-            <br />
-            <div style={{ 
-              display: 'block', 
-              marginTop: '0.8rem', 
-              fontWeight: 500, 
-              color: 'white',
-              textShadow: 'none'
-            }}>
-              <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span style={{ 
-                  color: 'white', 
-                  marginRight: '0.5rem',
-                  textShadow: 'none',
-                  filter: 'none'
-                }}>•</span>
-                <span style={{ color: 'white', textShadow: 'none' }}>
-                  Focused on blockchain security and reliable infrastructure
-                </span>
+            <Title 
+              variants={animationVariants}
+              className="cyberpunk-title cyberpunk-title-lg"
+              data-text={`Hi, I'm ${personalInfo.name}`}
+            >
+              Hi, I&apos;m {personalInfo.name}
+            </Title>
+            
+            <Subtitle
+              variants={animationVariants}
+              className="enhanced-text"
+            >
+              I&apos;m a <TypedText>{typedText}</TypedText>
+              <br />
+              <div style={{ 
+                display: 'block', 
+                marginTop: '0.8rem', 
+                fontWeight: 500, 
+                color: 'white',
+                textShadow: 'none'
+              }}>
+                <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ 
+                    color: 'white', 
+                    marginRight: '0.5rem',
+                    textShadow: 'none',
+                    filter: 'none'
+                  }}>•</span>
+                  <span style={{ color: 'white', textShadow: 'none' }}>
+                    Focused on blockchain security and reliable infrastructure
+                  </span>
+                </div>
+                <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ 
+                    color: 'white', 
+                    marginRight: '0.5rem',
+                    textShadow: 'none',
+                    filter: 'none'
+                  }}>•</span>
+                  <span style={{ color: 'white', textShadow: 'none' }}>
+                    Building resilient DeFi protocols and identifying vulnerabilities
+                  </span>
+                </div>
+                <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ 
+                    color: 'white', 
+                    marginRight: '0.5rem',
+                    textShadow: 'none',
+                    filter: 'none'
+                  }}>•</span>
+                  <span style={{ color: 'white', textShadow: 'none' }}>
+                    Bringing 8+ years of finance expertise to Web3
+                  </span>
+                </div>
               </div>
-              <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span style={{ 
-                  color: 'white', 
-                  marginRight: '0.5rem',
-                  textShadow: 'none',
-                  filter: 'none'
-                }}>•</span>
-                <span style={{ color: 'white', textShadow: 'none' }}>
-                  Building resilient DeFi protocols and identifying vulnerabilities
-                </span>
-              </div>
-              <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span style={{ 
-                  color: 'white', 
-                  marginRight: '0.5rem',
-                  textShadow: 'none',
-                  filter: 'none'
-                }}>•</span>
-                <span style={{ color: 'white', textShadow: 'none' }}>
-                  Bringing 8+ years of finance expertise to Web3
-                </span>
-              </div>
-            </div>
-          </Subtitle>
-          
-          <ButtonContainer
-            variants={animationVariants}
-          >
-            <Link href="#projects" passHref legacyBehavior>
-              <PrimaryButton 
-                as="a"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="cyberpunk-button"
-              >
-                View My Work
-              </PrimaryButton>
-            </Link>
+            </Subtitle>
             
-            <Link href="#contact" passHref legacyBehavior>
-              <SecondaryButton 
-                as="a"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="cyberpunk-button"
-              >
-                Contact Me
-              </SecondaryButton>
-            </Link>
-          </ButtonContainer>
-          
-          <StatsContainer
-            variants={animationVariants}
-            className="cyberpunk-container"
-          >
-            <StatItem>
-              <StatValue>3+</StatValue>
-              <StatLabel>
-                <span>YEARS BUILDING</span>
-                <span>WEB3 SOLUTIONS</span>
-              </StatLabel>
-            </StatItem>
+            <ButtonContainer
+              variants={animationVariants}
+            >
+              <Link href="#projects" passHref legacyBehavior>
+                <PrimaryButton 
+                  as="a"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="cyberpunk-button"
+                >
+                  View My Work
+                </PrimaryButton>
+              </Link>
+              
+              <Link href="#contact" passHref legacyBehavior>
+                <SecondaryButton 
+                  as="a"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="cyberpunk-button"
+                >
+                  Contact Me
+                </SecondaryButton>
+              </Link>
+            </ButtonContainer>
             
-            <StatItem>
-              <StatValue>8+</StatValue>
-              <StatLabel>
-                <span>YEARS IN</span>
-                <span>FINANCE</span>
-              </StatLabel>
-            </StatItem>
-            
-            <StatItem>
-              <StatValue>{githubContributions > 0 ? githubContributions : '4000+' }</StatValue>
-              <StatLabel>
-                <span>CONTRIBUTIONS IN</span>
-                <span>THE LAST YEAR</span>
-              </StatLabel>
-            </StatItem>
-            
-            <StatItem>
-              <StatValue>0x42</StatValue>
-              <StatLabel>
-                <span>REASONS TO TEST</span>
-                <span>BEFORE MAINNET</span>
-              </StatLabel>
-            </StatItem>
-          </StatsContainer>
-        </motion.div>
-      </ContentWrapper>
-    </HeroContainer>
+            <StatsContainer
+              variants={animationVariants}
+              className="cyberpunk-container"
+            >
+              <StatItem>
+                <StatValue>3+</StatValue>
+                <StatLabel>
+                  <span>YEARS BUILDING</span>
+                  <span>WEB3 SOLUTIONS</span>
+                </StatLabel>
+              </StatItem>
+              
+              <StatItem>
+                <StatValue>8+</StatValue>
+                <StatLabel>
+                  <span>YEARS IN</span>
+                  <span>FINANCE</span>
+                </StatLabel>
+              </StatItem>
+              
+              <StatItem>
+                <StatValue>{githubContributions > 0 ? githubContributions : '4000+' }</StatValue>
+                <StatLabel>
+                  <span>CONTRIBUTIONS IN</span>
+                  <span>THE LAST YEAR</span>
+                </StatLabel>
+              </StatItem>
+              
+              <StatItem>
+                <StatValue>0x42</StatValue>
+                <StatLabel>
+                  <span>REASONS TO TEST</span>
+                  <span>BEFORE MAINNET</span>
+                </StatLabel>
+              </StatItem>
+            </StatsContainer>
+          </motion.div>
+        </ContentWrapper>
+      </HeroContainer>
+    </>
   );
 } 
