@@ -97,6 +97,10 @@ const NavContent = styled.div`
   justify-content: space-between;
   padding: 0 1rem 0 0;
   margin-left: -67px;
+  
+  @media (max-width: 767px) {
+    margin-left: 0;
+  }
 `;
 
 const LogoContainer = styled(motion.div)`
