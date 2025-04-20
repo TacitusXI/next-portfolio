@@ -69,7 +69,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   // Cyberpunk radio stations
   const stations = [
-    { name: "TacitusFM", url: tacitusPlaylist[currentTrackIndex], isPlaylist: true },
+    // { name: "TacitusFM", url: tacitusPlaylist[currentTrackIndex], isPlaylist: true },
     { name: "NightrideFM", url: "https://stream.nightride.fm/nightride.m4a", isPlaylist: false },
     { name: "DarkSynth", url: "https://stream.nightride.fm/darksynth.m4a", isPlaylist: false },
     { name: "ChillSynth", url: "https://stream.nightride.fm/chillsynth.m4a", isPlaylist: false },
