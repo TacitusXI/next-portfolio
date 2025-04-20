@@ -714,7 +714,7 @@ export default function AboutSection() {
           
           <DownloadButton
             as="a"
-            href="/Ivan_Leskov_Web3_Solidity_Engineer.pdf"
+            href="./Ivan_Leskov_Web3_Solidity_Engineer.pdf"
             target="_blank"
             rel="noopener noreferrer"
             variants={itemVariants}
