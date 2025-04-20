@@ -243,10 +243,10 @@ export default function HobbiesSection() {
                 {reading.map((book, index) => (
                   <Book key={index}>
                     <BookCover style={{ 
-                      backgroundImage: `url(./images/books/${book.title === 'The Dao of Capital' ? 'DAO_of_Capital.png' : 
-                        book.title === 'Python for Finance' ? 'Python_in_Finance.png' :
-                        book.title === 'High Performance Trading' ? 'High_Performance_trading.png' :
-                        book.title === 'The 10X Rule' ? 'The_10x_rule.png' : ''}`
+                      backgroundImage: `url(./images/books/${book.title === 'The Dao of Capital' ? 'DAO_of_Capital.webp' : 
+                        book.title === 'Python for Finance' ? 'Python_in_Finance.webp' :
+                        book.title === 'High Performance Trading' ? 'High_Performance_trading.webp' :
+                        book.title === 'The 10X Rule' ? 'The_10x_rule.webp' : ''}`
                     }} />
                     <BookInfo>
                       <h4>{book.title}</h4>
