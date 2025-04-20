@@ -281,6 +281,17 @@ export default function HeroSection() {
   useEffect(() => {
     const fetchGithubData = async () => {
       try {
+        // First try to get data from sessionStorage (which GitHubSection may have populated)
+        const storedData = sessionStorage.getItem('githubData');
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          if (parsedData && parsedData.totalContributions) {
+            setGithubContributions(parsedData.totalContributions);
+            return;
+          }
+        }
+        
+        // If no data in storage, fetch directly
         const response = await fetch('/api/github');
         
         if (!response.ok) {
@@ -291,6 +302,8 @@ export default function HeroSection() {
         const data = await response.json();
         if (data && data.totalContributions) {
           setGithubContributions(data.totalContributions);
+          // Store for other components to use
+          sessionStorage.setItem('githubData', JSON.stringify(data));
         }
       } catch (err) {
         console.error('Error fetching GitHub data:', err);
@@ -469,7 +482,7 @@ export default function HeroSection() {
             </StatItem>
             
             <StatItem>
-              <StatValue>{githubContributions > 0 ? githubContributions : '20+' }</StatValue>
+              <StatValue>{githubContributions > 0 ? githubContributions : '4000+' }</StatValue>
               <StatLabel>Contributions in the last year</StatLabel>
             </StatItem>
             

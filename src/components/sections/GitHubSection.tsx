@@ -776,6 +776,9 @@ const GitHubSection: React.FC = () => {
         };
         
         setGithubData(formattedData);
+        
+        // Store the data in sessionStorage for other components to use
+        sessionStorage.setItem('githubData', JSON.stringify(formattedData));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Error fetching GitHub data:', err);
@@ -825,6 +828,9 @@ const GitHubSection: React.FC = () => {
           totalContributions: 450
         };
         setGithubData(mockData);
+        
+        // Also store mock data in sessionStorage
+        sessionStorage.setItem('githubData', JSON.stringify(mockData));
       } finally {
         setLoading(false);
       }
