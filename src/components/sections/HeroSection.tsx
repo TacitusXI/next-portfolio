@@ -270,7 +270,7 @@ export default function HeroSection() {
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [typeDelay, setTypeDelay] = useState(150);
-  const [githubContributions, setGithubContributions] = useState(0);
+  const [githubContributions, setGithubContributions] = useState<number>(0);
   
   const { setBackgroundType, setIntensity, setColorScheme } = useBackground();
   const [ref, inView] = useInView({
@@ -281,6 +281,7 @@ export default function HeroSection() {
   useEffect(() => {
     const fetchGithubData = async () => {
       try {
+        // Use absolute URL to ensure it works in both dev and prod
         const response = await fetch('/api/github');
         
         if (!response.ok) {
@@ -289,7 +290,7 @@ export default function HeroSection() {
         }
         
         const data = await response.json();
-        if (data && data.totalContributions) {
+        if (data && typeof data.totalContributions === 'number') {
           setGithubContributions(data.totalContributions);
         }
       } catch (err) {
@@ -469,7 +470,7 @@ export default function HeroSection() {
             </StatItem>
             
             <StatItem>
-              <StatValue>{githubContributions > 0 ? githubContributions : '20+' }</StatValue>
+              <StatValue>{githubContributions > 0 ? githubContributions : '20+'}</StatValue>
               <StatLabel>Contributions in the last year</StatLabel>
             </StatItem>
             

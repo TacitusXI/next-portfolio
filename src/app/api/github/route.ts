@@ -114,6 +114,15 @@ export async function GET() {
     // Extract user data from GraphQL response
     const userData = graphQLData.data.user;
     
+    // Ensure the user data is valid
+    if (!userData || !userData.contributionsCollection || !userData.contributionsCollection.contributionCalendar) {
+      console.error('Invalid or missing user contribution data from GitHub');
+      return NextResponse.json(
+        { error: 'Invalid GitHub user data format' },
+        { status: 500 }
+      );
+    }
+
     // Extract contribution calendar data
     const contributionDays: ContributionDay[] = [];
     userData.contributionsCollection.contributionCalendar.weeks.forEach((week: Week) => {
@@ -139,6 +148,10 @@ export async function GET() {
         forks: repo.forks_count
       }));
 
+    // Ensure totalContributions is a number
+    const totalContributions = 
+      userData.contributionsCollection.contributionCalendar.totalContributions || 0;
+
     // Prepare the response data
     const responseData = {
       profile: {
@@ -152,14 +165,14 @@ export async function GET() {
       },
       contributions: contributionDays,
       topRepositories,
-      totalContributions: userData.contributionsCollection.contributionCalendar.totalContributions
+      totalContributions: totalContributions
     };
 
     return NextResponse.json(responseData);
   } catch (error) {
     console.error('Error in GitHub API route:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch GitHub data' },
+      { error: 'Failed to fetch GitHub data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
