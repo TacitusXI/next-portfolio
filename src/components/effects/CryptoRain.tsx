@@ -229,8 +229,20 @@ class RainDrop {
   constructor(x: number, y: number, speed: number, length: number, color: string, specialChance = 0.1) {
     this.x = x;
     this.y = y;
-    this.z = Math.random(); // Random depth
-    this.speed = speed * (1 + this.z * 0.5); // Faster drops appear closer (reduced multiplier for better performance)
+    
+    // Check if we're on a mobile device for simplified logic
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    );
+    
+    // Simplified z-depth for mobile (much less variation)
+    this.z = isMobile ? 0.9 : Math.random();
+    
+    // Simplified speed calculation for mobile
+    this.speed = isMobile ? 
+      speed * 1.1 : // Less variation on mobile
+      speed * (1 + this.z * 0.5);
+      
     this.originalSpeed = this.speed;
     this.length = length;
     
@@ -244,11 +256,11 @@ class RainDrop {
     this.alpha = 1.0;
     this.fadeStep = 0.05 / length;
     
-    // Special drops (reduced chance based on performance mode)
-    this.special = Math.random() < specialChance;
+    // Greatly reduce special drops on mobile
+    this.special = isMobile ? Math.random() < (specialChance * 0.2) : Math.random() < specialChance;
     
-    // Size based on z position (depth) - reduce the sizing variation further
-    this.size = 0.85 + (this.z * 0.3); // 0.85 to 1.15 size (reduced range)
+    // Size based on z position - almost no variation on mobile
+    this.size = isMobile ? 0.9 : 0.85 + (this.z * 0.3);
     
     this.symbols = this.generateSymbols(length);
   }
@@ -285,6 +297,39 @@ class RainDrop {
     // Skip rendering if not in viewport (performance optimization)
     if (!this.inViewport) return;
     
+    // Check if we're on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    );
+    
+    // For mobile, bypass most special effects
+    if (isMobile) {
+      // Super simplified drawing for mobile
+      const fontSize = parseInt(ctx.font.split('px')[0], 10);
+      const fontFamily = ctx.font.split('px')[1] || 'monospace';
+      
+      for (let i = 0; i < this.symbols.length; i++) {
+        const alpha = this.alpha - (i * this.fadeStep);
+        if (alpha <= 0) continue;
+        
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        
+        ctx.fillText(
+          this.symbols[i],
+          this.x,
+          this.y - i * this.spacing
+        );
+      }
+      
+      ctx.globalAlpha = 1;
+      return;
+    }
+    
+    // Regular drawing logic for non-mobile
+    
     // Update pulse animation (only for special drops to save CPU)
     if (this.special) {
       this.pulse += this.pulseSpeed;
@@ -298,16 +343,15 @@ class RainDrop {
     // Apply different effects based on performance mode
     switch (performanceMode) {
       case DevicePerformance.HIGH:
-        // Full effects but reduced magnitude
-        glowSize = this.special ? 4 : (this.glowing ? 8 : 2); // Reduced from 6/15/3 to 4/8/2
+        glowSize = this.special ? 4 : (this.glowing ? 8 : 2);
         break;
         
       case DevicePerformance.MEDIUM:
-        glowSize = this.special ? 3 : (this.glowing ? 5 : 0); // Reduced from 4/8/0 to 3/5/0
+        glowSize = this.special ? 3 : (this.glowing ? 5 : 0);
         break;
         
       case DevicePerformance.LOW:
-        glowSize = 0; // No glow on low performance
+        glowSize = 0;
         break;
     }
     
@@ -409,6 +453,22 @@ class RainDrop {
 
   // Enhance hover effect with performance considerations
   applyHoverEffect(distance: number, maxDistance: number, hoverColor: string, performanceMode: DevicePerformance) {
+    // Check if we're on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    );
+    
+    // Minimal hover effects on mobile
+    if (isMobile) {
+      if (distance < maxDistance * 0.5) { // Reduced hover range on mobile
+        this.color = hoverColor;
+      } else {
+        this.color = this.originalColor;
+      }
+      return;
+    }
+    
+    // Regular hover effect for non-mobile
     if (distance < maxDistance) {
       // Calculate effect intensity based on distance (closer = stronger effect)
       const intensity = 1 - (distance / maxDistance);
@@ -653,36 +713,50 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
     const dpr = window.devicePixelRatio || 1;
     const dprAdjustment = dpr > 1.5 ? 0.5 : (dpr > 1 ? 0.75 : 1);
     
-    switch (performanceMode) {
-      case DevicePerformance.LOW:
-        densityMultiplier = 0.3 * dprAdjustment; // Reduce further for high DPR
-        break;
-      case DevicePerformance.MEDIUM:
-        densityMultiplier = 0.6 * dprAdjustment; // Reduce further for high DPR
-        break;
-      case DevicePerformance.HIGH:
-      default:
-        densityMultiplier = 1.0 * dprAdjustment; // Reduce further for high DPR
-        break;
+    // Check if we're on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    );
+    
+    if (isMobile) {
+      // Super simplified for mobile
+      densityMultiplier = 0.2 * dprAdjustment;
+    } else {
+      switch (performanceMode) {
+        case DevicePerformance.LOW:
+          densityMultiplier = 0.3 * dprAdjustment;
+          break;
+        case DevicePerformance.MEDIUM:
+          densityMultiplier = 0.6 * dprAdjustment;
+          break;
+        case DevicePerformance.HIGH:
+        default:
+          densityMultiplier = 1.0 * dprAdjustment;
+          break;
+      }
     }
     
     const dropDensity = Math.max(0.3, intensity / 100) * densityMultiplier;
-    // Base count scaled by performance
-    const baseCount = performanceMode === DevicePerformance.LOW ? 10 : 
-                     performanceMode === DevicePerformance.MEDIUM ? 15 : 20;
+    
+    // Base count with even fewer drops on mobile
+    const baseCount = isMobile ? 5 : 
+                      performanceMode === DevicePerformance.LOW ? 10 : 
+                      performanceMode === DevicePerformance.MEDIUM ? 15 : 20;
     
     const dropCount = Math.floor((intensity / 10) * dropDensity * baseCount);
     
-    // Character length based on performance - reduce max length
-    const maxLength = performanceMode === DevicePerformance.LOW ? 4 : 
-                     performanceMode === DevicePerformance.MEDIUM ? 5 : 6; // Reduced from 8 to 6 for HIGH
+    // Character length - make even shorter on mobile
+    const maxLength = isMobile ? 3 :
+                     performanceMode === DevicePerformance.LOW ? 4 : 
+                     performanceMode === DevicePerformance.MEDIUM ? 5 : 6;
     
     return {
       dropCount,
-      speed: 1 + (intensity / 100),
+      speed: isMobile ? 0.8 + (intensity / 100) : 1 + (intensity / 100), // Slower on mobile
       opacity: 0.7 + (intensity / 200),
-      length: 3 + Math.floor((intensity / 20) * (maxLength / 8)),
-      specialChance: performanceMode === DevicePerformance.LOW ? 0.05 : 
+      length: isMobile ? 2 + Math.floor((intensity / 30)) : 3 + Math.floor((intensity / 20) * (maxLength / 8)),
+      specialChance: isMobile ? 0.02 : // Almost no special drops on mobile
+                    performanceMode === DevicePerformance.LOW ? 0.05 : 
                     performanceMode === DevicePerformance.MEDIUM ? 0.08 : 0.1
     };
   }, [intensity, performanceMode]);
