@@ -95,7 +95,8 @@ const NavContent = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem 0 0.5rem;
+  padding: 0 1rem 0 0;
+  margin-left: -67px;
 `;
 
 const LogoContainer = styled(motion.div)`
@@ -205,11 +206,11 @@ const LogoText = styled.div`
 const DesktopNav = styled.div`
   display: none;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   
   @media (min-width: 768px) {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.4rem;
   }
 `;
 
@@ -307,11 +308,11 @@ const MobileMenuList = styled(motion.div)`
 const NavItem = styled(motion.a)<{ $isActive: boolean; $isMobile?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: ${props => props.$isMobile ? '0.75rem 0' : '0.7rem 1rem'};
+  gap: 0.4rem;
+  padding: ${props => props.$isMobile ? '0.75rem 0' : '0.5rem 0.8rem'};
   color: ${props => props.$isActive ? 'rgb(72, 191, 255)' : 'rgba(255, 255, 255, 0.75)'};
   text-decoration: none;
-  font-size: ${props => props.$isMobile ? '1.35rem' : '1.1rem'};
+  font-size: ${props => props.$isMobile ? '1.35rem' : '0.95rem'};
   font-weight: ${props => props.$isActive ? '600' : '500'};
   letter-spacing: 0.5px;
   position: relative;
@@ -328,8 +329,8 @@ const NavItem = styled(motion.a)<{ $isActive: boolean; $isMobile?: boolean }>`
       content: '';
       position: absolute;
       bottom: ${props.$isMobile ? '-5px' : '0'};
-      left: ${props.$isMobile ? '0' : '1rem'};
-      width: ${props.$isMobile ? '100%' : 'calc(100% - 2rem)'};
+      left: ${props.$isMobile ? '0' : '0.8rem'};
+      width: ${props.$isMobile ? '100%' : 'calc(100% - 1.6rem)'};
       height: 2px;
       background: linear-gradient(90deg, rgb(115, 74, 253), rgb(49, 164, 253));
       border-radius: 4px;
@@ -338,7 +339,7 @@ const NavItem = styled(motion.a)<{ $isActive: boolean; $isMobile?: boolean }>`
   `}
   
   svg {
-    font-size: ${props => props.$isMobile ? '1.3rem' : '1.2rem'};
+    font-size: ${props => props.$isMobile ? '1.3rem' : '1rem'};
     filter: ${props => props.$isActive ? 'drop-shadow(0 0 3px rgba(72, 191, 255, 0.6))' : 'none'};
   }
 `;
