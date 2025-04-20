@@ -1,4 +1,3 @@
-
   // IPFS Asset Path Fixer
   (function() {
     // Function to fix asset URLs
@@ -82,11 +81,18 @@
               console.warn('Fetch error, falling back to static data:', err);
               // For GitHub API, return static data
               if (origUrl.indexOf('/api/github') !== -1) {
-                return new Response(JSON.stringify({
-                  user: { login: "TacitusXI", name: "Ivan Leskov" },
-                  repos: [],
-                  contributions: { totalCount: 0, weeks: [] }
-                }), {
+                const mockData = {
+                  profile: { 
+                    login: "TacitusXI", 
+                    name: "Ivan Leskov",
+                    bio: "Software Engineer & Blockchain Developer",
+                    followers: 10,
+                    following: 20,
+                    publicRepos: 15
+                  },
+                  totalContributions: 450
+                };
+                return new Response(JSON.stringify(mockData), {
                   status: 200,
                   headers: { 'Content-Type': 'application/json' }
                 });
