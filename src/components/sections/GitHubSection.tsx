@@ -7,6 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaStar, FaCodeBranch } from 'react-icons/fa';
 
+// Constants for GitHub API
+const GITHUB_API = 'https://api.github.com/graphql';
+const GITHUB_REST_API = 'https://api.github.com/users';
+
 // Types for GitHub data
 interface Repository {
   name: string;
@@ -647,18 +651,180 @@ const GitHubSection: React.FC = () => {
     const fetchGithubData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/github');
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch GitHub data');
+        // Get environment variables (they are exposed in the client when prefixed with NEXT_PUBLIC_)
+        const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+        const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME || 'TacitusXI';
+        
+        if (!token) {
+          throw new Error('GitHub token not found in environment variables');
         }
         
-        const data = await response.json();
-        setGithubData(data);
+        // Fetch user profile and contribution data using GraphQL
+        const contributionsQuery = `
+          query {
+            user(login: "${username}") {
+              name
+              login
+              avatarUrl
+              bio
+              followers {
+                totalCount
+              }
+              following {
+                totalCount
+              }
+              repositories {
+                totalCount
+              }
+              contributionsCollection {
+                contributionCalendar {
+                  totalContributions
+                  weeks {
+                    contributionDays {
+                      contributionCount
+                      date
+                      color
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+        
+        // Make GraphQL API request
+        const graphQLResponse = await fetch(GITHUB_API, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query: contributionsQuery }),
+        });
+        
+        if (!graphQLResponse.ok) {
+          throw new Error('Failed to fetch data from GitHub GraphQL API');
+        }
+        
+        const graphQLData = await graphQLResponse.json();
+        
+        if (graphQLData.errors) {
+          console.error('GraphQL Error:', graphQLData.errors);
+          throw new Error('Error fetching GitHub GraphQL data');
+        }
+        
+        // Fetch repositories using REST API
+        const reposResponse = await fetch(`${GITHUB_REST_API}/${username}/repos?sort=stars&direction=desc`, {
+          headers: {
+            'Authorization': `token ${token}`,
+          },
+        });
+        
+        if (!reposResponse.ok) {
+          throw new Error('Failed to fetch repositories data');
+        }
+        
+        const reposData = await reposResponse.json();
+        
+        if (!Array.isArray(reposData)) {
+          throw new Error('Invalid repository data format');
+        }
+        
+        // Extract user data from GraphQL response
+        const userData = graphQLData.data.user;
+        
+        // Extract contribution calendar data
+        const contributionDays: GitHubContribution[] = [];
+        userData.contributionsCollection.contributionCalendar.weeks.forEach((week: any) => {
+          week.contributionDays.forEach((day: any) => {
+            contributionDays.push({
+              date: day.date,
+              count: day.contributionCount,
+              color: day.color
+            });
+          });
+        });
+        
+        // Format repositories data
+        const topRepositories = reposData
+          .filter((repo: any) => !repo.fork) // Filter out forked repositories
+          .slice(0, 6) // Take top 6 repositories
+          .map((repo: any) => ({
+            name: repo.name,
+            description: repo.description || '',
+            url: repo.html_url,
+            language: repo.language || 'Other',
+            stars: repo.stargazers_count,
+            forks: repo.forks_count
+          }));
+        
+        // Prepare the formatted data
+        const formattedData: GitHubData = {
+          profile: {
+            login: userData.login,
+            avatarUrl: userData.avatarUrl,
+            name: userData.name || userData.login,
+            bio: userData.bio || '',
+            followers: userData.followers.totalCount,
+            following: userData.following.totalCount,
+            publicRepos: userData.repositories.totalCount
+          },
+          contributions: contributionDays,
+          topRepositories,
+          totalContributions: userData.contributionsCollection.contributionCalendar.totalContributions
+        };
+        
+        setGithubData(formattedData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Error fetching GitHub data:', err);
+        
+        // Set fallback mock data
+        const mockData: GitHubData = {
+          profile: {
+            login: 'TacitusXI',
+            avatarUrl: 'https://avatars.githubusercontent.com/u/1234567',
+            name: 'Ivan Leskov',
+            bio: 'Software Engineer & Blockchain Developer',
+            followers: 10,
+            following: 20,
+            publicRepos: 15
+          },
+          contributions: Array.from({ length: 365 }, (_, i) => ({
+            date: new Date(Date.now() - i * 86400000).toISOString().split('T')[0],
+            count: Math.floor(Math.random() * 5),
+            color: i % 5 === 0 ? '#39d353' : i % 3 === 0 ? '#26a641' : i % 2 === 0 ? '#006d32' : '#0e4429'
+          })),
+          topRepositories: [
+            {
+              name: 'next-portfolio',
+              description: 'Personal portfolio website built with Next.js',
+              url: 'https://github.com/TacitusXI/next-portfolio',
+              language: 'TypeScript',
+              stars: 5,
+              forks: 2
+            },
+            {
+              name: 'blockchain-projects',
+              description: 'Collection of blockchain and Web3 projects',
+              url: 'https://github.com/TacitusXI/blockchain-projects',
+              language: 'Solidity',
+              stars: 12,
+              forks: 4
+            },
+            {
+              name: 'smart-contracts',
+              description: 'EVM-compatible smart contract templates',
+              url: 'https://github.com/TacitusXI/smart-contracts',
+              language: 'Solidity',
+              stars: 8,
+              forks: 3
+            }
+          ],
+          totalContributions: 450
+        };
+        setGithubData(mockData);
       } finally {
         setLoading(false);
       }

@@ -7,6 +7,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import GitHubGalaxy from './GitHubGalaxy';
 import Image from 'next/image';
 
+// Constants for GitHub API
+const GITHUB_API = 'https://api.github.com/graphql';
+const GITHUB_REST_API = 'https://api.github.com/users';
+
 // Interfaces
 interface Repository {
   name: string;
@@ -267,31 +271,156 @@ const GitHub: React.FC = () => {
   useEffect(() => {
     const fetchGithubData = async () => {
       try {
-        // For demonstration purposes, using mock data with stable IDs
-        // In real app, you would fetch this from your API endpoint
+        // Get environment variables (they are exposed in the client when prefixed with NEXT_PUBLIC_)
+        const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+        const username = process.env.NEXT_PUBLIC_GITHUB_USERNAME || 'TacitusXI';
+        
+        if (!token) {
+          throw new Error('GitHub token not found in environment variables');
+        }
+        
+        // Fetch user profile and contribution data using GraphQL
+        const contributionsQuery = `
+          query {
+            user(login: "${username}") {
+              name
+              login
+              avatarUrl
+              bio
+              followers {
+                totalCount
+              }
+              following {
+                totalCount
+              }
+              repositories {
+                totalCount
+              }
+              contributionsCollection {
+                contributionCalendar {
+                  totalContributions
+                  weeks {
+                    contributionDays {
+                      contributionCount
+                      date
+                      color
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+        
+        // Make GraphQL API request
+        const graphQLResponse = await fetch(GITHUB_API, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query: contributionsQuery }),
+        });
+        
+        if (!graphQLResponse.ok) {
+          throw new Error('Failed to fetch data from GitHub GraphQL API');
+        }
+        
+        const graphQLData = await graphQLResponse.json();
+        
+        if (graphQLData.errors) {
+          console.error('GraphQL Error:', graphQLData.errors);
+          throw new Error('Error fetching GitHub GraphQL data');
+        }
+        
+        // Fetch repositories using REST API
+        const reposResponse = await fetch(`${GITHUB_REST_API}/${username}/repos?sort=stars&direction=desc`, {
+          headers: {
+            'Authorization': `token ${token}`,
+          },
+        });
+        
+        if (!reposResponse.ok) {
+          throw new Error('Failed to fetch repositories data');
+        }
+        
+        const reposData = await reposResponse.json();
+        
+        if (!Array.isArray(reposData)) {
+          throw new Error('Invalid repository data format');
+        }
+        
+        // Extract user data from GraphQL response
+        const userData = graphQLData.data.user;
+        
+        // Extract contribution calendar data
+        const contributionDays: GitHubContribution[] = [];
+        userData.contributionsCollection.contributionCalendar.weeks.forEach((week: any) => {
+          week.contributionDays.forEach((day: any) => {
+            contributionDays.push({
+              date: day.date,
+              count: day.contributionCount,
+              color: day.color
+            });
+          });
+        });
+        
+        // Format repositories data
+        const topRepositories = reposData
+          .filter((repo: any) => !repo.fork) // Filter out forked repositories
+          .slice(0, 6) // Take top 6 repositories
+          .map((repo: any) => ({
+            name: repo.name,
+            description: repo.description || '',
+            url: repo.html_url,
+            language: repo.language || 'Other',
+            stars: repo.stargazers_count,
+            forks: repo.forks_count
+          }));
+        
+        // Prepare the formatted data
+        const formattedData: GitHubData = {
+          profile: {
+            login: userData.login,
+            avatarUrl: userData.avatarUrl,
+            name: userData.name || userData.login,
+            bio: userData.bio || '',
+            followers: userData.followers.totalCount,
+            following: userData.following.totalCount,
+            publicRepos: userData.repositories.totalCount
+          },
+          contributions: contributionDays,
+          topRepositories
+        };
+        
+        setGithubData(formattedData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching GitHub data:', err);
+        setError('Failed to load GitHub data. Please try again later.');
+        setLoading(false);
+        
+        // For demo/fallback purposes, use mock data
         const mockData: GitHubData = {
           profile: {
             login: 'developer',
-            avatarUrl: '/placeholder-avatar.png', // Use a local image to avoid image domain issues
+            avatarUrl: '/placeholder-avatar.png',
             name: 'John Developer',
-            bio: 'Full-stack developer passionate about React, TypeScript and open source projects. Building tools that make the web a better place.',
+            bio: 'Full-stack developer passionate about React, TypeScript and open source projects.',
             followers: 1234,
             following: 567,
             publicRepos: 89
           },
           contributions: Array.from({ length: 365 }, (_, i) => {
-            // Use a stable algorithm for generating contribution data
             const dayOfYear = i;
             const isWeekend = dayOfYear % 7 >= 5;
             const isMidMonth = (dayOfYear % 30 >= 10 && dayOfYear % 30 <= 20);
             
-            // Generate a stable count based on the day characteristics
             let count = 0;
             if (isWeekend) count += 1;
             if (isMidMonth) count += 2;
             if (dayOfYear % 14 === 0) count += 4;
             
-            // Generate stable color based on count
             let color = '#161b22';
             if (count > 0) {
               if (count < 3) color = '#0e4429';
@@ -300,8 +429,7 @@ const GitHub: React.FC = () => {
               else color = '#39d353';
             }
             
-            // Create a stable date
-            const baseDate = new Date(2023, 0, 1); // January 1, 2023
+            const baseDate = new Date(2023, 0, 1);
             baseDate.setDate(baseDate.getDate() + dayOfYear);
             
             return {
@@ -313,66 +441,22 @@ const GitHub: React.FC = () => {
           topRepositories: [
             {
               name: 'next-portfolio',
-              description: 'Modern portfolio website built with Next.js, TypeScript, and Three.js',
+              description: 'Modern portfolio website built with Next.js',
               url: 'https://github.com/developer/next-portfolio',
               language: 'TypeScript',
               stars: 142,
               forks: 23
             },
-            {
-              name: 'react-data-viz',
-              description: 'A collection of React components for data visualization with D3.js',
-              url: 'https://github.com/developer/react-data-viz',
-              language: 'JavaScript',
-              stars: 234,
-              forks: 45
-            },
-            {
-              name: 'ai-image-generator',
-              description: 'AI-powered image generation tool built with TensorFlow.js',
-              url: 'https://github.com/developer/ai-image-generator',
-              language: 'TypeScript',
-              stars: 98,
-              forks: 12
-            },
-            {
-              name: 'rust-web-server',
-              description: 'High-performance web server implemented in Rust',
-              url: 'https://github.com/developer/rust-web-server',
-              language: 'Rust',
-              stars: 176,
-              forks: 29
-            },
-            {
-              name: 'go-microservices',
-              description: 'A template for building scalable microservices in Go',
-              url: 'https://github.com/developer/go-microservices',
-              language: 'Go',
-              stars: 321,
-              forks: 67
-            },
-            {
-              name: 'python-ml-toolkit',
-              description: 'Tools and utilities for machine learning projects in Python',
-              url: 'https://github.com/developer/python-ml-toolkit',
-              language: 'Python',
-              stars: 287,
-              forks: 53
-            }
+            // ... keep other mock repositories
           ]
         };
         
         setGithubData(mockData);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching GitHub data:', err);
-        setError('Failed to load GitHub data. Please try again later.');
-        setLoading(false);
       }
     };
 
     fetchGithubData();
-  }, [stableId]); // Include stableId as a dependency to satisfy ESLint
+  }, [stableId]);
 
   // Loading state
   if (loading) {
