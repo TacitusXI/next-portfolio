@@ -536,7 +536,7 @@ export default function ExperienceSection() {
       verifyUrl: 'https://certificates.cs50.io/b33fa552-f15f-4ad2-951e-476acffff2e6.pdf?size=letter',
       description: 'Completed ten problem sets, nine labs, and one final project covering computer science fundamentals, data structures, algorithms, and web development.',
       skills: ['Computer Science', 'C', 'Python', 'SQL', 'Web Development'],
-      imagePath: '/images/certificates/CS50x.webp'
+      imagePath: './images/certificates/CS50x.webp'
     },
     {
       id: 2,
@@ -545,7 +545,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Comprehensive training on trading analysis, strategy development, Pinescript, risk management, JavaScript trading, automation, and exchange API setup.',
       skills: ['Trading Analysis', 'Pinescript', 'JavaScript Trading', 'Risk Management', 'Exchange APIs'],
-      imagePath: '/images/certificates/leskov-Algorithmic-Trading-amp-Technical-Analysis-Algorithmic-Trading-Technical-Analysis-v3-Moralis-Academy.webp'
+      imagePath: './images/certificates/leskov-Algorithmic-Trading-amp-Technical-Analysis-Algorithmic-Trading-Technical-Analysis-v3-Moralis-Academy.webp'
     },
     {
       id: 3,
@@ -554,7 +554,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Advanced course covering DAO and Parity hack replication, security mindset, Solidity best practices, contract design, and secure contract patterns including upgradable, proxy, and pausable contracts.',
       skills: ['Smart Contract Security', 'Solidity', 'Hack Prevention', 'Upgradable Contracts'],
-      imagePath: '/images/certificates/Ivan-Lieskov-Ethereum-Smart-Contract-Security-Ethereum-Smart-Contract-Security-Moralis-Moralis-Academy.webp'
+      imagePath: './images/certificates/Ivan-Lieskov-Ethereum-Smart-Contract-Security-Ethereum-Smart-Contract-Security-Moralis-Moralis-Academy.webp'
     },
     {
       id: 4,
@@ -563,7 +563,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Advanced smart contract development with Truffle, unit testing, ERC standards, migrations, OpenZeppelin contracts, and testnet deployment.',
       skills: ['Truffle', 'Unit Testing', 'ERC Standards', 'OpenZeppelin', 'Testnet Development'],
-      imagePath: '/images/certificates/Ivan-Lieskov-Ethereum-Smart-Contract-Programming-201-Ethereum-Smart-Contract-Programming-201-Moralis-Moralis-Academy.webp'
+      imagePath: './images/certificates/Ivan-Lieskov-Ethereum-Smart-Contract-Programming-201-Ethereum-Smart-Contract-Programming-201-Moralis-Moralis-Academy.webp'
     },
     {
       id: 5,
@@ -572,7 +572,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Specialized training on oracles, smart contract integration with Chainlink, node operation, oracle testing, verifiable randomness, and building Chainlink projects.',
       skills: ['Oracles', 'Chainlink', 'Smart Contracts', 'Verifiable Randomness'],
-      imagePath: '/images/certificates/Ivan-Lieskov-Chainlink-Programming-101-Chainlink-101-Moralis-Moralis-Academy.webp'
+      imagePath: './images/certificates/Ivan-Lieskov-Chainlink-Programming-101-Chainlink-101-Moralis-Moralis-Academy.webp'
     },
     {
       id: 6,
@@ -581,7 +581,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Foundational course on Solidity basics including arrays, structs, mappings, data location, error handling, inheritance, visibility, events, and external calls.',
       skills: ['Solidity', 'Smart Contracts', 'Error Handling', 'Events'],
-      imagePath: '/images/certificates/Ivan-Lieskov-Ethereum-Smart-Contract-Programming-101-Ethereum-Smart-Contract-Programming-101-Moralis-Moralis-Academy.webp'
+      imagePath: './images/certificates/Ivan-Lieskov-Ethereum-Smart-Contract-Programming-101-Ethereum-Smart-Contract-Programming-101-Moralis-Moralis-Academy.webp'
     },
     {
       id: 7,
@@ -590,7 +590,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Comprehensive training on Ethereum DApp development using Truffle, Ganache, NFT marketplace development, token creation, frontend development, Metamask integration, and Web3.js.',
       skills: ['Truffle', 'Ganache', 'NFT Marketplace', 'Web3.js', 'MetaMask'],
-      imagePath: '/images/certificates/Ivan-Lieskov-Build-an-NFT-Marketplace-Ethereum-Dapp-Programming-Moralis-Moralis-Academy.webp'
+      imagePath: './images/certificates/Ivan-Lieskov-Build-an-NFT-Marketplace-Ethereum-Dapp-Programming-Moralis-Moralis-Academy.webp'
     },
     {
       id: 8,
@@ -600,7 +600,7 @@ export default function ExperienceSection() {
       certificateId: 'cert_fsjxv9bl',
       description: 'Intensive 3-month bootcamp started at the beginning of 2022, covering blockchain fundamentals, smart contract development, decentralized application architecture, and deployment.',
       skills: ['Blockchain', 'Smart Contracts', 'DApp Development', 'Solidity'],
-      imagePath: '/images/certificates/certificate-of-completion-for-blockchain-developer-bootcamp.webp'
+      imagePath: './images/certificates/certificate-of-completion-for-blockchain-developer-bootcamp.webp'
     },
     {
       id: 9,
@@ -609,7 +609,7 @@ export default function ExperienceSection() {
       institution: 'Moralis Academy',
       description: 'Introduction to Ethereum Virtual Machine (EVM), Ethereum basics, token standards, account model, decentralized applications, and smart contract fundamentals.',
       skills: ['Ethereum', 'EVM', 'Token Standards', 'Smart Contracts'],
-      imagePath: '/images/certificates/Ivan-Lieskov-Ethereum-101-Ethereum-101-Moralis-Moralis-Academy.webp'
+      imagePath: './images/certificates/Ivan-Lieskov-Ethereum-101-Ethereum-101-Moralis-Moralis-Academy.webp'
     },
   ];
   
