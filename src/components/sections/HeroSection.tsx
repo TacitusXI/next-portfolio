@@ -193,6 +193,14 @@ const StatLabel = styled.div`
   letter-spacing: 1px;
   max-width: 140px;
   line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  
+  span {
+    display: block;
+    white-space: nowrap;
+    text-align: center;
+  }
 `;
 
 const StatItem = styled.div`
@@ -473,22 +481,34 @@ export default function HeroSection() {
           >
             <StatItem>
               <StatValue>3+</StatValue>
-              <StatLabel>Years Building Web3 Solutions</StatLabel>
+              <StatLabel>
+                <span>YEARS BUILDING</span>
+                <span>WEB3 SOLUTIONS</span>
+              </StatLabel>
             </StatItem>
             
             <StatItem>
               <StatValue>8+</StatValue>
-              <StatLabel>Years in Finance</StatLabel>
+              <StatLabel>
+                <span>YEARS IN</span>
+                <span>FINANCE</span>
+              </StatLabel>
             </StatItem>
             
             <StatItem>
               <StatValue>{githubContributions > 0 ? githubContributions : '4000+' }</StatValue>
-              <StatLabel>Contributions in the last year</StatLabel>
+              <StatLabel>
+                <span>CONTRIBUTIONS IN</span>
+                <span>THE LAST YEAR</span>
+              </StatLabel>
             </StatItem>
             
             <StatItem>
               <StatValue>0x42</StatValue>
-              <StatLabel>reasons to test before mainnet</StatLabel>
+              <StatLabel>
+                <span>REASONS TO TEST</span>
+                <span>BEFORE MAINNET</span>
+              </StatLabel>
             </StatItem>
           </StatsContainer>
         </motion.div>
