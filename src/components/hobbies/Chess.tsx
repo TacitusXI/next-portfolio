@@ -7,6 +7,8 @@ import { Chessboard } from 'react-chessboard';
 import { motion } from 'framer-motion';
 import './chess/styles/animations.css'; // Import the animations
 import { designs, getDesignByName } from './chess/designs'; // Import designs
+import { getStockfishEngine } from './chess/logic/StockfishEngine'; // Import Stockfish engine
+import ChessEngineInfo from './chess/components/ChessEngineInfo'; // Import engine info component
 
 // Types
 type GameState = 'playing' | 'checkmate' | 'draw' | 'stalemate';
@@ -333,45 +335,129 @@ const StatusText = styled.h4`
 `;
 
 const MovesContainer = styled.div`
-  max-height: 250px;
+  margin-top: 1rem;
+  max-height: 200px;
   overflow-y: auto;
-  margin-bottom: 1.5rem;
-  position: relative;
+  background-color: rgba(30, 30, 40, 0.6);
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid rgba(153, 69, 255, 0.2);
+`;
+
+const MovesTitle = styled.div`
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: rgba(153, 69, 255, 0.9);
+`;
+
+const MovesList = styled.div<{ $isViewing: boolean }>`
+  opacity: ${props => props.$isViewing ? 0.7 : 1};
+`;
+
+const MoveItem = styled.div`
+  display: flex;
+  margin-bottom: 0.25rem;
+`;
+
+const MoveNumber = styled.span`
+  width: 1.5rem;
+  color: rgba(255, 255, 255, 0.5);
+`;
+
+const MoveText = styled.span<{ $isSelected: boolean }>`
+  margin-right: 0.75rem;
+  cursor: pointer;
+  color: ${props => props.$isSelected ? 'rgb(0, 242, 96)' : 'white'};
+  font-weight: ${props => props.$isSelected ? 'bold' : 'normal'};
   
-  &::-webkit-scrollbar {
-    width: 6px;
+  &:hover {
+    text-decoration: underline;
   }
+`;
+
+const ViewingPrompt = styled.div`
+  margin-top: 0.5rem;
+  text-align: center;
+  color: rgb(0, 242, 96);
+  cursor: pointer;
+  font-size: 0.85rem;
   
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+  &:hover {
+    text-decoration: underline;
   }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+`;
+
+const ActionButton = styled.button`
+  flex: 1;
+  background-color: rgba(30, 30, 50, 0.7);
+  color: white;
+  border: 1px solid rgba(153, 69, 255, 0.4);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
   
-  &::-webkit-scrollbar-thumb {
-    background: rgba(153, 69, 255, 0.5);
-    border-radius: 3px;
+  &:hover {
+    background-color: rgba(153, 69, 255, 0.2);
+    border-color: rgba(153, 69, 255, 0.6);
   }
+`;
+
+const DesignSelect = styled.select`
+  flex: 1;
+  background-color: rgba(30, 30, 50, 0.7);
+  color: white;
+  border: 1px solid rgba(153, 69, 255, 0.4);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
   
-  /* Add tech frame */
-  &::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    right: -1px;
-    height: 2px;
-    background: linear-gradient(to right, transparent, rgba(153, 69, 255, 0.6), transparent);
-    z-index: 1;
+  &:hover {
+    background-color: rgba(153, 69, 255, 0.2);
+    border-color: rgba(153, 69, 255, 0.6);
   }
+`;
+
+const ChooseSideContainer = styled.div`
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  background-color: rgba(30, 30, 40, 0.6);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(153, 69, 255, 0.2);
+`;
+
+const SideTitle = styled.div`
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  color: rgba(153, 69, 255, 0.9);
+`;
+
+const SideButtons = styled.div`
+  display: flex;
+  gap: 0.75rem;
+`;
+
+const SideButton = styled.button`
+  flex: 1;
+  background-color: rgba(30, 30, 50, 0.7);
+  color: white;
+  border: 1px solid rgba(153, 69, 255, 0.4);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
   
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: -1px;
-    right: -1px;
-    height: 2px;
-    background: linear-gradient(to right, transparent, rgba(153, 69, 255, 0.6), transparent);
-    z-index: 1;
+  &:hover {
+    background-color: rgba(153, 69, 255, 0.2);
+    border-color: rgba(153, 69, 255, 0.6);
   }
 `;
 
@@ -1254,15 +1340,19 @@ export default function Chess() {
         }
       }
       
-      // First try the online Stockfish API - typically fails but we'll keep the code
+      // Use Stockfish engine for 1200 Elo play
       try {
-        console.log("Attempting to use Stockfish API...");
-        const response = await fetch(`${API_URL}${encodeURIComponent(game.fen())}&depth=${MAX_DEPTH}`);
-        const data = await response.json();
+        console.log("Using Stockfish engine...");
+        const stockfish = getStockfishEngine();
+        const moveUci = await stockfish.getBestMove(game);
         
-        if (data && data.bestMove) {
+        if (moveUci && moveUci.length >= 4) {
+          const from = moveUci.substring(0, 2) as Square;
+          const to = moveUci.substring(2, 4) as Square;
+          const promotion = moveUci.length > 4 ? moveUci.substring(4, 5) : undefined;
+          
           const gameCopy = new ChessGame(game.fen());
-          const move = gameCopy.move(data.bestMove);
+          const move = gameCopy.move({ from, to, promotion });
           
           if (move) {
             // Update the game with the bot's move
@@ -1272,17 +1362,19 @@ export default function Chess() {
               from: move.from,
               to: move.to
             });
-            return; // Successfully made a move, exit function
+            setIsThinking(false);
+            return;
           }
         }
-        // If we get here, the API didn't provide a valid move
-        throw new Error("Invalid or missing move from API");
-      } catch (apiError) {
-        console.log("API error, using improved local evaluation", apiError);
-        // Continue to improved local evaluation below
+        
+        // If Stockfish didn't provide a valid move, fall back to local evaluation
+        throw new Error("Invalid or missing move from Stockfish");
+      } catch (stockfishError) {
+        console.log("Stockfish error, falling back to local evaluation", stockfishError);
+        // Fall back to local evaluation below
       }
       
-      // Use improved local evaluation
+      // Fallback 1: Use improved local evaluation
       console.log("Using improved local evaluation...");
       const gameCopy = new ChessGame(game.fen());
       const bestMove = evaluateSimpleMove(gameCopy);
@@ -1301,7 +1393,7 @@ export default function Chess() {
           });
         }
       } else {
-        // Last resort: make any random legal move
+        // Fallback 2: make any random legal move
         const moves = gameCopy.moves({ verbose: true });
         if (moves.length > 0) {
           const randomIndex = Math.floor(Math.random() * moves.length);
@@ -1384,10 +1476,63 @@ export default function Chess() {
     setDesignObj(getDesignByName(designName));
   };
   
+  // Handle drag and drop of pieces (alternative to click-based moves)
+  const handleDrop = (sourceSquare: Square, targetSquare: Square, piece: string): boolean => {
+    // Don't allow moves during bot's turn
+    if (isThinking || gameState !== 'playing' || game.turn() !== playerSide) {
+      return false;
+    }
+    
+    // Make the move
+    const move = makeMove({
+      from: sourceSquare,
+      to: targetSquare,
+      promotion: piece.charAt(1).toLowerCase() === 'p' && (targetSquare.charAt(1) === '8' || targetSquare.charAt(1) === '1') 
+        ? 'q' // Auto-promote to queen
+        : undefined
+    });
+    
+    return !!move;
+  };
+  
+  // Add the getGameStatusMessage function inside the Chess component
+  const getGameStatusMessage = () => {
+    if (viewingMove !== null) {
+      return 'Viewing historical position';
+    }
+    
+    if (gameState === 'checkmate') {
+      const userWins = playerSide ? game.turn() !== playerSide : false;
+      return userWins ? 'Victory! Checkmate!' : 'Defeat! You were checkmated!';
+    }
+    
+    if (gameState === 'draw') {
+      return 'Game ended in a draw';
+    }
+    
+    if (gameState === 'stalemate') {
+      return 'Stalemate - game drawn';
+    }
+    
+    if (!playerSide) {
+      return 'Choose your side';
+    }
+    
+    if (game.turn() === playerSide && !isThinking) {
+      return `Your turn (${playerSide === 'w' ? 'White' : 'Black'})`;
+    }
+    
+    if (isThinking) {
+      return 'Bot is thinking...';
+    }
+    
+    return `Bot's turn (${playerSide === 'w' ? 'Black' : 'White'})`;
+  };
+  
   return (
     <ChessContainer>
       <BoardContainer 
-        ref={boardContainerRef} 
+        ref={boardContainerRef}
         style={designObj.boardContainerStyles}
       >
         {currentDesign === 'digitalLedger' && (
@@ -1406,17 +1551,18 @@ export default function Chess() {
             <div className="data-scan top-scan" style={{ top: '-10px' }}></div>
             <div className="data-scan bottom-scan" style={{ bottom: '-10px' }}></div>
         
-        <Chessboard
-          position={fen}
-          boardWidth={boardWidth}
-          id="chess-board"
+            <Chessboard
+              position={fen}
+              boardWidth={boardWidth}
+              id="chess-board"
               boardOrientation={getBoardOrientation()}
               areArrowsAllowed={false}
-              arePiecesDraggable={false}
+              arePiecesDraggable={true}
               onSquareClick={handleSquareClick}
+              onPieceDrop={handleDrop}
               customBoardStyle={toCustomSquareStyle({
                 ...designObj.boardStyles,
-            borderRadius: '8px',
+                borderRadius: '8px',
                 aspectRatio: '1/1',
                 width: '100%',
                 maxWidth: '100%',
@@ -1451,8 +1597,9 @@ export default function Chess() {
             id="chess-board"
             boardOrientation={getBoardOrientation()}
             areArrowsAllowed={false}
-            arePiecesDraggable={false}
+            arePiecesDraggable={true}
             onSquareClick={handleSquareClick}
+            onPieceDrop={handleDrop}
             customBoardStyle={toCustomSquareStyle({
               ...designObj.boardStyles,
               borderRadius: '8px',
@@ -1463,7 +1610,7 @@ export default function Chess() {
             })}
             customDarkSquareStyle={toCustomSquareStyle(designObj.squareStyles.dark)}
             customLightSquareStyle={toCustomSquareStyle(designObj.squareStyles.light)}
-          customSquareStyles={{
+            customSquareStyles={{
               // Highlight selected square
               ...(selectedSquare ? {
                 [selectedSquare]: toCustomSquareStyle(designObj.selectedSquareStyles)
@@ -1477,9 +1624,9 @@ export default function Chess() {
               ...(lastMove && !viewingMove ? {
                 [lastMove.from]: toCustomSquareStyle(designObj.lastMoveSquareStyles),
                 [lastMove.to]: toCustomSquareStyle(designObj.lastMoveSquareStyles)
-            } : {})
-          }}
-        />
+              } : {})
+            }}
+          />
         )}
       </BoardContainer>
       
@@ -1492,14 +1639,14 @@ export default function Chess() {
           }
           
           return (
-        <GameStatus 
-          $state={gameState}
+            <GameStatus 
+              $state={gameState}
               $userWins={userWins}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <StatusText>
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <StatusText>
                 {viewingMove !== null 
                   ? 'Viewing historical position'
                   : gameState === 'checkmate'
@@ -1516,7 +1663,7 @@ export default function Chess() {
                               ? 'Bot is thinking...'
                               : `Bot's turn (${playerSide === 'w' ? 'Black' : 'White'})`
                 }
-          </StatusText>
+              </StatusText>
               {gameState === 'checkmate' && (
                 <p style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>
                   {userWins ? '✨ You win! ✨' : 'The bot wins.'}
@@ -1531,7 +1678,7 @@ export default function Chess() {
                   <span>Return to current position</span>
                 </Button>
               )}
-        </GameStatus>
+            </GameStatus>
           );
         })()}
         
@@ -1549,11 +1696,35 @@ export default function Chess() {
           </div>
         )}
         
-        <InfoItem>
-          <h5>OPPONENT</h5>
-          <p>AI Stockfish Engine</p>
-          <BotDifficulty>Rating <CyberDot/> 1200</BotDifficulty>
-        </InfoItem>
+        {playerSide && (
+          <InfoItem>
+            <h5>OPPONENT</h5>
+            <p>AI Stockfish Engine</p>
+            <BotDifficulty>Rating <CyberDot/> 1200</BotDifficulty>
+            
+            {/* Show engine thinking indicator */}
+            {isThinking && (
+              <div style={{ 
+                marginTop: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.9rem',
+                color: 'rgba(0, 242, 96, 0.9)'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgb(0, 242, 96)',
+                  boxShadow: '0 0 8px rgb(0, 242, 96)',
+                  animation: 'pulse 1s infinite'
+                }}></div>
+                Thinking...
+              </div>
+            )}
+          </InfoItem>
+        )}
         
         {/* Board flip button moved to a better position */}
         <div style={{ 
@@ -1648,7 +1819,7 @@ export default function Chess() {
             <label htmlFor="design-select" style={{ color: designObj.statusTextStyles.color }}>Design:</label>
             <select 
               id="design-select"
-              value={currentDesign}
+              value={currentDesign} 
               onChange={(e) => changeDesign(e.target.value)}
               style={{
                 ...designObj.dropdownStyles,

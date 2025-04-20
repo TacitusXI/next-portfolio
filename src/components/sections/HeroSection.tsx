@@ -488,7 +488,7 @@ export default function HeroSection() {
             
             <StatItem>
               <StatValue>0x42</StatValue>
-              <StatLabel>reasons to test</StatLabel>
+              <StatLabel>reasons to test before mainnet</StatLabel>
             </StatItem>
           </StatsContainer>
         </motion.div>
