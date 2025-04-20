@@ -292,26 +292,21 @@ class RainDrop {
     }
     
     // Pulse effect - simplified for better performance
-    let pulseEffect = 1;
+    let pulseEffect = 1; // Always set to 1 to remove the pulse effect
     let glowSize = 0;
     
     // Apply different effects based on performance mode
     switch (performanceMode) {
       case DevicePerformance.HIGH:
         // Full effects but reduced magnitude
-        pulseEffect = this.special ? Math.sin(this.pulse) * 0.2 + 1 : 1; // Reduced from 0.3 to 0.2
         glowSize = this.special ? 4 : (this.glowing ? 8 : 2); // Reduced from 6/15/3 to 4/8/2
         break;
         
       case DevicePerformance.MEDIUM:
-        // Reduced effects
-        pulseEffect = this.special ? Math.sin(this.pulse) * 0.1 + 1 : 1; // Reduced from 0.2 to 0.1
         glowSize = this.special ? 3 : (this.glowing ? 5 : 0); // Reduced from 4/8/0 to 3/5/0
         break;
         
       case DevicePerformance.LOW:
-        // Minimal effects - no glow, simple pulse
-        pulseEffect = this.special ? Math.sin(this.pulse) * 0.05 + 1 : 1; // Reduced from 0.1 to 0.05
         glowSize = 0; // No glow on low performance
         break;
     }
@@ -335,7 +330,7 @@ class RainDrop {
       // Enhanced glow effect with pulses for special drops, but only on higher performance modes
       if (glowSize > 0) {
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = glowSize * pulseEffect;
+        ctx.shadowBlur = glowSize;
       } else {
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
@@ -344,7 +339,7 @@ class RainDrop {
       // Apply size scaling - only on medium/high performance
       if (performanceMode !== DevicePerformance.LOW) {
         // Use the limited font size for calculation
-        const scaledSize = Math.round(limitedFontSize * this.size * pulseEffect);
+        const scaledSize = Math.round(limitedFontSize * this.size);
         const cappedSize = Math.min(scaledSize, maxFontSize); // Double cap to be safe
         ctx.font = `${cappedSize}px ${fontFamily}`;
       }
