@@ -23,6 +23,7 @@ const tacitusPlaylist = [
   "./music/tacitus2.mp3",
   "./music/tacitus3.mp3",
   "./music/tacitus4.mp3",
+  "./music/tacitus5.mp3",
   // Add more tracks as needed
 ];
 
