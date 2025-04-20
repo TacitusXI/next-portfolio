@@ -360,7 +360,7 @@ export const recommendations: Recommendation[] = [
     id: 1,
     name: "Reigner Ouano",
     position: "Acumatica ERP Specialist | Expertise in C#, Blazor, and Blockchain",
-    image: "/images/recommendations/reigner.jpeg", // Primary path
+    image: "./images/recommendations/reigner.jpeg", // Primary path
     fallbackImage: "https://randomuser.me/api/portraits/men/32.jpg", // Fallback image
     text: "I had the privilege of working with Ivan Leskov at BlockTrust, where he demonstrated exceptional skills as a blockchain developer. Ivan's proficiency in blockchain technology, including his work with Solidity, is truly impressive. He has a deep understanding of both front-end and back-end development, which he combines with a genuine enthusiasm for learning and growing in the field.\n\nIvan's technical expertise is complemented by his eagerness to tackle new challenges. Whether developing complex blockchain solutions or collaborating on diverse projects, his ability to adapt and contribute effectively was evident. His commitment to continuous learning and improvement makes him a valuable asset to any team.\n\nIvan's contributions to our projects were invaluable, and his positive attitude and collaborative spirit made working with him a pleasure. I have no doubt that he will continue to excel and bring significant value to future endeavors. I highly recommend Ivan for any role that demands expertise in blockchain development and a passion for innovation.",
     date: "September 15, 2024",
@@ -370,7 +370,7 @@ export const recommendations: Recommendation[] = [
     id: 2,
     name: "Stefano Tempesta",
     position: "Web3 Architect | AI & Blockchain for Good Ambassador | Scout Leader",
-    image: "/images/recommendations/stefano.jpeg", // Primary path
+    image: "./images/recommendations/stefano.jpeg", // Primary path
     fallbackImage: "https://randomuser.me/api/portraits/men/67.jpg", // Fallback image
     text: "Had the pleasure of working with Ivan at BlockTrust. We built web3 technology that lasts, running 24/7 without interruption of service. Diligent, precise, reliable, and extremely experienced on all smart contract matters, Ivan is a highly skilled software engineer, versatile across multiple technologies. Pointless to say, I'd hire him over again, no questions asked!",
     date: "September 14, 2024",
