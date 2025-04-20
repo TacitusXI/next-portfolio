@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ overflowX: 'hidden' }}>
       <head>
-        <link rel="icon" href="./images/tacitus_no_bg.webp" />
+        <link rel="icon" href="./images/tacitus.webp" />
       </head>
       <body className={inter.className} style={{ overflowX: 'hidden' }}>
         <StyledComponentsRegistry>
