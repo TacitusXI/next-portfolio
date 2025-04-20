@@ -185,7 +185,7 @@ const CalendarTitle = styled.h3`
   font-size: 1.2rem;
   color: white;
   margin-bottom: 1rem;
-  font-family: var(--font-code);
+  font-family: 'Courier New', monospace;
   position: relative;
   
   &::before {
@@ -533,7 +533,7 @@ const ViewAllLink = styled.a`
   align-items: center;
   gap: 5px;
   transition: all 0.2s ease;
-  font-family: var(--font-code);
+  font-family: 'Courier New', monospace;
   
   &:hover {
     text-shadow: 0 0 8px rgba(0, 255, 163, 0.7);
@@ -588,7 +588,7 @@ const SectionHeader = styled.div`
 const SectionPrefix = styled.span`
   font-size: 1rem;
   color: #00e0ff;
-  font-family: var(--font-code);
+  font-family: 'Courier New', monospace;
   margin-bottom: 0.5rem;
 `;
 

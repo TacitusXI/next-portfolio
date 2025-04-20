@@ -169,7 +169,7 @@ const LogoText = styled.div`
   
   &.tacitvs {
     font-size: 1.5rem;
-    font-family: var(--font-primary-heading);
+    font-family: 'Orbitron', sans-serif;
     letter-spacing: 2px;
     margin-left: 0.25rem;
     position: relative;
