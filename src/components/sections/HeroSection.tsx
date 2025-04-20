@@ -487,8 +487,8 @@ export default function HeroSection() {
             </StatItem>
             
             <StatItem>
-              <StatValue>20+</StatValue>
-              <StatLabel>finished projects</StatLabel>
+              <StatValue>0x42</StatValue>
+              <StatLabel>reasons to test</StatLabel>
             </StatItem>
           </StatsContainer>
         </motion.div>
