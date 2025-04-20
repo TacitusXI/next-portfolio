@@ -473,7 +473,7 @@ const MovesTable = styled.table`
   
   th {
     color: rgba(255, 255, 255, 0.6);
-    font-family: monospace;
+    font-family: var(--font-code);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -550,7 +550,7 @@ const InfoItem = styled.div`
     margin: 0 0 0.5rem 0;
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.9rem;
-    font-family: monospace;
+    font-family: var(--font-code);
     letter-spacing: 1px;
     position: relative;
     display: inline-block;

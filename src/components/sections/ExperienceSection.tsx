@@ -263,7 +263,7 @@ const CertificateId = styled.div`
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 0.5rem;
-  font-family: monospace;
+  font-family: var(--font-code);
 `;
 
 const TimelineTitle = styled.h3`

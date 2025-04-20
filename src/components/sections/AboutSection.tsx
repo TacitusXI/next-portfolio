@@ -376,7 +376,7 @@ const BioTextContent = styled.p`
 
 // Add a new styled component for the Latin text
 const LatinText = styled.span`
-  font-family: 'Times New Roman', serif;
+  font-family: var(--font-primary-body);
   font-style: italic;
   font-weight: 500;
   letter-spacing: 1px;
