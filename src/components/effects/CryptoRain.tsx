@@ -515,41 +515,52 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
       return; // Skip this click if too soon after the last one
     }
     
-    // Check if we already have too many block effects
-    if (blockEffects.current.length >= MAX_BLOCK_EFFECTS) {
-      return; // Skip if too many effects are already active
-    }
-    
     // Update the last click time
     lastClickTime.current = now;
     
-    // Create block effect
-    blockEffects.current.push(new BlockEffect(x, y, color));
+    // Skip block effects completely on mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    );
+    
+    // Only create block effects on desktop
+    if (!isMobile) {
+      // Check if we already have too many block effects
+      if (blockEffects.current.length >= MAX_BLOCK_EFFECTS) {
+        // Remove the oldest effect if we're at max capacity
+        blockEffects.current.shift();
+      }
+      
+      // Create block effect (only on desktop)
+      blockEffects.current.push(new BlockEffect(x, y, color));
+    }
     
     // Skip particle burst on low performance devices
     if (performanceMode === DevicePerformance.LOW) {
       return;
     }
     
-    // Create new raindrops bursting from click location
+    // Create new raindrops bursting from click location - with reduced count on mobile
     if (canvasRef.current) {
       const settings = getSettings();
-      // Reduce burst count based on performance mode
-      const burstCount = performanceMode === DevicePerformance.HIGH 
-        ? Math.min(10, 15 * (intensity / 100))
-        : Math.min(5, 8 * (intensity / 100));
+      // Reduce burst count based on performance mode and device type
+      const burstCount = isMobile 
+        ? Math.min(3, 5 * (intensity / 100))  // Very minimal for mobile
+        : performanceMode === DevicePerformance.HIGH 
+          ? Math.min(8, 12 * (intensity / 100))
+          : Math.min(4, 6 * (intensity / 100));
       
       for (let i = 0; i < burstCount; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 50 + 50;
+        const distance = Math.random() * 40 + 40; // Reduced distance
         const burstX = x + Math.cos(angle) * distance;
         const burstY = y + Math.sin(angle) * distance;
-        const speed = (1 + Math.random() * 3) * settings.speed * 1.5;
-        const length = Math.floor(Math.random() * 3) + 3;
+        const speed = (1 + Math.random() * 2) * settings.speed * 1.2; // Reduced multiplier
+        const length = Math.floor(Math.random() * 2) + 2; // Shorter drops
         
-        const drop = new RainDrop(burstX, burstY, speed, length, color, 0.5); // Higher chance of special for burst drops
-        drop.glowing = true;
-        drop.special = true;
+        const drop = new RainDrop(burstX, burstY, speed, length, color, 0.3); // Lower chance of special
+        drop.glowing = !isMobile; // Only glow on desktop
+        drop.special = !isMobile && Math.random() < 0.3; // Fewer specials on mobile
         
         raindrops.current.push(drop);
       }
@@ -794,27 +805,40 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
       return;
     }
     
+    // Check if we're on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    );
+    
+    // Set frame rate limit based on device type and performance mode
+    const frameRateLimit = isMobile
+      ? performanceMode === DevicePerformance.LOW ? 15 : 24
+      : performanceMode === DevicePerformance.LOW ? 24 : 30;
+    
+    const minFrameTime = 1000 / frameRateLimit;
+    
     const animate = (timestamp: number) => {
       if (!canvasRef.current) return;
       
       // Calculate FPS for performance monitoring
       const elapsed = timestamp - lastFrameTime.current;
+      
+      // Limit frame rate more aggressively on mobile
+      if (elapsed < minFrameTime) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
       const fps = 1000 / elapsed;
       
       // Store recent FPS values
       fpsCounter.current.push(fps);
-      if (fpsCounter.current.length > 30) {
+      if (fpsCounter.current.length > 20) { // Reduced sample size
         fpsCounter.current.shift();
         
-        // Calculate average FPS every 30 frames and adjust performance if needed
+        // Calculate average FPS every 20 frames and adjust performance if needed
         const avgFps = fpsCounter.current.reduce((a, b) => a + b, 0) / fpsCounter.current.length;
         updatePerformanceMode(avgFps);
-      }
-      
-      // Limit frame rate for better performance
-      if (elapsed < 1000 / 30) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
       }
       
       lastFrameTime.current = timestamp;
@@ -833,10 +857,12 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
       // Calculate a size factor that normalizes rendering across different displays
       const displayScaleFactor = Math.min(window.devicePixelRatio || 1, 1.5) / (window.devicePixelRatio || 1);
       
-      // Set font - slightly smaller on low performance and account for device scaling
-      const fontSize = performanceMode === DevicePerformance.LOW
-        ? 14 * displayScaleFactor * (window.devicePixelRatio || 1)
-        : 18 * displayScaleFactor * (window.devicePixelRatio || 1);
+      // Set font - smaller on mobile and low performance
+      const fontSize = isMobile
+        ? 12 * displayScaleFactor * (window.devicePixelRatio || 1)
+        : performanceMode === DevicePerformance.LOW
+          ? 14 * displayScaleFactor * (window.devicePixelRatio || 1)
+          : 18 * displayScaleFactor * (window.devicePixelRatio || 1);
       
       ctx.font = `${fontSize}px monospace`;
       
@@ -849,8 +875,8 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
       // Define hover effect radius - scaled by performance but capped to avoid excessive scaling
       const hoverRadius = (performanceMode === DevicePerformance.LOW ? 120 : 180) * displayScaleFactor * (window.devicePixelRatio || 1);
       
-      // Occasionally add a scan line (only on medium/high performance)
-      if (performanceMode !== DevicePerformance.LOW) {
+      // Skip scan lines on mobile completely
+      if (!isMobile && performanceMode !== DevicePerformance.LOW) {
         // Less frequent scan lines on medium performance
         const scanLineInterval = performanceMode === DevicePerformance.MEDIUM ? 4000 : 2000;
         
@@ -866,7 +892,8 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
         return line.update(canvas.width, canvas.height);
       });
       
-      // Draw and update block effects
+      // Draw and update block effects - we still process them if they exist
+      // (they won't be created on mobile but this handles existing ones)
       blockEffects.current = blockEffects.current.filter(effect => {
         effect.draw(ctx);
         return effect.update();
