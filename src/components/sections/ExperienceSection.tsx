@@ -670,7 +670,7 @@ export default function ExperienceSection() {
             transition={{ duration: 0.8 }}
             className="cyberpunk-section-title cyberpunk-title-md"
             data-text="Execute.Career_Protocols"
-            data-mobile-text="Experience"
+            data-mobile-text="Career"
           >
             Execute.Career_Protocols
           </SectionTitle>
