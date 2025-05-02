@@ -101,8 +101,10 @@
     document.querySelectorAll('style').forEach(styleEl => {
       if (styleEl.textContent && styleEl.textContent.includes('@font-face')) {
         let cssText = styleEl.textContent;
-        // Replace absolute font URLs with relative ones
-        cssText = cssText.replace(/url\(('|")\/fonts\//g, "url($1./fonts/");
+        // Replace absolute font URLs with relative ones - using string replace instead of regex
+        cssText = cssText.replace(/url\((['"])\/fonts\//g, function(match, quote) {
+          return 'url(' + quote + './fonts/';
+        });
         styleEl.textContent = cssText;
       }
     });
