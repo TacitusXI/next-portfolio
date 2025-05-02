@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ivan Leskov | Fleek Fix</title>
+  
+  <!-- Font definitions -->
+  <style>
+    @font-face {
+      font-family: '__Inter_Fallback';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url("./fonts/a34f9d1faa5f3315-s.p.woff2") format("woff2");
+    }
+    
+    body {
+      font-family: '__Inter_Fallback', sans-serif;
+      background-color: #000514;
+      color: white;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    
+    .container {
+      max-width: 800px;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      margin-bottom: 1.5rem;
+    }
+    
+    .loader {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      margin: 2rem auto;
+    }
+    
+    .loader:after {
+      content: " ";
+      display: block;
+      width: 64px;
+      height: 64px;
+      margin: 8px;
+      border-radius: 50%;
+      border: 6px solid #fff;
+      border-color: #fff transparent #fff transparent;
+      animation: loader 1.2s linear infinite;
+    }
+    
+    @keyframes loader {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ivan Leskov's Portfolio</h1>
+    <p>Loading optimized version...</p>
+    <div class="loader"></div>
+    
+    <script>
+      // This script avoids any problematic regex and ensures proper font loading
+      (function() {
+        // Preload all font files
+        var fonts = [
+          'a34f9d1faa5f3315-s.p.woff2',
+          '55c55f0601d81cf3-s.woff2',
+          '26a46d62cd723877-s.woff2',
+          '97e0cb1ae144a2a9-s.woff2',
+          '581909926a08bbc8-s.woff2',
+          'df0a9ae256c0569c-s.woff2',
+          '6d93bde91c0c2823-s.woff2'
+        ];
+        
+        // Preload all fonts
+        fonts.forEach(function(font) {
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          link.href = './fonts/' + font;
+          link.as = 'font';
+          link.type = 'font/woff2';
+          link.crossOrigin = 'anonymous';
+          document.head.appendChild(link);
+        });
+        
+        // Monitor font loading and redirect when ready
+        function checkFontsAndRedirect() {
+          // We'll redirect to the main page, but with a query parameter to 
+          // indicate we should use our own font loading code
+          window.location.href = './index.html?font_fix=true';
+        }
+        
+        // Wait a moment to ensure fonts get a chance to load
+        setTimeout(checkFontsAndRedirect, 1500);
+      })();
+    </script>
+  </div>
+</body>
+</html> 
