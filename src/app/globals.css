@@ -1,4 +1,13 @@
 /* Custom CSS - placed before Tailwind imports to avoid processing conflicts */
+/* Font face for Inter font */
+@font-face {
+  font-family: '__Inter_Fallback';
+  src: url('/fonts/a34f9d1faa5f3315-s.p.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 .custom-text-white {
   color: #ffffff;
 }

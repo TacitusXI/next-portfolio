@@ -5,6 +5,14 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Preload font to ensure it's available */}
+        <link 
+          rel="preload" 
+          href="/fonts/a34f9d1faa5f3315-s.p.woff2" 
+          as="font" 
+          type="font/woff2" 
+          crossOrigin="anonymous" 
+        />
         {/* Inline script that runs immediately to rewrite asset paths */}
         <script
           dangerouslySetInnerHTML={{
@@ -26,7 +34,7 @@ export default function Document() {
                   }
                   
                   // Handle https://ipfs.io/ipfs/<CID>/_next/
-                  const ipfsCidMatch = url.match(/https:\\/\\/ipfs\\.io\\/ipfs\\/[a-zA-Z0-9]+\\/_next\\//);
+                  const ipfsCidMatch = url.match(/https:\/\/ipfs\.io\/ipfs\/[a-zA-Z0-9]+\/_next\//);
                   if (ipfsCidMatch) {
                     // Extract the part after _next/
                     const parts = url.split('/_next/');
@@ -38,6 +46,14 @@ export default function Document() {
                   // Handle https://ipfs.tech/_next/
                   if (url.startsWith('https://ipfs.tech/_next/')) {
                     return './_next/' + url.substring(21);
+                  }
+                  
+                  // Handle font file paths
+                  if (url.includes('woff2') && !url.startsWith('/fonts/')) {
+                    // Extract the filename
+                    const parts = url.split('/');
+                    const filename = parts[parts.length - 1];
+                    return '/fonts/' + filename;
                   }
                   
                   return url;
