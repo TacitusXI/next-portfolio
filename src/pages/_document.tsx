@@ -8,7 +8,7 @@ export default function Document() {
         {/* Preload font to ensure it's available */}
         <link 
           rel="preload" 
-          href="./fonts/a34f9d1faa5f3315-s.p.woff2" 
+          href="/fonts/a34f9d1faa5f3315-s.p.woff2" 
           as="font" 
           type="font/woff2" 
           crossOrigin="anonymous" 

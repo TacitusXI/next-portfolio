@@ -32,8 +32,18 @@
       // If it's a Next.js generated font path, fix it to use our /fonts/ directory
       if (url.includes('/_next/static/media/')) {
         const filename = url.split('/').pop();
-        return '/fonts/' + filename;
+        return './fonts/' + filename;
       }
+      
+      // Fix absolute font paths in IPFS context
+      if (url.startsWith('/fonts/')) {
+        return '.' + url; // Convert /fonts/ to ./fonts/
+      }
+    }
+    
+    // Handle images from public directory
+    if (url.startsWith('/images/')) {
+      return './images/' + url.substring(8);
     }
     
     return url;
@@ -74,13 +84,26 @@
       if (href) {
         if (href.includes('/_next/static/media/') && href.includes('.woff2')) {
           const filename = href.split('/').pop();
-          el.setAttribute('href', '/fonts/' + filename);
+          el.setAttribute('href', './fonts/' + filename);
         } else if (href.includes('https://ipfs.io/') && href.includes('/_next/')) {
           const parts = href.split('/_next/');
           if (parts.length > 1) {
             el.setAttribute('href', './_next/' + parts[1]);
           }
+        } else if (href.startsWith('/fonts/')) {
+          // Convert absolute font paths to relative for IPFS environment
+          el.setAttribute('href', '.' + href);
         }
+      }
+    });
+
+    // Fix font face CSS URLs via style tags
+    document.querySelectorAll('style').forEach(styleEl => {
+      if (styleEl.textContent && styleEl.textContent.includes('@font-face')) {
+        let cssText = styleEl.textContent;
+        // Replace absolute font URLs with relative ones
+        cssText = cssText.replace(/url\(('|")\/fonts\//g, "url($1./fonts/");
+        styleEl.textContent = cssText;
       }
     });
 
