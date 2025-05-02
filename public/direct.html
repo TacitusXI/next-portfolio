@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ivan Leskov | IPFS Alternative</title>
+  
+  <!-- Inline early prevention script -->
+  <script>
+    // Early loader script to prevent regex issues
+    (function() {
+      // Immediately run before anything else
+      
+      // 1. Check if we're in an IPFS environment
+      var isIPFS = true; // Always apply fixes in this direct file
+      
+      console.log('Applying preventive measures for IPFS');
+      
+      // 2. Intercept and prevent loading of problematic scripts
+      var originalCreateElement = document.createElement;
+      document.createElement = function(tagName) {
+        var element = originalCreateElement.apply(document, arguments);
+        
+        if (tagName.toLowerCase() === 'script') {
+          // Intercept setting src attribute
+          var originalSetAttribute = element.setAttribute;
+          element.setAttribute = function(name, value) {
+            if (name === 'src' && typeof value === 'string' && value.indexOf('ipfs-fix.js') !== -1) {
+              console.log('Prevented loading of problematic script:', value);
+              // Don't set the src attribute for problematic scripts
+              return;
+            }
+            return originalSetAttribute.apply(this, arguments);
+          };
+        }
+        
+        return element;
+      };
+      
+      // 3. Create and apply inline font faces immediately
+      var style = document.createElement('style');
+      style.textContent = `
+        @font-face {
+          font-family: '__Inter_Fallback';
+          font-style: normal;
+          font-weight: 100 900;
+          font-display: swap;
+          src: url("./fonts/a34f9d1faa5f3315-s.p.woff2") format("woff2");
+        }
+      `;
+      
+      // Insert at the beginning of head
+      if (document.head) {
+        document.head.insertBefore(style, document.head.firstChild);
+      } else {
+        // If head doesn't exist yet, wait for it
+        document.addEventListener('DOMContentLoaded', function() {
+          document.head.insertBefore(style, document.head.firstChild);
+        });
+      }
+      
+      // Preload all fonts
+      var fonts = [
+        'a34f9d1faa5f3315-s.p.woff2',
+        '55c55f0601d81cf3-s.woff2',
+        '26a46d62cd723877-s.woff2',
+        '97e0cb1ae144a2a9-s.woff2',
+        '581909926a08bbc8-s.woff2',
+        'df0a9ae256c0569c-s.woff2',
+        '6d93bde91c0c2823-s.woff2'
+      ];
+      
+      fonts.forEach(function(font) {
+        var link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = './fonts/' + font;
+        link.as = 'font';
+        link.type = 'font/woff2';
+        link.crossOrigin = 'anonymous';
+        if (document.head) {
+          document.head.appendChild(link);
+        }
+      });
+      
+      // Pre-load fonts with an image pixel
+      fonts.forEach(function(font) {
+        var img = new Image();
+        img.style.position = 'absolute';
+        img.style.opacity = '0';
+        img.style.width = '1px';
+        img.style.height = '1px';
+        img.onload = img.onerror = function() {
+          console.log('Font triggered preload:', font);
+          if (img.parentNode) {
+            img.parentNode.removeChild(img);
+          }
+        };
+        img.src = './fonts/' + font + '?trigger=preload';
+        if (document.body) {
+          document.body.appendChild(img);
+        } else {
+          window.addEventListener('DOMContentLoaded', function() {
+            document.body.appendChild(img);
+          });
+        }
+      });
+    })();
+  </script>
+  
+  <!-- Basic styling -->
+  <style>
+    body {
+      font-family: '__Inter_Fallback', sans-serif;
+      background-color: #000514;
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    
+    .container {
+      max-width: 800px;
+      padding: 2rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #734afd, #31a4fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .button {
+      display: inline-block;
+      background: #31a4fd;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      margin: 0 10px 10px 10px;
+    }
+    
+    .button:hover {
+      background: #734afd;
+      transform: translateY(-3px);
+    }
+    
+    #status {
+      margin-top: 2rem;
+      padding: 1rem;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ivan Leskov</h1>
+    <p>Blockchain & Web3 Engineer</p>
+    
+    <div>
+      <button id="diagButton" class="button">Run diagnostics</button>
+      <a href="./index.html?font_fix=true&bypass_ipfs_fix=true" class="button">Go to Portfolio</a>
+      <a href="./debug.html" class="button">Use Debug Tool</a>
+    </div>
+    
+    <div id="status"></div>
+    
+    <script>
+      document.getElementById('diagButton').addEventListener('click', function() {
+        var status = document.getElementById('status');
+        status.style.display = 'block';
+        status.style.backgroundColor = '#2d2d2d';
+        status.innerHTML = '<p>Running checks...</p>';
+        
+        // Test font loading
+        var fontFiles = [
+          'a34f9d1faa5f3315-s.p.woff2',
+          '55c55f0601d81cf3-s.woff2',
+          '26a46d62cd723877-s.woff2'
+        ];
+        
+        var results = '';
+        var successCount = 0;
+        var totalChecks = fontFiles.length;
+        
+        fontFiles.forEach(function(font) {
+          fetch('./fonts/' + font)
+            .then(function(response) {
+              if (response.ok) {
+                results += '<p style="color: #4caf50;">✓ Found: ' + font + '</p>';
+                successCount++;
+              } else {
+                results += '<p style="color: #f44336;">✗ Missing: ' + font + ' (' + response.status + ')</p>';
+              }
+              
+              updateStatus();
+            })
+            .catch(function(error) {
+              results += '<p style="color: #f44336;">✗ Error loading: ' + font + ' - ' + error.message + '</p>';
+              updateStatus();
+            });
+        });
+        
+        function updateStatus() {
+          status.innerHTML = results;
+          
+          if (successCount + (totalChecks - successCount) === totalChecks) {
+            // All checks complete
+            if (successCount === totalChecks) {
+              status.innerHTML += '<p style="color: #4caf50;">All fonts available! You can proceed to the portfolio.</p>';
+            } else {
+              status.innerHTML += '<p style="color: #f44336;">Some fonts are missing. The site may not display correctly.</p>';
+            }
+          }
+        }
+      });
+    </script>
+  </div>
+</body>
+</html> 

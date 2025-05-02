@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ivan Leskov | Web3 Engineer</title>
+  
+  <!-- Preload fonts directly -->
+  <link rel="preload" href="./fonts/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  
+  <!-- Inline font face definition -->
+  <style>
+    /* Basic styles */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000514;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: '__Inter_Fallback', sans-serif;
+      text-align: center;
+    }
+    
+    /* Font definitions with relative paths */
+    @font-face {
+      font-family: '__Inter_Fallback';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url("./fonts/a34f9d1faa5f3315-s.p.woff2") format('woff2');
+    }
+    
+    .container {
+      max-width: 800px;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #734afd, #31a4fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .button {
+      display: inline-block;
+      background: #31a4fd;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      margin: 0 10px;
+    }
+    
+    .button:hover {
+      background: #734afd;
+      transform: translateY(-3px);
+    }
+    
+    .options {
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ivan Leskov</h1>
+    <p>Blockchain & Web3 Engineer</p>
+    
+    <div class="options">
+      <p>Choose how you'd like to view the portfolio:</p>
+      <a href="index.html?font_fix=true" class="button">View Portfolio (Fixed)</a>
+      <a href="debug.html" class="button">Debug Tool</a>
+    </div>
+    
+    <script>
+      // Super simple script to handle font loading
+      (function() {
+        // Preload all fonts
+        var fonts = [
+          'a34f9d1faa5f3315-s.p.woff2',
+          '55c55f0601d81cf3-s.woff2',
+          '26a46d62cd723877-s.woff2',
+          '97e0cb1ae144a2a9-s.woff2',
+          '581909926a08bbc8-s.woff2',
+          'df0a9ae256c0569c-s.woff2',
+          '6d93bde91c0c2823-s.woff2'
+        ];
+        
+        // Create preload links
+        fonts.forEach(function(font) {
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          link.href = './fonts/' + font;
+          link.as = 'font';
+          link.type = 'font/woff2';
+          link.crossOrigin = 'anonymous';
+          document.head.appendChild(link);
+        });
+      })();
+    </script>
+  </div>
+</body>
+</html> 

@@ -1,17 +1,52 @@
 // Early-loading script to fix issues with IPFS deployments
 (function() {
-  // Check for special parameter that indicates we came from the font fixer
+  // Check for special parameters
   var forceFix = window.location.search.indexOf('font_fix=true') !== -1;
+  var bypassIpfsFix = window.location.search.indexOf('bypass_ipfs_fix=true') !== -1;
+  
+  // Set a global variable for other scripts to check
+  window.bypassIpfsFix = bypassIpfsFix;
+  
+  console.log('Fix script loaded. Force fix:', forceFix, 'Bypass IPFS fix:', bypassIpfsFix);
   
   // First, let's try to stop any problematic scripts
   function stopProblematicScripts() {
+    // If bypass is true, intercept script creation
+    if (bypassIpfsFix && !window.scriptInterceptorInstalled) {
+      console.log('Installing script interceptor');
+      window.scriptInterceptorInstalled = true;
+      
+      var originalCreateElement = document.createElement;
+      document.createElement = function(tagName) {
+        var element = originalCreateElement.apply(document, arguments);
+        
+        if (tagName.toLowerCase() === 'script') {
+          // Intercept setting src attribute
+          var originalSetAttribute = element.setAttribute;
+          element.setAttribute = function(name, value) {
+            if (name === 'src' && typeof value === 'string' && 
+                (value.indexOf('ipfs-fix.js') !== -1 || 
+                 value.indexOf('/_ipfs/') !== -1)) {
+              console.log('Prevented loading of problematic script:', value);
+              // Don't set the src attribute for problematic scripts
+              return;
+            }
+            return originalSetAttribute.apply(this, arguments);
+          };
+        }
+        
+        return element;
+      };
+    }
+    
     // Find and stop the existing ipfs-fix.js script
     var scripts = document.getElementsByTagName('script');
     for (var i = 0; i < scripts.length; i++) {
       var script = scripts[i];
       if (script.src && (
           script.src.indexOf('ipfs-fix.js') !== -1 || 
-          script.src.indexOf('_ipfs/ipfs-fix.js') !== -1)) {
+          script.src.indexOf('_ipfs/ipfs-fix.js') !== -1 ||
+          script.src.indexOf('/_ipfs/') !== -1)) {
         if (script.parentNode) {
           script.parentNode.removeChild(script);
           console.log('Removed problematic script:', script.src);
@@ -27,8 +62,10 @@
       
       // Check if it contains both regex and IPFS references
       if (content.indexOf('match(') !== -1 && 
-          (content.indexOf('ipfs.io') !== -1 || content.indexOf('/_next/') !== -1)) {
-        if (script.parentNode && forceFix) {
+          (content.indexOf('ipfs.io') !== -1 || 
+           content.indexOf('/_next/') !== -1 || 
+           content.indexOf('/_ipfs/') !== -1)) {
+        if (script.parentNode && (forceFix || bypassIpfsFix)) {
           script.parentNode.removeChild(script);
           console.log('Removed potentially problematic inline script with regex');
         }
@@ -123,9 +160,13 @@
     document.addEventListener('DOMContentLoaded', function() {
       fixFontPaths();
       fixAssetPaths();
+      // Run again to catch any scripts added during initial load
+      stopProblematicScripts();
     });
   } else {
     fixFontPaths();
     fixAssetPaths();
+    // Run again to catch any scripts added during initial load
+    stopProblematicScripts();
   }
 })(); 
