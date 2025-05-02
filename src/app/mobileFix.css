@@ -1,0 +1,7 @@
+/* Specific fix for mobile titles */
+@media (max-width: 768px) {
+  .cyberpunk-section-title[data-mobile-text]::before,
+  .cyberpunk-section-title[data-mobile-text]::after {
+    content: attr(data-mobile-text) !important;
+  }
+} 

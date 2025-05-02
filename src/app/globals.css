@@ -179,6 +179,23 @@
   }
 }
 
+/* Replace with this corrected version */
+/* Responsive content for mobile devices */
+@media (max-width: 768px) {
+  .cyberpunk-section-title[data-mobile-text]::before,
+  .cyberpunk-section-title[data-mobile-text]::after {
+    content: attr(data-mobile-text);
+  }
+  
+  .cyberpunk-section-title::before {
+    -webkit-text-fill-color: rgb(115, 74, 253);
+  }
+  
+  .cyberpunk-section-title::after {
+    -webkit-text-fill-color: rgb(49, 164, 253);
+  }
+}
+
 .cyberpunk-title-sm {
   font-size: 1.75rem;
   margin-bottom: 1.5rem;
@@ -433,5 +450,21 @@
   .content-section-enhanced code {
     white-space: pre-wrap;
     font-size: 0.75rem;
+  }
+}
+
+/* FIXED VERSION - Mobile title text replacement */
+@media (max-width: 768px) {
+  .cyberpunk-section-title[data-mobile-text]::before,
+  .cyberpunk-section-title[data-mobile-text]::after {
+    content: attr(data-mobile-text);
+  }
+  
+  .cyberpunk-section-title::before {
+    -webkit-text-fill-color: rgb(115, 74, 253);
+  }
+  
+  .cyberpunk-section-title::after {
+    -webkit-text-fill-color: rgb(49, 164, 253);
   }
 }

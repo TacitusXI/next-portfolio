@@ -1,4 +1,5 @@
 import './globals.css';
+import './mobileFix.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
