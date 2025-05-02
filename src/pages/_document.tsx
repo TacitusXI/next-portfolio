@@ -8,11 +8,15 @@ export default function Document() {
         {/* Preload font to ensure it's available */}
         <link 
           rel="preload" 
-          href="/fonts/a34f9d1faa5f3315-s.p.woff2" 
+          href="./fonts/a34f9d1faa5f3315-s.p.woff2" 
           as="font" 
           type="font/woff2" 
           crossOrigin="anonymous" 
         />
+        
+        {/* Custom IPFS fix script */}
+        <script src="/ipfs-fix.js" />
+        
         {/* Inline script that runs immediately to rewrite asset paths */}
         <script
           dangerouslySetInnerHTML={{
@@ -34,8 +38,7 @@ export default function Document() {
                   }
                   
                   // Handle https://ipfs.io/ipfs/<CID>/_next/
-                  const ipfsCidMatch = url.match(/https:\/\/ipfs\.io\/ipfs\/[a-zA-Z0-9]+\/_next\//);
-                  if (ipfsCidMatch) {
+                  if (url.indexOf('https://ipfs.io/ipfs/') !== -1 && url.indexOf('/_next/') !== -1) {
                     // Extract the part after _next/
                     const parts = url.split('/_next/');
                     if (parts.length > 1) {
