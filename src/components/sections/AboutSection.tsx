@@ -692,9 +692,9 @@ export default function AboutSection() {
           <BioText className="enhanced-text">
             {isClient && (
               <BioTextContent>
-                Currently exploring <HighlightText>advanced DeFi mechanics</HighlightText>, 
-                on-chain governance patterns, and <HighlightText>ZK-friendly architecture</HighlightText>. 
-                Always pushing for smarter, safer, and more composable protocols.
+                Currently deepening my <HighlightText>security expertise</HighlightText>, 
+                performing audits on <HighlightText>Code4rena</HighlightText>, 
+                and exploring new blockchain technologies. Always learning and improving.
               </BioTextContent>
             )}
           </BioText>

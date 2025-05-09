@@ -10,10 +10,11 @@ export const personalInfo: PersonalInfo = {
   email: "ivan.leskov@protonmail.com",
   location: "Europe, Poland",
   linkedin: "https://www.linkedin.com/in/ivan-leskov/",
-  summary: "Experienced Blockchain Developer with a strong focus on Solidity and secure smart contract implementation. I specialize in DeFi protocols, NFT marketplaces, and decentralized applications with a proven track record of delivering secure and efficient blockchain solutions.",
+  summary: "Experienced Blockchain Developer with a strong focus on Solidity and secure smart contract implementation. I specialize in DeFi protocols, NFT marketplaces, and decentralized applications with a proven track record of delivering secure and efficient blockchain solutions. Technical reviewer for Packt's 'Developing Blockchain Solutions in the Cloud', contributing expertise to industry publications.",
   bio: [
     "Hello! I'm Ivan Leskov, a passionate Blockchain Developer with expertise in building secure and efficient smart contract implementations.",
     "With a strong focus on DeFi protocols, NFT marketplaces, and decentralized applications, I specialize in creating secure blockchain solutions.",
+    "I serve as a technical reviewer for published blockchain literature, including Packt's 'Developing Blockchain Solutions in the Cloud', where I helped shape technical content across numerous chapters.",
     "I'm constantly exploring new blockchain technologies and methodologies to build more efficient and secure decentralized systems."
   ],
   socials: [
@@ -37,69 +38,156 @@ export const personalInfo: PersonalInfo = {
 
 export const experiences: Experience[] = [
   {
-    title: "Blockchain Engineer | Full-Stack Developer",
-    company: "Stacknova",
-    period: "Feb 2024 - Feb 2025",
-    description: "Prepared a multi-chain presale across eight EVM-compatible blockchains for Bitcoin AI Launchpad solution and developed Ethereum-based smart contracts using Solidity and TypeScript. Integrated backend systems with a scalable database and delivered a user-friendly frontend interface for the dApp.",
+    title: "Blockchain Engineer",
+    company: "Various Projects",
+    period: "2024 - 2025",
+    description: "Worked with early-stage blockchain startups and personal projects, focusing on smart contract development, decentralized application architecture across multiple chains, technical reviews, audits and side projects.",
     achievements: [
-      "Defined technical requirements and led the delivery of a presale campaign across eight major EVM-compatible blockchains",
-      "Implemented a secure oracle system to fetch and verify off-chain data, reducing data fetch times by 40%",
-      "Developed and deployed smart contracts with 25% gas optimization using Solidity and TypeScript",
-      "Led technical design and implementation of backend systems with Node.js and NoSQL databases",
-      "Implemented advanced caching mechanisms to improve dApp performance by 35%",
-      "Integrated CI/CD pipelines reducing deployment times by 30%"
+      "Designed and implemented custom smart contract solutions for various DeFi and NFT use cases",
+      "Built full-stack dApps with React, Next.js and Solidity, focusing on user experience and secure blockchain integration",
+      "Deepened security expertise by performing smart contract audits on Code4rena, identifying vulnerabilities across different blockchain projects."
+    ],
+    proof: {
+      title: "Technical Book Reviewer",
+      description: "Over the last year and a half, I focused on side projects, startups, audits on Code4rena, and technical reviews. One of my achievements during this time was serving as a technical reviewer for 'Developing Blockchain Solutions in the Cloud' by Stefano Tempesta and Michael Peña. The book was published by Packt and covers comprehensive approaches to building blockchain applications in cloud environments.",
+      images: [
+        "/images/proofs/packt/packt1.webp",
+        "/images/proofs/packt/packt2.webp"
+      ],
+      links: [
+        {
+          title: "Book on Amazon",
+          url: "https://www.amazon.com/Developing-Blockchain-Solutions-Cloud-blockchain-powered-ebook/dp/B0CW59K1M4"
+        }
+      ]
+    }
+  },
+  {
+    title: "Blockchain Engineer",
+    company: "BlockTrust",
+    period: "2022 - 2024",
+    description: "Developed a comprehensive library of NFT smart contracts (ERC-721 and ERC-1155) for physical asset tokenization, primarily focusing on firearm collectibles and other real-world items for major clients in the collectibles industry.",
+    achievements: [
+      "Created a full set of backend infrastructure for various projects and clients, including Node.js endpoints to retrieve blockchain data",
+      "Created certificates of authenticity as NFTs for the firearm collection market, supporting charity initiatives through sales",
+      "Developed reusable smart contract libraries and blockchain infrastructure components to streamline development across multiple projects"
+    ],
+    proof: {
+      title: "Charity NFT Project",
+      description: "One of the firearms (number 022) from the collection I worked on was gifted by Czech President Petr Pavel to President Zelensky. The certificate of authenticity contract was created by me, with the NFT sold at auction and proceeds going to charity.",
+      images: [
+        "/images/proofs/blocktrust/blocktrust1.webp",
+        "/images/proofs/blocktrust/blocktrust2.webp",
+        "/images/proofs/blocktrust/blocktrust3.webp"
+      ],
+      links: [
+        {
+          title: "OpenSea NFT #22",
+          url: "https://opensea.io/item/matic/0x32f3a5cd66b0813f5650abaf8505f178dff24a35/22"
+        },
+        {
+          title: "Polygon Contract",
+          url: "https://polygonscan.com/address/0x32f3a5cd66b0813f5650abaf8505f178dff24a35"
+        }
+      ]
+    }
+  },
+  {
+    title: "Independent Trader",
+    company: "Self-Employed",
+    period: "2019 - 2022",
+    description: "Executed sophisticated trading strategies in volatile cryptocurrency markets, maintaining financial independence through disciplined analysis and strategic position management.",
+    achievements: [
+      "Mastered market cycles through rigorous technical analysis, navigating two significant market rises and subsequent corrections",
+      "Developed proprietary risk management system that consistently preserved capital during extreme market volatility",
+      "Transformed market insights into actionable technical knowledge, facilitating strategic transition to blockchain development"
+    ],
+    proof: {
+      title: "Crypto Trading & Technical Expertise",
+      description: "From 2019, blockchain and crypto fully captured my mind. I delved deeply into trading, mastering technical analysis and blockchain concepts. I became recognized as a technical guy and was invited to several local events as a speaker, where I presented on technical analysis and blockchain/crypto concepts. In the background, I was learning coding, developing trading bots, and exploring smart contracts in depth - this formed the foundation of my career as a blockchain engineer.",
+      images: [
+        "/images/proofs/technical/technical1.webp",
+        "/images/proofs/technical/technical2.webp"
+      ],
+      links: []
+    }
+  },
+  {
+    title: "Financial Consultant",
+    company: "Major Banking Institution",
+    period: "2015 - 2019",
+    description: "Dominated regional banking and insurance markets through strategic client acquisition and sophisticated financial product positioning, establishing unmatched sales authority.",
+    achievements: [
+      "Secured top sales performer status across entire regional branch network for multiple consecutive months",
+      "Mastered complex insurance and banking offerings, creating persuasive value propositions for diverse client portfolios",
+      "Cultivated exclusive client relationships through targeted financial strategy consultations, establishing reputation for expertise"
+    ],
+    proof: {
+      title: "Top Sales Performance",
+      description: "I was one of the best sellers in banking products, making deals with agencies and bringing new clients to the bank. My sales were distinguished not just by quantity but also by quality. I maintained the #1 position by quantity/quality metrics in one of the 4 regions in Poland, consistently holding this lead position almost every month during my tenure.",
+      images: [
+        "/images/proofs/seller/seller1.webp",
+        "/images/proofs/seller/seller2.webp"
+      ],
+      links: []
+    }
+  }
+];
+
+export const additionalExperiences: Experience[] = [
+  {
+    title: "Protocol Engineer",
+    company: "HIRO",
+    period: "2025",
+    description: "Executed adaptation of Uniswap v3 for custom blockchain, overcoming significant technical barriers in contract deployment and EVM compatibility issues to deliver a functional decentralized exchange.",
+    achievements: [
+      "Deployed essential infrastructure contracts (UniswapInterfaceMulticall, CREATE2, Permit2) with precise configuration, establishing full protocol functionality on a chain with limited compatibility",
+      "Modified and patched multiple core packages (sdk-core, universal-router-sdk, smart-order-router etc.) to support custom chain parameters",
+      "Resolved complex EVM version mismatches (Istanbul vs. Cancun) while executing comprehensive UI redesign according to client specifications"
+    ]
+  },
+  {
+    title: "Blockchain Engineer | Smart Contract Developer",
+    company: "Stacknova",
+    period: "2024 - 2025",
+    description: "Developed multi-chain presale infrastructure across eight EVM-compatible blockchains, implementing secure and efficient smart contracts in Solidity.",
+    achievements: [
+      "Built and deployed Solidity smart contracts for cross-chain presale functionality with secure token distribution mechanics",
+      "Created GraphQL infrastructure to sync all transaction data across 8 chains efficiently, enabling real-time monitoring",
+      "Implemented fully backend and frontend for presale page, creating a complete end-to-end solution"
     ]
   },
   {
     title: "Blockchain Technical Reviewer",
     company: "Packt",
-    period: "Sep 2023 - Mar 2024",
-    description: "Reviewed the book 'Developing Blockchain Solutions in the Cloud', improving 15+ chapters with 30+ code corrections aligned with AWS, Azure, Hyperledger, and Ethereum standards.",
+    period: "2023 - 2024",
+    description: "Served as technical reviewer for 'Developing Blockchain Solutions in the Cloud', with my name and bio featured in the published book.",
     achievements: [
-      "Provided technical feedback improving accuracy and depth of over 15 chapters on blockchain technologies",
-      "Suggested over 30 code corrections and content enhancements for cloud blockchain implementations",
-      "Validated cloud-based blockchain architectures and consensus mechanisms for production environments",
-      "Ensured code samples adhered to industry best practices for security and optimization",
-      "Collaborated with authors to clarify complex blockchain concepts for readers"
+      "Reviewed technical content across 15+ chapters, ensuring accuracy and quality of blockchain concepts",
+      "Provided technical feedback and suggestions to improve code examples and architectural explanations",
+      "Collaborated with authors and editors to enhance the educational value of the publication"
     ]
   },
   {
     title: "Blockchain Developer",
     company: "Aetlas",
-    period: "Nov 2023 - Feb 2024",
-    description: "Developed an upgradable DeFi system using Solidity with ERC20-compliant token pool management for carbon offset tokens and environmental assets.",
+    period: "2023 - 2024",
+    description: "Developed an upgradable DeFi system for carbon offset tokens, featuring ERC20-compliant token pools with deposit, redemption, and cross-chain bridging capabilities.",
     achievements: [
-      "Designed core development logic for multi-asset AMM pools, reducing slippage by 15%",
-      "Engineered AMM protocol using Balancer's spot and effective price formulas for carbon assets",
-      "Guided team in Chainlink Hackathon and implemented wrapped MRV standard for on-chain verification",
-      "Collaborated with founding team on protocol logic alignment and governance structure",
-      "Integrated latest advancements in smart contract security and audit preparation"
-    ]
-  },
-  {
-    title: "Blockchain Engineer",
-    company: "BlockTrust",
-    period: "Oct 2022 - Jan 2024",
-    description: "Developed NFT smart contracts generating revenue per auction, improved modularity by 40% using Diamond Proxy patterns, and optimized gas usage by 25% while ensuring compliance with ERC standards.",
-    achievements: [
-      "Designed and developed NFT smart contracts for collectibles within EVM-compatible chains",
-      "Led R&D efforts on NFT contract architectures and proxy patterns for upgradability",
-      "Delivered rapid MVP solution for NFT auction platform with royalty management",
-      "Optimized smart contract gas consumption by 25% through storage optimization",
-      "Collaborated across multiple teams and mentored junior developers on blockchain standards"
+      "Built dynamic pricing mechanism for carbon projects based on attributes like region, standard, and methodology",
+      "Engineered multi-asset AMM pools using Balancer's price formulas to ensure stable pricing for carbon market assets",
+      "Guided and helped external team participation in Chainlink Hackathon, implementing wrapped MRV standard for oracle integration with carbon methodologies"
     ]
   },
   {
     title: "Solidity Developer",
     company: "1000Geeks",
-    period: "May 2022 - Oct 2022",
-    description: "Integrated blockchain components using microservices architecture, reducing deployment times by 15% and implementing robust testing frameworks for smart contract validation.",
+    period: "2022",
+    description: "Developed smart contracts for NFT projects using Solidity, focusing on gas optimization and cross-project compatibility.",
     achievements: [
-      "Supported multiple NFT projects with smart contract development and deployment",
-      "Implemented efficient version control systems and documentation workflows",
-      "Reduced gas consumption per transaction by 10% through code optimization",
-      "Participated in peer code reviews and maintained high code quality standards",
-      "Designed and implemented token distribution mechanisms for project launches"
+      "Integrated blockchain components using node.js endpoints for scalable and efficient deployment",
+      "Built and deployed smart contracts for multiple NFT collections following industry best practices",
+      "Implemented gas optimization techniques for more cost-effective transactions in production environments"
     ]
   }
 ];
@@ -107,7 +195,7 @@ export const experiences: Experience[] = [
 export const projects: Project[] = [
   {
     title: "Tacitus Swap",
-    period: "Jan 2023 - Present",
+    period: "2023 - Present",
     description: "A sophisticated fork of Uniswap with custom Tacitus implementations, featuring an enhanced user interface with modern design elements. The platform incorporates a distinctive digital rain animation for a cyberpunk aesthetic, while maintaining the robust trading functionality of the original DEX. Supports multiple chains and token swaps with optimized transaction processing.",
     links: {
       github: "https://github.com/TacitusXI/tacitus-swap",
@@ -130,7 +218,7 @@ export const projects: Project[] = [
   },
   {
     title: "DeFi IL Hedge Bot",
-    period: "Mar 2024 - Present",
+    period: "2024 - Present",
     description: "A Python-based trading bot and backtesting framework that hedges impermanent loss in Uniswap V2 ETH/USDC liquidity pools using Binance perpetual contracts. The bot collects historical data, calculates LP position value, determines position sensitivity to ETH price changes, and executes hedging orders.",
     links: {
       github: "https://github.com/TacitusXI/defi-il-hedge-bot"
@@ -150,7 +238,7 @@ export const projects: Project[] = [
   },
   {
     title: "Ledger Signer",
-    period: "Jan 2024 - Present",
+    period: "2024 - Present",
     description: "A utility tool for Ledger hardware wallet integration that enables secure transaction signing with enhanced verification and multi-chain support. The signer provides a seamless interface for dApp interactions while maintaining the security benefits of hardware-based key storage.",
     links: {
       github: "https://github.com/TacitusXI/ledger-signer"
@@ -171,7 +259,7 @@ export const projects: Project[] = [
   },
   {
     title: "LeskoDEX",
-    period: "Nov 2021 - Mar 2023",
+    period: "2021 - 2023",
     description: "LeskoDEX is a decentralized exchange (DEX) featuring a decentralized order book and a custom ERC-20 ESKO token. Users can seamlessly connect via Metamask to trade the ETH/ESKO pair. The platform includes an integrated charting tool for comprehensive technical analysis.",
     links: {
       github: "https://github.com/TacitusXI/LeskoDEX"
@@ -192,7 +280,7 @@ export const projects: Project[] = [
   },
   {
     title: "TechnoirClub Marketplace",
-    period: "Jan 2022 - Mar 2023",
+    period: "2022 - 2023",
     description: "A collection of unique NFT mutant robots featuring an interactive frontend interface and marketplace. Each robot can be modified and reassembled to create entirely new configurations using interchangeable parts, offering over 999 trillion potential combinations for collectors and enthusiasts.",
     links: {
       github: "https://github.com/TacitusXI/TechnoirClub-Marketplace"
@@ -214,7 +302,7 @@ export const projects: Project[] = [
   },
   {
     title: "LIQUID-DEX",
-    period: "Dec 2023 - Jan 2024",
+    period: "2023 - 2024",
     description: "LIQUID Decentralized Exchange: Built on the Stacks ecosystem for STX/LIQ trading, utilizing the LIQUID SIP010 token and developed in Clarity for enhanced security. Users can connect, trade, and manage liquidity with advanced wallet integration and comprehensive trading features.",
     links: {
       github: "https://github.com/TacitusXI/LIQUID-DEX",
