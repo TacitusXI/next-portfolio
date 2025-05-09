@@ -5,8 +5,9 @@ import styled from 'styled-components';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useBackground } from '../effects/BackgroundProvider';
-import { experiences } from '@/data/content';
-import { FaFilePdf, FaExternalLinkAlt, FaTimes, FaSearch } from 'react-icons/fa';
+import { experiences, additionalExperiences } from '@/data/content';
+import { FaFilePdf, FaExternalLinkAlt, FaTimes, FaSearch, FaShieldAlt } from 'react-icons/fa';
+import { parseTextWithBookLinks } from '@/components/utils/textParser';
 
 const ExperienceContainer = styled.section`
   padding: 8rem 2rem;
@@ -460,6 +461,133 @@ const VerifyButton = styled(ViewButton)`
   }
 `;
 
+const ProofButton = styled(motion.button)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(115, 74, 253, 0.1);
+  border: 1px solid rgba(115, 74, 253, 0.2);
+  color: rgb(115, 74, 253);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(115, 74, 253, 0.2);
+  }
+`;
+
+const ProofModal = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  backdrop-filter: blur(5px);
+`;
+
+const ProofContent = styled(motion.div)`
+  width: 85%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: rgba(15, 15, 25, 0.95);
+  border-radius: 12px;
+  overflow: auto;
+  position: relative;
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  box-shadow: 0 0 30px rgba(115, 74, 253, 0.2);
+  padding: 1.75rem;
+  
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    width: 95%;
+  }
+`;
+
+const ProofTitle = styled.h3`
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 1rem;
+  text-align: center;
+`;
+
+const ProofDescription = styled.p`
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+`;
+
+const ProofImageGrid = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  overflow-x: auto;
+`;
+
+const ProofImage = styled.img`
+  height: 375px;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
+`;
+
+const ProofLinks = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const ProofLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(49, 164, 253, 0.1);
+  border: 1px solid rgba(49, 164, 253, 0.3);
+  color: rgb(49, 164, 253);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(49, 164, 253, 0.2);
+  }
+`;
+
+// Add this new styled component
+const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+`;
+
+const SideProjectsButton = styled(ProofButton)`
+  background: rgba(49, 164, 253, 0.1);
+  border: 1px solid rgba(49, 164, 253, 0.2);
+  color: rgb(49, 164, 253);
+  
+  &:hover {
+    background: rgba(49, 164, 253, 0.2);
+  }
+`;
+
 // Update interface to make certificateId optional
 interface Certificate {
   id: number;
@@ -486,6 +614,7 @@ export default function ExperienceSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [imageZoom, setImageZoom] = useState(1);
   const [imageRatio, setImageRatio] = useState({ width: 3, height: 2 }); // Default ratio
+  const [selectedProof, setSelectedProof] = useState<any | null>(null);
   
   useEffect(() => {
     if (inView) {
@@ -523,6 +652,7 @@ export default function ExperienceSection() {
   
   const tabs = [
     { id: 'work', name: 'Work Experience' },
+    { id: 'side', name: 'Side Projects' },
     { id: 'education', name: 'Certifications' }
   ];
   
@@ -650,6 +780,16 @@ export default function ExperienceSection() {
     setImageZoom(imageZoom === 1 ? 1.5 : 1);
   };
   
+  const openProofModal = (proof: any) => {
+    setSelectedProof(proof);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+  };
+  
+  const closeProofModal = () => {
+    setSelectedProof(null);
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+  };
+  
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -711,7 +851,7 @@ export default function ExperienceSection() {
                     <TimelineSubtitle>
                       <span>{experience.company}</span>
                     </TimelineSubtitle>
-                    <TimelineDescription>{experience.description}</TimelineDescription>
+                    <TimelineDescription>{parseTextWithBookLinks(experience.description)}</TimelineDescription>
                     
                     <AchievementsList>
                       {experience.achievements.map((achievement: string) => (
@@ -720,6 +860,79 @@ export default function ExperienceSection() {
                         </AchievementItem>
                       ))}
                     </AchievementsList>
+                    
+                    {experience.proof && (
+                      <ButtonsContainer>
+                        <ProofButton 
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => openProofModal(experience.proof)}
+                        >
+                          <FaShieldAlt /> View Proof
+                        </ProofButton>
+                        
+                        {experience.company === "Various Projects" && (
+                          <SideProjectsButton
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setActiveTab('side')}
+                          >
+                            Side Projects
+                          </SideProjectsButton>
+                        )}
+                      </ButtonsContainer>
+                    )}
+                  </TimelineContent>
+                </TimelineItem>
+              ))}
+            </Timeline>
+            
+            <Timeline 
+              isVisible={activeTab === 'side'}
+              variants={containerVariants}
+              initial="hidden"
+              animate={activeTab === 'side' ? 'visible' : 'hidden'}
+            >
+              {additionalExperiences.map((experience, index) => (
+                <TimelineItem key={index} variants={itemVariants}>
+                  <TimelineDate>{experience.period}</TimelineDate>
+                  <TimelineDot />
+                  <TimelineContent className="neotech-border">
+                    <TimelineTitle>{experience.title}</TimelineTitle>
+                    <TimelineSubtitle>
+                      <span>{experience.company}</span>
+                    </TimelineSubtitle>
+                    <TimelineDescription>{parseTextWithBookLinks(experience.description)}</TimelineDescription>
+                    
+                    <AchievementsList>
+                      {experience.achievements.map((achievement: string) => (
+                        <AchievementItem key={achievement}>
+                          {achievement}
+                        </AchievementItem>
+                      ))}
+                    </AchievementsList>
+                    
+                    {experience.proof && (
+                      <ButtonsContainer>
+                        <ProofButton 
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => openProofModal(experience.proof)}
+                        >
+                          <FaShieldAlt /> View Proof
+                        </ProofButton>
+                        
+                        {experience.company === "Various Projects" && (
+                          <SideProjectsButton
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setActiveTab('side')}
+                          >
+                            Side Projects
+                          </SideProjectsButton>
+                        )}
+                      </ButtonsContainer>
+                    )}
                   </TimelineContent>
                 </TimelineItem>
               ))}
@@ -759,7 +972,7 @@ export default function ExperienceSection() {
                       {certificate.certificateId && (
                         <CertificateId>ID: {certificate.certificateId}</CertificateId>
                       )}
-                      <TimelineDescription>{certificate.description}</TimelineDescription>
+                      <TimelineDescription>{parseTextWithBookLinks(certificate.description)}</TimelineDescription>
                       
                       <SkillsList>
                         {certificate.skills.map((skill, i) => (
@@ -845,6 +1058,61 @@ export default function ExperienceSection() {
               )}
             </ModalContent>
           </ModalOverlay>
+        )}
+      </AnimatePresence>
+      
+      {/* Proof Modal */}
+      <AnimatePresence>
+        {selectedProof && (
+          <ProofModal
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeProofModal}
+          >
+            <ProofContent
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CloseButton onClick={closeProofModal} aria-label="Close proof">
+                <FaTimes />
+              </CloseButton>
+              
+              {selectedProof.title && (
+                <ProofTitle>{selectedProof.title}</ProofTitle>
+              )}
+              
+              {selectedProof.description && (
+                <ProofDescription>{selectedProof.description}</ProofDescription>
+              )}
+              
+              {selectedProof.images && selectedProof.images.length > 0 && (
+                <ProofImageGrid>
+                  {selectedProof.images.map((image: string, index: number) => (
+                    <ProofImage key={index} src={image} alt={`Proof ${index + 1}`} />
+                  ))}
+                </ProofImageGrid>
+              )}
+              
+              {selectedProof.links && selectedProof.links.length > 0 && (
+                <ProofLinks>
+                  {selectedProof.links.map((link: any, index: number) => (
+                    <ProofLink 
+                      key={index} 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      {link.title} <FaExternalLinkAlt size={12} />
+                    </ProofLink>
+                  ))}
+                </ProofLinks>
+              )}
+            </ProofContent>
+          </ProofModal>
         )}
       </AnimatePresence>
     </>

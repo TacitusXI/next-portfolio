@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { experiences } from '@/data/content';
+import { FaChevronDown, FaChevronUp, FaExternalLinkAlt, FaTimes, FaShieldAlt } from 'react-icons/fa';
+import { experiences, additionalExperiences } from '@/data/content';
+import { parseTextWithBookLinks } from '@/components/utils/textParser';
 
 const ExperienceSection = styled.section`
   padding: 100px 0;
@@ -18,6 +19,27 @@ const SectionTitle = styled.h2`
   font-weight: 700;
   text-align: center;
   margin-bottom: 50px;
+`;
+
+const SubSectionTitle = styled.h3`
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  text-align: center;
+  
+  &.desktop-only {
+    display: none;
+    margin-bottom: 30px;
+    font-size: 1.4rem;
+    
+    @media (min-width: 769px) {
+      display: block;
+    }
+  }
+  
+  &.with-top-margin {
+    margin-top: 40px;
+  }
 `;
 
 const TimelineContainer = styled.div`
@@ -208,91 +230,465 @@ const AchievementsList = styled.ul`
   }
 `;
 
-const Experience: React.FC = () => {
-  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+const ProofButton = styled(motion.button)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+`;
 
-  const toggleCard = (index: number) => {
+const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+`;
+
+const SideProjectsButton = styled(ProofButton)`
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+`;
+
+const ProofModal = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  backdrop-filter: blur(5px);
+`;
+
+const ProofContent = styled(motion.div)`
+  width: 85%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: rgba(15, 15, 25, 0.95);
+  border-radius: 12px;
+  overflow: auto;
+  position: relative;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+  padding: 1.75rem;
+  
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    width: 95%;
+  }
+`;
+
+const ProofTitle = styled.h3`
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 1rem;
+  text-align: center;
+`;
+
+const ProofDescription = styled.p`
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+`;
+
+const ProofImageGrid = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  overflow-x: auto;
+`;
+
+const ProofImage = styled.img`
+  height: 375px;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
+`;
+
+const ProofLinks = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const ProofLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+`;
+
+const CloseProofButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(15, 15, 25, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.1);
+  }
+`;
+
+const Experience: React.FC = () => {
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [selectedProof, setSelectedProof] = useState<any | null>(null);
+
+  const toggleCard = (index: string) => {
     setExpandedCard(expandedCard === index ? null : index);
   };
+  
+  const openProofModal = (proof: any) => {
+    setSelectedProof(proof);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+  };
+  
+  const closeProofModal = () => {
+    setSelectedProof(null);
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+  };
+  
+  const scrollToSideProjects = () => {
+    const sideProjectsTitle = document.querySelector('.with-top-margin');
+    if (sideProjectsTitle) {
+      sideProjectsTitle.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
+  // Clean up on unmount
+  React.useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
 
   return (
-    <ExperienceSection id="experience">
-      <SectionTitle>Professional Experience</SectionTitle>
-      <TimelineContainer>
-        {/* Mobile View */}
-        {experiences.map((exp, index) => (
-          <MobileExperienceCard key={index}>
-            <CardHeader 
-              $isOpen={expandedCard === index}
-              onClick={() => toggleCard(index)}
+    <>
+      <ExperienceSection id="experience">
+        <SectionTitle>Professional Experience</SectionTitle>
+        <TimelineContainer>
+          {/* Mobile View - Main Experiences */}
+          <SubSectionTitle>Main Experience</SubSectionTitle>
+          {experiences.map((exp, index) => (
+            <MobileExperienceCard key={`main-${index}`}>
+              <CardHeader 
+                $isOpen={expandedCard === `main-${index}`}
+                onClick={() => toggleCard(`main-${index}`)}
+              >
+                <HeaderContent>
+                  <CompanyTitle>{exp.company}</CompanyTitle>
+                  <Period>{exp.period}</Period>
+                </HeaderContent>
+                <ExpandButton
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: expandedCard === `main-${index}` ? 180 : 0 }}
+                >
+                  {expandedCard === `main-${index}` ? <FaChevronUp /> : <FaChevronDown />}
+                </ExpandButton>
+              </CardHeader>
+              
+              <AnimatePresence>
+                {expandedCard === `main-${index}` && (
+                  <CardContent
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <JobTitle>{exp.title}</JobTitle>
+                    <Description>{parseTextWithBookLinks(exp.description)}</Description>
+                    <h5 style={{ marginTop: '20px', color: '#3b82f6' }}>Key Achievements:</h5>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                      {exp.achievements.map((achievement: string, i: number) => (
+                        <Achievement 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                        >
+                          {achievement}
+                        </Achievement>
+                      ))}
+                    </ul>
+                    
+                    {exp.proof && (
+                      <ButtonsContainer>
+                        <ProofButton 
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => openProofModal(exp.proof)}
+                        >
+                          <FaShieldAlt /> View Proof
+                        </ProofButton>
+                        
+                        {exp.company === "Various Projects" && (
+                          <SideProjectsButton
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={scrollToSideProjects}
+                          >
+                            Side Projects
+                          </SideProjectsButton>
+                        )}
+                      </ButtonsContainer>
+                    )}
+                  </CardContent>
+                )}
+              </AnimatePresence>
+            </MobileExperienceCard>
+          ))}
+          
+          {/* Mobile View - Additional Experiences */}
+          <SubSectionTitle className="with-top-margin">Side Projects</SubSectionTitle>
+          {additionalExperiences.map((exp, index) => (
+            <MobileExperienceCard key={`side-${index}`}>
+              <CardHeader 
+                $isOpen={expandedCard === `side-${index}`}
+                onClick={() => toggleCard(`side-${index}`)}
+              >
+                <HeaderContent>
+                  <CompanyTitle>{exp.company}</CompanyTitle>
+                  <Period>{exp.period}</Period>
+                </HeaderContent>
+                <ExpandButton
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: expandedCard === `side-${index}` ? 180 : 0 }}
+                >
+                  {expandedCard === `side-${index}` ? <FaChevronUp /> : <FaChevronDown />}
+                </ExpandButton>
+              </CardHeader>
+              
+              <AnimatePresence>
+                {expandedCard === `side-${index}` && (
+                  <CardContent
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <JobTitle>{exp.title}</JobTitle>
+                    <Description>{parseTextWithBookLinks(exp.description)}</Description>
+                    <h5 style={{ marginTop: '20px', color: '#3b82f6' }}>Key Achievements:</h5>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                      {exp.achievements.map((achievement: string, i: number) => (
+                        <Achievement 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                        >
+                          {achievement}
+                        </Achievement>
+                      ))}
+                    </ul>
+                  </CardContent>
+                )}
+              </AnimatePresence>
+            </MobileExperienceCard>
+          ))}
+
+          {/* Desktop View - Main Experiences */}
+          <SubSectionTitle className="desktop-only">Main Experience</SubSectionTitle>
+          {experiences.map((exp, index) => (
+            <TimelineItem
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              viewport={{ once: true }}
             >
-              <HeaderContent>
+              <TimelineDot />
+              <TimelineContent className="content">
                 <CompanyTitle>{exp.company}</CompanyTitle>
                 <Period>{exp.period}</Period>
-              </HeaderContent>
-              <ExpandButton
-                initial={{ rotate: 0 }}
-                animate={{ rotate: expandedCard === index ? 180 : 0 }}
-              >
-                {expandedCard === index ? <FaChevronUp /> : <FaChevronDown />}
-              </ExpandButton>
-            </CardHeader>
-            
-            <AnimatePresence>
-              {expandedCard === index && (
-                <CardContent
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <JobTitle>{exp.title}</JobTitle>
-                  <Description>{exp.description}</Description>
-                  <h5 style={{ marginTop: '20px', color: '#3b82f6' }}>Key Achievements:</h5>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {exp.achievements.map((achievement: string, i: number) => (
-                      <Achievement 
-                        key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
+                <JobTitle>{exp.title}</JobTitle>
+                <Description>{parseTextWithBookLinks(exp.description)}</Description>
+                <h5 style={{ marginTop: '20px', color: '#3b82f6' }}>Key Achievements:</h5>
+                <AchievementsList>
+                  {exp.achievements.map((achievement: string, i: number) => (
+                    <li key={i}>{achievement}</li>
+                  ))}
+                </AchievementsList>
+                
+                {exp.proof && (
+                  <ButtonsContainer>
+                    <ProofButton 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => openProofModal(exp.proof)}
+                    >
+                      <FaShieldAlt /> View Proof
+                    </ProofButton>
+                    
+                    {exp.company === "Various Projects" && (
+                      <SideProjectsButton
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={scrollToSideProjects}
                       >
-                        {achievement}
-                      </Achievement>
-                    ))}
-                  </ul>
-                </CardContent>
-              )}
-            </AnimatePresence>
-          </MobileExperienceCard>
-        ))}
+                        Side Projects
+                      </SideProjectsButton>
+                    )}
+                  </ButtonsContainer>
+                )}
+              </TimelineContent>
+            </TimelineItem>
+          ))}
 
-        {/* Desktop View */}
-        {experiences.map((exp, index) => (
-          <TimelineItem
-            key={index}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.2 }}
-            viewport={{ once: true }}
+          {/* Desktop View - Additional Experiences */}
+          <SubSectionTitle className="desktop-only with-top-margin">Side Projects</SubSectionTitle>
+          {additionalExperiences.map((exp, index) => (
+            <TimelineItem
+              key={`side-${index}`}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              viewport={{ once: true }}
+            >
+              <TimelineDot />
+              <TimelineContent className="content">
+                <CompanyTitle>{exp.company}</CompanyTitle>
+                <Period>{exp.period}</Period>
+                <JobTitle>{exp.title}</JobTitle>
+                <Description>{parseTextWithBookLinks(exp.description)}</Description>
+                <h5 style={{ marginTop: '20px', color: '#3b82f6' }}>Key Achievements:</h5>
+                <AchievementsList>
+                  {exp.achievements.map((achievement: string, i: number) => (
+                    <li key={i}>{achievement}</li>
+                  ))}
+                </AchievementsList>
+                
+                {exp.proof && (
+                  <ButtonsContainer>
+                    <ProofButton 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => openProofModal(exp.proof)}
+                    >
+                      <FaShieldAlt /> View Proof
+                    </ProofButton>
+                    
+                    {exp.company === "Various Projects" && (
+                      <SideProjectsButton
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={scrollToSideProjects}
+                      >
+                        Side Projects
+                      </SideProjectsButton>
+                    )}
+                  </ButtonsContainer>
+                )}
+              </TimelineContent>
+            </TimelineItem>
+          ))}
+        </TimelineContainer>
+      </ExperienceSection>
+      
+      {/* Proof Modal */}
+      <AnimatePresence>
+        {selectedProof && (
+          <ProofModal
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeProofModal}
           >
-            <TimelineDot />
-            <TimelineContent className="content">
-              <CompanyTitle>{exp.company}</CompanyTitle>
-              <Period>{exp.period}</Period>
-              <JobTitle>{exp.title}</JobTitle>
-              <Description>{exp.description}</Description>
-              <h5 style={{ marginTop: '20px', color: '#3b82f6' }}>Key Achievements:</h5>
-              <AchievementsList>
-                {exp.achievements.map((achievement: string, i: number) => (
-                  <li key={i}>{achievement}</li>
-                ))}
-              </AchievementsList>
-            </TimelineContent>
-          </TimelineItem>
-        ))}
-      </TimelineContainer>
-    </ExperienceSection>
+            <ProofContent
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CloseProofButton onClick={closeProofModal} aria-label="Close proof">
+                <FaTimes />
+              </CloseProofButton>
+              
+              {selectedProof.title && (
+                <ProofTitle>{selectedProof.title}</ProofTitle>
+              )}
+              
+              {selectedProof.description && (
+                <ProofDescription>{selectedProof.description}</ProofDescription>
+              )}
+              
+              {selectedProof.images && selectedProof.images.length > 0 && (
+                <ProofImageGrid>
+                  {selectedProof.images.map((image: string, index: number) => (
+                    <ProofImage key={index} src={image} alt={`Proof ${index + 1}`} />
+                  ))}
+                </ProofImageGrid>
+              )}
+              
+              {selectedProof.links && selectedProof.links.length > 0 && (
+                <ProofLinks>
+                  {selectedProof.links.map((link: any, index: number) => (
+                    <ProofLink 
+                      key={index} 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      {link.title} <FaExternalLinkAlt size={12} />
+                    </ProofLink>
+                  ))}
+                </ProofLinks>
+              )}
+            </ProofContent>
+          </ProofModal>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
