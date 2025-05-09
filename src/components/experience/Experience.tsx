@@ -665,7 +665,11 @@ const Experience: React.FC = () => {
               {selectedProof.images && selectedProof.images.length > 0 && (
                 <ProofImageGrid>
                   {selectedProof.images.map((image: string, index: number) => (
-                    <ProofImage key={index} src={image} alt={`Proof ${index + 1}`} />
+                    <ProofImage 
+                      key={index} 
+                      src={image.startsWith('/images/') ? `.${image}` : image} 
+                      alt={`Proof ${index + 1}`} 
+                    />
                   ))}
                 </ProofImageGrid>
               )}

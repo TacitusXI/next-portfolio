@@ -75,6 +75,9 @@ const fixAssetPaths = (filePath) => {
     content = content.replace(/(src=["'])(\/images\/)/g, '$1./images/');
     content = content.replace(/(src=["'])(\/profile\.jpg)/g, '$1./profile.jpg');
     
+    // Fix proof image paths specifically
+    content = content.replace(/(src=["'])(\/images\/proofs\/)/g, '$1./images/proofs/');
+    
     // Fix preloaded fonts that have nested paths
     content = content.replace(/(href=["'][^"']*?\/_next\/static\/media\/[^"']+\.)(woff2|woff|ttf)(["'])/g, 
       '$1$2$3 onerror="this.onerror=null; this.href=this.href.replace(\'/_next/\', \'./_next/\')"');
@@ -318,6 +321,11 @@ const createIpfsCompatibleFiles = () => {
       // Fix images from public directory
       document.querySelectorAll('img[src^="/images/"]').forEach(el => {
         el.src = './images/' + el.src.substring(el.src.indexOf('/images/') + 8);
+      });
+      
+      // Fix proof images specifically
+      document.querySelectorAll('img[src^="/images/proofs/"]').forEach(el => {
+        el.src = './images/proofs/' + el.src.substring(el.src.indexOf('/images/proofs/') + 14);
       });
       
       document.querySelectorAll('img[src="/profile.jpg"]').forEach(el => {
