@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Debug IPFS Issues</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #1e1e1e;
+      color: #eee;
+      padding: 20px;
+    }
+    
+    h1 {
+      color: #4fc3f7;
+    }
+    
+    pre {
+      background: #2d2d2d;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    
+    #results {
+      margin-top: 20px;
+    }
+    
+    .success {
+      color: #4caf50;
+    }
+    
+    .error {
+      color: #f44336;
+    }
+    
+    button {
+      background: #4fc3f7;
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    
+    button:hover {
+      background: #29b6f6;
+    }
+    
+    .log-item {
+      border-bottom: 1px solid #444;
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>IPFS Debugging Tool</h1>
+  
+  <div>
+    <h2>Script Analysis</h2>
+    <button id="analyzeScripts">Analyze Problematic Scripts</button>
+    <div id="scriptResults"></div>
+  </div>
+  
+  <div>
+    <h2>Font Testing</h2>
+    <button id="testFonts">Test Font Loading</button>
+    <div id="fontResults"></div>
+  </div>
+  
+  <div>
+    <h2>Fix Issues</h2>
+    <button id="fixIssues">Apply Manual Fixes</button>
+    <div id="fixResults"></div>
+  </div>
+  
+  <script>
+    // Helper to safely log
+    function logToResults(targetId, message, isError) {
+      const div = document.createElement('div');
+      div.className = 'log-item ' + (isError ? 'error' : 'success');
+      div.textContent = message;
+      document.getElementById(targetId).appendChild(div);
+    }
+    
+    // Analyze all scripts on the page
+    document.getElementById('analyzeScripts').addEventListener('click', function() {
+      const results = document.getElementById('scriptResults');
+      results.innerHTML = '';
+      
+      logToResults('scriptResults', '🔍 Analyzing scripts...', false);
+      
+      // Find all script elements
+      const scripts = document.getElementsByTagName('script');
+      logToResults('scriptResults', `Found ${scripts.length} script elements`, false);
+      
+      // Check each script
+      for (let i = 0; i < scripts.length; i++) {
+        const script = scripts[i];
+        
+        if (script.src) {
+          // External script
+          logToResults('scriptResults', `Script ${i+1}: ${script.src}`, false);
+          
+          // Check if it's the problematic script
+          if (script.src.indexOf('ipfs-fix.js') !== -1) {
+            logToResults('scriptResults', `⚠️ Found problematic script: ${script.src}`, true);
+            
+            // Attempt to fetch and analyze its content
+            fetch(script.src)
+              .then(response => response.text())
+              .then(content => {
+                // Look for regex patterns
+                const regexMatches = content.match(/\/[^\/]+\/[gimsuy]*/g);
+                if (regexMatches) {
+                  logToResults('scriptResults', `Found ${regexMatches.length} regex patterns:`, true);
+                  regexMatches.forEach(pattern => {
+                    logToResults('scriptResults', `  - ${pattern}`, true);
+                  });
+                } else {
+                  logToResults('scriptResults', 'No regex patterns found', false);
+                }
+              })
+              .catch(error => {
+                logToResults('scriptResults', `Could not fetch script content: ${error}`, true);
+              });
+          }
+        } else {
+          // Inline script
+          const content = script.textContent;
+          if (content.indexOf('match(') !== -1 && (content.indexOf('ipfs.io') !== -1 || content.indexOf('/_next/') !== -1)) {
+            logToResults('scriptResults', `⚠️ Found potentially problematic inline script with regex`, true);
+            
+            // Extract regex patterns
+            const regexMatches = content.match(/\/[^\/]+\/[gimsuy]*/g);
+            if (regexMatches) {
+              logToResults('scriptResults', `Found ${regexMatches.length} regex patterns:`, true);
+              regexMatches.forEach(pattern => {
+                logToResults('scriptResults', `  - ${pattern}`, true);
+              });
+            } else {
+              logToResults('scriptResults', 'No regex patterns found in match() calls', false);
+            }
+          }
+        }
+      }
+      
+      // Check for specific line number mentioned in error
+      logToResults('scriptResults', 'Checking for line 123 issues...', false);
+      const inlineScripts = document.querySelectorAll('script:not([src])');
+      for (let i = 0; i < inlineScripts.length; i++) {
+        const content = inlineScripts[i].textContent || '';
+        const lines = content.split('\n');
+        if (lines.length >= 123) {
+          const line = lines[122]; // zero-indexed
+          if (line.indexOf('/') !== -1) {
+            logToResults('scriptResults', `⚠️ Line 123 of inline script ${i+1} contains a potential regex: ${line}`, true);
+          }
+        }
+      }
+    });
+    
+    // Test font loading
+    document.getElementById('testFonts').addEventListener('click', function() {
+      const results = document.getElementById('fontResults');
+      results.innerHTML = '';
+      
+      logToResults('fontResults', '🔍 Testing font loading...', false);
+      
+      const fontFiles = [
+        'a34f9d1faa5f3315-s.p.woff2',
+        '55c55f0601d81cf3-s.woff2',
+        '26a46d62cd723877-s.woff2',
+        '97e0cb1ae144a2a9-s.woff2',
+        '581909926a08bbc8-s.woff2',
+        'df0a9ae256c0569c-s.woff2',
+        '6d93bde91c0c2823-s.woff2'
+      ];
+      
+      let successCount = 0;
+      const checkPaths = [
+        './fonts/',  // Relative path 
+        '/fonts/',   // Absolute path
+        './_next/static/media/'  // Next.js default path
+      ];
+      
+      fontFiles.forEach(font => {
+        checkPaths.forEach(path => {
+          const fullPath = path + font;
+          fetch(fullPath)
+            .then(response => {
+              if (response.ok) {
+                logToResults('fontResults', `✅ Font found at: ${fullPath}`, false);
+                successCount++;
+              } else {
+                logToResults('fontResults', `❌ Font not found at: ${fullPath} (${response.status})`, true);
+              }
+            })
+            .catch(error => {
+              logToResults('fontResults', `❌ Error loading font from: ${fullPath} - ${error}`, true);
+            });
+        });
+      });
+    });
+    
+    // Fix issues manually
+    document.getElementById('fixIssues').addEventListener('click', function() {
+      const results = document.getElementById('fixResults');
+      results.innerHTML = '';
+      
+      logToResults('fixResults', '🛠 Applying manual fixes...', false);
+      
+      // 1. Remove any problematic scripts
+      const scripts = document.querySelectorAll('script');
+      let removedCount = 0;
+      
+      scripts.forEach(script => {
+        if (script.src && script.src.indexOf('ipfs-fix.js') !== -1) {
+          script.parentNode.removeChild(script);
+          removedCount++;
+          logToResults('fixResults', `Removed problematic external script: ${script.src}`, false);
+        } else if (!script.src) {
+          const content = script.textContent;
+          if (content.indexOf('match(') !== -1 && 
+              (content.indexOf('ipfs.io') !== -1 || content.indexOf('/_next/') !== -1)) {
+            script.parentNode.removeChild(script);
+            removedCount++;
+            logToResults('fixResults', 'Removed problematic inline script with regex', false);
+          }
+        }
+      });
+      
+      // 2. Add direct font-face declarations
+      const style = document.createElement('style');
+      style.textContent = `
+        @font-face {
+          font-family: '__Inter_Fallback';
+          font-style: normal;
+          font-weight: 100 900;
+          font-display: swap;
+          src: url("./fonts/a34f9d1faa5f3315-s.p.woff2") format("woff2");
+        }
+      `;
+      document.head.appendChild(style);
+      logToResults('fixResults', 'Added direct font-face declaration', false);
+      
+      // 3. Fix all existing paths
+      function fixPaths() {
+        // Fix all elements with src or href attributes
+        const elements = document.querySelectorAll('[src], [href]');
+        let fixedCount = 0;
+        
+        elements.forEach(el => {
+          if (el.hasAttribute('src')) {
+            const src = el.getAttribute('src');
+            if (src && typeof src === 'string') {
+              let newSrc = src;
+              
+              // Fix paths
+              if (src.indexOf('/_next/') === 0) {
+                newSrc = './_next/' + src.substring(7);
+              } else if (src.indexOf('/fonts/') === 0) {
+                newSrc = '.' + src;
+              } else if (src.indexOf('/images/') === 0) {
+                newSrc = '.' + src;
+              }
+              
+              if (newSrc !== src) {
+                el.setAttribute('src', newSrc);
+                fixedCount++;
+              }
+            }
+          }
+          
+          if (el.hasAttribute('href')) {
+            const href = el.getAttribute('href');
+            if (href && typeof href === 'string') {
+              let newHref = href;
+              
+              // Fix paths
+              if (href.indexOf('/_next/') === 0) {
+                newHref = './_next/' + href.substring(7);
+              } else if (href.indexOf('/fonts/') === 0) {
+                newHref = '.' + href;
+              } else if (href.indexOf('/images/') === 0) {
+                newHref = '.' + href;
+              }
+              
+              if (newHref !== href) {
+                el.setAttribute('href', newHref);
+                fixedCount++;
+              }
+            }
+          }
+        });
+        
+        logToResults('fixResults', `Fixed ${fixedCount} element paths`, false);
+      }
+      
+      fixPaths();
+      
+      // 4. Create a working version link
+      const link = document.createElement('a');
+      link.href = './index.html?font_fix=true';
+      link.textContent = 'Click here to visit the fixed site';
+      link.style.display = 'block';
+      link.style.margin = '20px 0';
+      link.style.padding = '10px';
+      link.style.background = '#4caf50';
+      link.style.color = 'white';
+      link.style.textDecoration = 'none';
+      link.style.borderRadius = '4px';
+      link.style.textAlign = 'center';
+      
+      results.appendChild(link);
+      
+      logToResults('fixResults', `Applied ${removedCount} fixes - site should work now`, false);
+    });
+  </script>
+</body>
+</html> 

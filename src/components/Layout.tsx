@@ -304,17 +304,6 @@ const Layout = ({ children }: LayoutProps) => {
             }}
             aria-label="Toggle audio player"
           >
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background: 'linear-gradient(90deg, transparent, rgba(115, 74, 253, 0.8), transparent)',
-              animation: 'scan-line 2s linear infinite',
-              opacity: 0.7,
-            }}></div>
-            
             {/* Icon with animation */}
             <span style={{
               filter: 'drop-shadow(0 0 2px rgb(115, 74, 253))',

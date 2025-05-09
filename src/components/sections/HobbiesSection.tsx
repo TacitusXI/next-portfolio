@@ -191,7 +191,7 @@ export default function HobbiesSection() {
           transition={{ duration: 0.6 }}
           className="cyberpunk-section-title cyberpunk-title-md"
           data-text="Explore.Personal_Interests"
-          data-mobile-text="Interests"
+          data-mobile-text="Hobbies"
         >
           Explore.Personal_Interests
         </SectionTitle>

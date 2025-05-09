@@ -1,4 +1,13 @@
 /* Custom CSS - placed before Tailwind imports to avoid processing conflicts */
+/* Font face for Inter font */
+@font-face {
+  font-family: '__Inter_Fallback';
+  src: url('/fonts/a34f9d1faa5f3315-s.p.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 .custom-text-white {
   color: #ffffff;
 }
@@ -168,6 +177,23 @@
   .cyberpunk-section-title::before,
   .cyberpunk-section-title::after {
     -webkit-text-fill-color: initial;
+  }
+  
+  .cyberpunk-section-title::before {
+    -webkit-text-fill-color: rgb(115, 74, 253);
+  }
+  
+  .cyberpunk-section-title::after {
+    -webkit-text-fill-color: rgb(49, 164, 253);
+  }
+}
+
+/* Replace with this corrected version */
+/* Responsive content for mobile devices */
+@media (max-width: 768px) {
+  .cyberpunk-section-title[data-mobile-text]::before,
+  .cyberpunk-section-title[data-mobile-text]::after {
+    content: attr(data-mobile-text);
   }
   
   .cyberpunk-section-title::before {
@@ -433,5 +459,21 @@
   .content-section-enhanced code {
     white-space: pre-wrap;
     font-size: 0.75rem;
+  }
+}
+
+/* FIXED VERSION - Mobile title text replacement */
+@media (max-width: 768px) {
+  .cyberpunk-section-title[data-mobile-text]::before,
+  .cyberpunk-section-title[data-mobile-text]::after {
+    content: attr(data-mobile-text);
+  }
+  
+  .cyberpunk-section-title::before {
+    -webkit-text-fill-color: rgb(115, 74, 253);
+  }
+  
+  .cyberpunk-section-title::after {
+    -webkit-text-fill-color: rgb(49, 164, 253);
   }
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ivan Leskov | Redirecting</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #000514;
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    
+    .container {
+      max-width: 800px;
+      padding: 2rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #734afd, #31a4fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .loader {
+      margin: 2rem auto;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 5px solid #31a4fd;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+  </style>
+  <script>
+    // Function to determine if we're running in IPFS environment
+    function isIPFSEnvironment() {
+      var hostname = window.location.hostname;
+      var ipfsPatterns = [
+        'ipfs.io',
+        'ipfs.fleek.co',
+        'gateway.pinata.cloud',
+        'cloudflare-ipfs.com',
+        'ipfs.infura.io',
+        'gateway.ipfs.io',
+        'ipfs.cf-ipfs.com'
+      ];
+      
+      // Check if hostname contains any IPFS patterns
+      for (var i = 0; i < ipfsPatterns.length; i++) {
+        if (hostname.indexOf(ipfsPatterns[i]) !== -1) {
+          return true;
+        }
+      }
+      
+      // Check if URL contains IPFS identifiers
+      var path = window.location.pathname;
+      if (path.indexOf('/ipfs/') !== -1 || path.indexOf('/ipns/') !== -1) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // Preload main font file
+    var preloadLink = document.createElement('link');
+    preloadLink.rel = 'preload';
+    preloadLink.href = './fonts/a34f9d1faa5f3315-s.p.woff2';
+    preloadLink.as = 'font';
+    preloadLink.type = 'font/woff2';
+    preloadLink.crossOrigin = 'anonymous';
+    document.head.appendChild(preloadLink);
+    
+    // Get any existing query parameters
+    var currentParams = new URLSearchParams(window.location.search);
+    var queryParams = '';
+    
+    // Wait for document to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      var message = document.getElementById('message');
+      
+      if (isIPFSEnvironment()) {
+        message.textContent = 'Detected IPFS environment. Redirecting to optimized version...';
+        
+        // Add IPFS specific parameters
+        currentParams.set('font_fix', 'true');
+        currentParams.set('bypass_ipfs_fix', 'true');
+        queryParams = '?' + currentParams.toString();
+        
+        // First try to load the direct approach
+        setTimeout(function() {
+          window.location.href = './direct.html' + queryParams;
+        }, 1500);
+      } else {
+        message.textContent = 'Redirecting to portfolio...';
+        
+        // Regular site, just pass through any existing query params
+        queryParams = window.location.search;
+        
+        // Redirect to regular index
+        setTimeout(function() {
+          window.location.href = './index.html' + queryParams;
+        }, 1000);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Ivan Leskov</h1>
+    <p id="message">Loading portfolio...</p>
+    <div class="loader"></div>
+    <p><small>If you're not redirected automatically, <a href="./direct.html?font_fix=true&bypass_ipfs_fix=true" style="color: #31a4fd;">click here</a>.</small></p>
+  </div>
+</body>
+</html> 

@@ -4,6 +4,15 @@ export interface Experience {
   period: string;
   description: string;
   achievements: string[];
+  proof?: {
+    title?: string;
+    description?: string;
+    images?: string[];
+    links?: Array<{
+      title: string;
+      url: string;
+    }>;
+  };
 }
 
 export interface Project {

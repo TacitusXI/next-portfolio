@@ -34,6 +34,10 @@ const ContentWrapper = styled.div`
 
   @media (max-width: 768px) {
     padding-top: 2rem; /* Reduce this since we're adding padding to container */
+    width: 100%;
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 `;
 
@@ -56,14 +60,33 @@ const Title = styled(motion.h1)`
 const Subtitle = styled(motion.h2)`
   font-size: 1.5rem;
   margin-bottom: 2rem;
-  max-width: 700px;
+  max-width: 800px;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.5;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
+    max-width: 100%;
   }
+`;
+
+const BulletPoint = styled.div`
+  display: flex;
+  margin-bottom: 0.5rem;
+  align-items: center;
+  width: 100%;
+  overflow: visible;
+`;
+
+const Bullet = styled.span`
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+`;
+
+const BulletContent = styled.span`
+  white-space: nowrap;
+  overflow: visible;
 `;
 
 const TypedText = styled.span`
@@ -81,6 +104,18 @@ const TypedText = styled.span`
   @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
+  }
+`;
+
+const BookLink = styled.a`
+  color: rgb(72, 191, 255);
+  text-decoration: none;
+  position: relative;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    text-shadow: 0 0 8px rgba(72, 191, 255, 0.5);
   }
 `;
 
@@ -323,10 +358,11 @@ export default function HeroSection() {
   
   useEffect(() => {
     const phrases = [
-      'Blockchain Developer',
+
       'Smart Contract Engineer',
-      'Web3 Enthusiast',
-      'DeFi Specialist'
+      'Technical Reviewer',
+      'Solidity Dev',
+      'Blockchain Enthusiast'
     ];
     
     const timer = setTimeout(() => {
@@ -413,39 +449,30 @@ export default function HeroSection() {
               color: 'white',
               textShadow: 'none'
             }}>
-              <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span style={{ 
-                  color: 'white', 
-                  marginRight: '0.5rem',
-                  textShadow: 'none',
-                  filter: 'none'
-                }}>•</span>
-                <span style={{ color: 'white', textShadow: 'none' }}>
+              <BulletPoint>
+                <Bullet style={{ color: 'white', textShadow: 'none', filter: 'none' }}>•</Bullet>
+                <BulletContent style={{ color: 'white', textShadow: 'none' }}>
                   Focused on blockchain security and reliable infrastructure
-                </span>
-              </div>
-              <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span style={{ 
-                  color: 'white', 
-                  marginRight: '0.5rem',
-                  textShadow: 'none',
-                  filter: 'none'
-                }}>•</span>
-                <span style={{ color: 'white', textShadow: 'none' }}>
-                  Building resilient DeFi protocols and identifying vulnerabilities
-                </span>
-              </div>
-              <div style={{ display: 'flex', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span style={{ 
-                  color: 'white', 
-                  marginRight: '0.5rem',
-                  textShadow: 'none',
-                  filter: 'none'
-                }}>•</span>
-                <span style={{ color: 'white', textShadow: 'none' }}>
-                  Bringing 8+ years of finance expertise to Web3
-                </span>
-              </div>
+                </BulletContent>
+              </BulletPoint>
+              
+              <BulletPoint>
+                <Bullet style={{ color: 'white', textShadow: 'none', filter: 'none' }}>•</Bullet>
+                <BulletContent style={{ color: 'white', textShadow: 'none' }}>
+                  Leveraging 4 years in traditional finance and 5 years in DeFi
+                </BulletContent>
+              </BulletPoint>
+              
+              <BulletPoint>
+                <Bullet style={{ color: 'white', textShadow: 'none', filter: 'none' }}>•</Bullet>
+                <BulletContent style={{ color: 'white', textShadow: 'none' }}>
+                  Technical reviewer for <BookLink 
+                    href="https://www.amazon.com/Developing-Blockchain-Solutions-Cloud-blockchain-powered-ebook/dp/B0CW59K1M4" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >Developing Blockchain Solutions in the Cloud</BookLink>
+                </BulletContent>
+              </BulletPoint>
             </div>
           </Subtitle>
           
@@ -459,7 +486,7 @@ export default function HeroSection() {
                 whileTap={{ scale: 0.95 }}
                 className="cyberpunk-button"
               >
-                View My Work
+                Explore My Solutions
               </PrimaryButton>
             </Link>
             
@@ -470,7 +497,7 @@ export default function HeroSection() {
                 whileTap={{ scale: 0.95 }}
                 className="cyberpunk-button"
               >
-                Contact Me
+                Initiate Connection
               </SecondaryButton>
             </Link>
           </ButtonContainer>
@@ -488,7 +515,7 @@ export default function HeroSection() {
             </StatItem>
             
             <StatItem>
-              <StatValue>8+</StatValue>
+              <StatValue>9+</StatValue>
               <StatLabel>
                 <span>YEARS IN</span>
                 <span>FINANCE</span>
