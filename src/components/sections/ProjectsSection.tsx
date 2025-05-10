@@ -7,6 +7,7 @@ import { useInView } from 'react-intersection-observer';
 import { useBackground } from '../effects/BackgroundProvider';
 import { projects } from '@/data/content';
 import type { Project } from '@/types/index';
+import { trackEvent, setTag } from '@/utils/analytics';
 
 const ProjectsContainer = styled.section`
   padding: 8rem 2rem;
@@ -353,6 +354,11 @@ export default function ProjectsSection() {
                 className="cyberpunk-card"
                 onClick={() => {
                   if (project.links.github) {
+                    // Track the project click with Clarity
+                    trackEvent('project_click');
+                    setTag('project_name', project.title);
+                    setTag('project_tech', project.githubInfo?.languages.map(lang => lang.name) || []);
+                    
                     window.open(project.links.github, '_blank', 'noopener noreferrer');
                   }
                 }}
