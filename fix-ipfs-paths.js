@@ -34,8 +34,8 @@ const fixAssetPaths = (filePath) => {
   // Fix different path patterns
   if (fileExt === '.html' || fileExt === '.js' || fileExt === '.css') {
     // Fix nested _next paths first (important to do this before other replacements)
-    content = content.replace(/(\/_next\/[^"']*?)(\/_next\/)/g, '$1/');
-    content = content.replace(/(_next\/[^"']*?)(_next\/)/g, '$1');
+    content = content.replace(/(\/\_next\/[^"']*?)(\/\_next\/)/g, '$1/');
+    content = content.replace(/(\_next\/[^"']*?)(\_next\/)/g, '$1');
     
     // Fix all /_next/ paths (important: must be first to catch most patterns)
     content = content.replace(/(\"|\'|\`|\(|\s|=)(\/\_next\/)/g, '$1./_next/');
@@ -80,7 +80,7 @@ const fixAssetPaths = (filePath) => {
     
     // Fix preloaded fonts that have nested paths
     content = content.replace(/(href=["'][^"']*?\/_next\/static\/media\/[^"']+\.)(woff2|woff|ttf)(["'])/g, 
-      '$1$2$3 onerror="this.onerror=null; this.href=this.href.replace(\'/_next/\', \'./_next/\')"');
+      '$1$2$3 onerror="this.onerror=null; this.href=this.href.replace(\'\/_next\/\', \'.\\/_next\/\')"');
   }
   
   // Write fixed content back to file
@@ -302,7 +302,7 @@ const createIpfsCompatibleFiles = () => {
       // Fix font and media paths - special case for nested paths
       document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
         const href = el.getAttribute('href');
-        const fixedHref = href.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
+        const fixedHref = href.replace(/_next\\/static\\/css\\/_next\\/static\\/media\\//g, '_next/static/media/');
         el.setAttribute('href', fixedHref);
       });
       
