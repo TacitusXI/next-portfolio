@@ -33,6 +33,21 @@ const fixAssetPaths = (filePath) => {
   
   // Fix different path patterns
   if (fileExt === '.html' || fileExt === '.js' || fileExt === '.css') {
+    // Special fix for doubled paths in CSS files (_next/static/css/_next/static/media)
+    if (fileExt === '.css') {
+      // Fix the doubled _next paths in CSS files referencing font files
+      content = content.replace(
+        /_next\/static\/css\/_next\/static\/media\//g, 
+        '_next/static/media/'
+      );
+      
+      // Also fix any other variations of this doubling
+      content = content.replace(
+        /(\/|^)_next\/static\/css\/_next\//g, 
+        '$1_next/'
+      );
+    }
+    
     // Fix nested _next paths first (important to do this before other replacements)
     content = content.replace(/(\/\_next\/[^"']*?)(\/\_next\/)/g, '$1/');
     content = content.replace(/(\_next\/[^"']*?)(\_next\/)/g, '$1');
@@ -508,6 +523,28 @@ const fixNextDirectory = () => {
         console.error('Failed to create fallback directory:', err.message);
       }
     }
+  }
+  
+  // Special fix for doubled font paths - specifically fix the CSS files
+  const cssDir = path.join(nextDir, 'static', 'css');
+  if (fs.existsSync(cssDir)) {
+    const cssFiles = fs.readdirSync(cssDir).filter(file => file.endsWith('.css'));
+    cssFiles.forEach(cssFile => {
+      const cssFilePath = path.join(cssDir, cssFile);
+      let cssContent = fs.readFileSync(cssFilePath, 'utf8');
+      
+      // Replace any occurrences of doubled _next paths
+      const originalContent = cssContent;
+      cssContent = cssContent.replace(
+        /_next\/static\/css\/_next\/static\/media\//g, 
+        '_next/static/media/'
+      );
+      
+      if (cssContent !== originalContent) {
+        fs.writeFileSync(cssFilePath, cssContent);
+        console.log(`Fixed doubled _next paths in CSS file: ${cssFilePath}`);
+      }
+    });
   }
 };
 

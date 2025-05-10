@@ -4,6 +4,11 @@
   function fixAssetUrl(url) {
     if (typeof url !== 'string') return url;
     
+    // Fix doubled _next paths in CSS (common issue with font files)
+    if (url.includes('/_next/static/css/_next/static/media/')) {
+      return url.replace('/_next/static/css/_next/static/media/', '/_next/static/media/');
+    }
+    
     // Handle direct /_next/ URLs
     if (url.startsWith('/_next/')) {
       return './_next/' + url.substring(7);
@@ -85,10 +90,51 @@
 
   // Fix all elements with src or href
   function fixAllElements() {
+    // Fix doubled paths in CSS links - specifically targeting the font issue
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(el => {
+      if (el.href && el.href.includes('/_next/static/css/')) {
+        // For stylesheets, we need to check their content
+        fetch(el.href)
+          .then(response => response.text())
+          .then(cssText => {
+            if (cssText.includes('_next/static/css/_next/static/media/')) {
+              // Create a fixed version of the CSS
+              const fixedCss = cssText.replace(
+                /_next\/static\/css\/_next\/static\/media\//g, 
+                '_next/static/media/'
+              );
+              
+              // Replace the stylesheet if we made changes
+              if (fixedCss !== cssText) {
+                const style = document.createElement('style');
+                style.textContent = fixedCss;
+                document.head.appendChild(style);
+                // Remove the original stylesheet to avoid conflicts
+                el.disabled = true;
+              }
+            }
+          })
+          .catch(err => console.warn('Failed to fix CSS:', err));
+      }
+    });
+
+    // Directly fix href attributes containing the doubled paths
+    document.querySelectorAll('[href*="_next/static/css/_next/"]').forEach(el => {
+      const href = el.getAttribute('href');
+      const fixedHref = href.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
+      el.setAttribute('href', fixedHref);
+    });
+    
     // Fix preloaded fonts
     document.querySelectorAll('link[rel="preload"][as="font"]').forEach(el => {
       const href = el.getAttribute('href');
       if (href) {
+        // Fix doubled paths first
+        if (href.includes('/_next/static/css/_next/static/media/')) {
+          const fixedHref = href.replace('/_next/static/css/_next/static/media/', '/_next/static/media/');
+          el.setAttribute('href', fixedHref);
+        }
+        
         if (href.includes('/_next/static/media/') && (href.includes('.woff2') || href.includes('.woff'))) {
           const filename = href.split('/').pop();
           el.setAttribute('href', './fonts/' + filename);
@@ -112,6 +158,14 @@
     document.querySelectorAll('style').forEach(styleEl => {
       if (styleEl.textContent && styleEl.textContent.includes('@font-face')) {
         let cssText = styleEl.textContent;
+        
+        // Fix doubled _next paths first
+        if (cssText.includes('_next/static/css/_next/static/media/')) {
+          cssText = cssText.replace(
+            /_next\/static\/css\/_next\/static\/media\//g, 
+            '_next/static/media/'
+          );
+        }
         
         // Fix font paths using string operations to avoid regex issues
         if (cssText.includes('url(') && (cssText.includes('.woff2') || cssText.includes('.woff'))) {
@@ -168,11 +222,23 @@
     // Force reload broken font faces
     if (document.fonts && typeof document.fonts.load === 'function') {
       try {
-        // Try to load Inter font from multiple possible locations
-        document.fonts.load('1em "Inter"', 'a').then(() => {
-          console.log('Successfully loaded Inter font');
-        }).catch(() => {
-          console.log('Could not load Inter font from first source, trying alternatives');
+        // Try to load fonts from multiple possible paths
+        document.querySelectorAll('style').forEach(style => {
+          if (style.textContent.includes('@font-face') && style.textContent.includes('font-family')) {
+            // Extract font names from the CSS
+            const fontNameMatches = style.textContent.match(/font-family:\s*['"]([^'"]+)['"]/g);
+            if (fontNameMatches) {
+              // For each font, try to load it
+              fontNameMatches.forEach(match => {
+                const fontName = match.replace(/font-family:\s*['"]([^'"]+)['"]/, '$1');
+                if (fontName) {
+                  document.fonts.load(`1em "${fontName}"`, 'a').then(() => {
+                    console.log(`Successfully loaded font: ${fontName}`);
+                  }).catch(() => {});
+                }
+              });
+            }
+          }
         });
       } catch (e) {
         console.error('Error preloading fonts:', e);
@@ -186,6 +252,10 @@
   // And again after document is loaded
   document.addEventListener('DOMContentLoaded', fixAllElements);
   window.addEventListener('load', fixAllElements);
+  
+  // Also run after a short delay to catch any dynamically loaded resources
+  setTimeout(fixAllElements, 1000);
+  setTimeout(fixAllElements, 3000);
   
   // Add MutationObserver to catch dynamically added elements
   const observer = new MutationObserver(function(mutations) {
