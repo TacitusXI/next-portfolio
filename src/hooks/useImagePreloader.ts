@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type ImageStatus = 'loading' | 'loaded' | 'error';
 
@@ -9,8 +9,19 @@ type ImageStatus = 'loading' | 'loaded' | 'error';
  */
 export const useImagePreloader = (imageSrcs: string[]) => {
   const [imagesStatus, setImagesStatus] = useState<Record<string, ImageStatus>>({});
+  const prevImageSrcsRef = useRef<string[]>([]);
 
   useEffect(() => {
+    // Check if imageSrcs array has changed
+    const hasImageSrcsChanged = 
+      prevImageSrcsRef.current.length !== imageSrcs.length || 
+      imageSrcs.some((src, i) => prevImageSrcsRef.current[i] !== src);
+    
+    if (!hasImageSrcsChanged) return;
+    
+    // Update ref with current imageSrcs
+    prevImageSrcsRef.current = [...imageSrcs];
+    
     // Only preload images that haven't been loaded or aren't already loading
     const imagesToLoad = imageSrcs.filter(
       src => !imagesStatus[src] || imagesStatus[src] === 'error'
@@ -18,12 +29,14 @@ export const useImagePreloader = (imageSrcs: string[]) => {
 
     if (imagesToLoad.length === 0) return;
 
-    // Mark images as loading
-    const newStatus: Record<string, ImageStatus> = { ...imagesStatus };
-    imagesToLoad.forEach(src => {
-      newStatus[src] = 'loading';
+    // Mark images as loading using functional update
+    setImagesStatus(prevStatus => {
+      const newStatus = { ...prevStatus };
+      imagesToLoad.forEach(src => {
+        newStatus[src] = 'loading';
+      });
+      return newStatus;
     });
-    setImagesStatus(newStatus);
 
     // Create image objects to trigger loading
     const imagePromises = imagesToLoad.map(src => {
@@ -44,13 +57,15 @@ export const useImagePreloader = (imageSrcs: string[]) => {
 
     // Update status as images load
     Promise.all(imagePromises).then(results => {
-      const updatedStatus = { ...newStatus };
-      results.forEach(({ src, status }) => {
-        updatedStatus[src] = status;
+      setImagesStatus(prevStatus => {
+        const updatedStatus = { ...prevStatus };
+        results.forEach(({ src, status }) => {
+          updatedStatus[src] = status;
+        });
+        return updatedStatus;
       });
-      setImagesStatus(updatedStatus);
     });
-  }, [imageSrcs, imagesStatus]);
+  }, [imageSrcs]); // Remove imagesStatus from dependencies
 
   // Check if all images are loaded
   const allImagesLoaded = imageSrcs.every(

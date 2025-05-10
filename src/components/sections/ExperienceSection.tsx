@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
@@ -69,7 +69,9 @@ const TimelinesContainer = styled.div`
   position: relative;
 `;
 
-const Timeline = styled(motion.div)<{ isVisible: boolean }>`
+const Timeline = styled(motion.div).withConfig({
+  shouldForwardProp: (prop) => prop !== 'isVisible'
+})<{ isVisible: boolean }>`
   display: ${props => props.isVisible ? 'block' : 'none'};
 `;
 
@@ -670,15 +672,27 @@ export default function ExperienceSection() {
     .flatMap(exp => exp.proof ? exp.proof.images || [] : [])
     .map(img => img.startsWith('/images/') ? `.${img}` : img);
   
+  // Track previous length of loadedSrcs to avoid unnecessary updates
+  const prevLoadedSrcsLengthRef = useRef(0);
+  
   // Use our preloader hook
   const { imagesStatus, loadedSrcs } = useImagePreloader(allProofImages);
   
   // Update preloadedImages set when images load through the hook
   useEffect(() => {
-    if (loadedSrcs.length > 0) {
-      setPreloadedImages(prev => new Set([...prev, ...loadedSrcs]));
+    // Only update if we have more loaded sources than before
+    if (loadedSrcs.length > prevLoadedSrcsLengthRef.current) {
+      prevLoadedSrcsLengthRef.current = loadedSrcs.length;
+      
+      // Find only the newly loaded sources
+      const currentPreloadedArray = Array.from(preloadedImages);
+      const newSrcs = loadedSrcs.filter(src => !currentPreloadedArray.includes(src));
+      
+      if (newSrcs.length > 0) {
+        setPreloadedImages(prev => new Set([...prev, ...newSrcs]));
+      }
     }
-  }, [loadedSrcs]);
+  }, [loadedSrcs]); // Safe to depend on loadedSrcs with our ref check
 
   useEffect(() => {
     if (inView) {

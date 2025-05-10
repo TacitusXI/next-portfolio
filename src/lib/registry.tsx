@@ -39,8 +39,16 @@ export default function StyledComponentsRegistry({
     return <>{styles}</>;
   });
 
-  if (typeof window !== 'undefined') return <>{children}</>;
+  if (typeof window !== 'undefined') {
+    // Client-side rendering - still apply shouldForwardProp
+    return (
+      <StyleSheetManager shouldForwardProp={shouldForwardProp} enableVendorPrefixes>
+        {children}
+      </StyleSheetManager>
+    );
+  }
 
+  // Server-side rendering
   return (
     <StyleSheetManager sheet={styledComponentsStyleSheet.instance} shouldForwardProp={shouldForwardProp} enableVendorPrefixes>
       {children}

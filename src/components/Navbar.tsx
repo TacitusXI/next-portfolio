@@ -309,7 +309,26 @@ const MobileMenuList = styled(motion.div)`
 `;
 
 // Individual nav link styling
-const NavItem = styled(motion.a)<{ $isActive: boolean; $isMobile?: boolean }>`
+const NavItem = styled(motion.a).withConfig({
+  shouldForwardProp: (prop) => {
+    // Don't forward Framer Motion and custom props to the DOM
+    const blacklist = [
+      'whileHover', 
+      'whileTap', 
+      'whileFocus', 
+      'whileDrag',
+      'whileInView',
+      'initial', 
+      'animate', 
+      'exit', 
+      'transition',
+      'variants',
+      '$isActive',
+      '$isMobile'
+    ];
+    return !blacklist.includes(prop);
+  }
+})<{ $isActive: boolean; $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.4rem;

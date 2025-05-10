@@ -239,7 +239,7 @@ const GlowOverlay = styled.div`
   }
 `;
 
-const BioText = styled(motion.p)`
+const BioText = styled(motion.div)`
   font-size: 1.1rem;
   line-height: 1.8;
   color: rgba(255, 255, 255, 0.9);
