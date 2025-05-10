@@ -20,8 +20,6 @@ function ClarityTrackerInner() {
       Clarity.identify(`user-${Date.now()}`, undefined, pathname);
       Clarity.setTag('page', pathname);
       Clarity.event('page_view');
-      
-      console.log('Clarity tracking page view:', pageUrl);
     }
   }, [pathname, searchParams]);
 
@@ -35,7 +33,6 @@ export default function ClarityTracker() {
     
     if (projectId) {
       Clarity.init(projectId);
-      console.log('Clarity initialized with project ID:', projectId);
     } else {
       console.warn('Clarity project ID not found in environment variables');
     }

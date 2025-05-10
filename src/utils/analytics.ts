@@ -10,7 +10,6 @@ import Clarity from '@microsoft/clarity';
 export const trackEvent = (eventName: string): void => {
   try {
     Clarity.event(eventName);
-    console.log(`Analytics event tracked: ${eventName}`);
   } catch (error) {
     console.error('Failed to track event:', error);
   }
@@ -24,7 +23,6 @@ export const trackEvent = (eventName: string): void => {
 export const setTag = (key: string, value: string | string[]): void => {
   try {
     Clarity.setTag(key, value);
-    console.log(`Analytics tag set: ${key} = ${value}`);
   } catch (error) {
     console.error('Failed to set tag:', error);
   }
@@ -45,7 +43,6 @@ export const identifyUser = (
 ): void => {
   try {
     Clarity.identify(userId, sessionId, pageId, friendlyName);
-    console.log(`User identified: ${userId}`);
   } catch (error) {
     console.error('Failed to identify user:', error);
   }
@@ -58,7 +55,6 @@ export const identifyUser = (
 export const upgradeSession = (reason: string): void => {
   try {
     Clarity.upgrade(reason);
-    console.log(`Session upgraded: ${reason}`);
   } catch (error) {
     console.error('Failed to upgrade session:', error);
   }
