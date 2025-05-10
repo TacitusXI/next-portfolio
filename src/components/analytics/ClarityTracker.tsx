@@ -1,24 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import Clarity from '@microsoft/clarity';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-export default function ClarityTracker() {
+// Inner component that uses searchParams
+function ClarityTrackerInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Initialize Clarity just once when the component mounts
-    const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
-    
-    if (projectId) {
-      Clarity.init(projectId);
-      console.log('Clarity initialized with project ID:', projectId);
-    } else {
-      console.warn('Clarity project ID not found in environment variables');
-    }
-  }, []);
 
   // Track page views when the pathname or search params change
   useEffect(() => {
@@ -36,6 +25,26 @@ export default function ClarityTracker() {
     }
   }, [pathname, searchParams]);
 
-  // This component doesn't render anything visible
   return null;
+}
+
+export default function ClarityTracker() {
+  useEffect(() => {
+    // Initialize Clarity just once when the component mounts
+    const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
+    
+    if (projectId) {
+      Clarity.init(projectId);
+      console.log('Clarity initialized with project ID:', projectId);
+    } else {
+      console.warn('Clarity project ID not found in environment variables');
+    }
+  }, []);
+
+  // This component doesn't render anything visible
+  return (
+    <Suspense fallback={null}>
+      <ClarityTrackerInner />
+    </Suspense>
+  );
 } 
