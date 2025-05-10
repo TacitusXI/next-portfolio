@@ -408,6 +408,13 @@ const fixAssetFilenames = () => {
   const staticDir = path.join(outputDir, '_next', 'static');
   if (!fs.existsSync(staticDir)) return;
   
+  // Create fonts directory in output root
+  const fontsDir = path.join(outputDir, 'fonts');
+  if (!fs.existsSync(fontsDir)) {
+    fs.mkdirSync(fontsDir, { recursive: true });
+    console.log('Created fonts directory for better font access');
+  }
+  
   // Fix font files with problematic paths
   const cssDir = path.join(staticDir, 'css');
   const mediaDir = path.join(staticDir, 'media');
@@ -415,18 +422,24 @@ const fixAssetFilenames = () => {
   if (fs.existsSync(mediaDir)) {
     const mediaFiles = fs.readdirSync(mediaDir);
     mediaFiles.forEach(file => {
-      // Copy font files to css directory for easier relative access
+      // Copy font files to both css directory and root fonts directory
       if (file.endsWith('.woff2') || file.endsWith('.woff') || file.endsWith('.ttf')) {
         if (!fs.existsSync(cssDir)) {
           fs.mkdirSync(cssDir, { recursive: true });
         }
         
         const sourceFile = path.join(mediaDir, file);
-        const destFile = path.join(cssDir, file);
         
         try {
-          fs.copyFileSync(sourceFile, destFile);
+          // Copy to CSS directory
+          const cssDestFile = path.join(cssDir, file);
+          fs.copyFileSync(sourceFile, cssDestFile);
           console.log(`Copied ${file} to css directory for better font access`);
+          
+          // Copy to root fonts directory for IPFS access
+          const fontsDestFile = path.join(fontsDir, file);
+          fs.copyFileSync(sourceFile, fontsDestFile);
+          console.log(`Copied ${file} to /fonts directory for IPFS access`);
         } catch (err) {
           console.error(`Failed to copy ${file}:`, err.message);
         }
@@ -502,38 +515,55 @@ const fixNextDirectory = () => {
 const createFallbackResources = () => {
   console.log('Creating fallback resources');
   
-  // Create a basic fallback for the font file
-  const fontDir = path.join(outputDir, '_next', 'static', 'media');
+  // Create a basic fallback for the font files
+  const fontDir = path.join(outputDir, 'fonts');
   if (!fs.existsSync(fontDir)) {
     fs.mkdirSync(fontDir, { recursive: true });
   }
   
-  // Try to find the Inter font file
-  let interFontFile = null;
-  const possibleFontFiles = findHtmlFiles(outputDir).filter(file => 
-    file.includes('static/media') && (file.endsWith('.woff2') || file.endsWith('.woff'))
+  // Try to find all font files in the build
+  const fontFiles = findHtmlFiles(outputDir).filter(file => 
+    file.endsWith('.woff2') || file.endsWith('.woff') || file.endsWith('.ttf')
   );
   
-  if (possibleFontFiles.length > 0) {
-    interFontFile = possibleFontFiles[0];
-    const fontFilename = path.basename(interFontFile);
+  // Copy all font files to the fonts directory
+  fontFiles.forEach(fontFile => {
+    const fontFilename = path.basename(fontFile);
+    const destPath = path.join(fontDir, fontFilename);
     
-    // Copy the font to multiple locations for better accessibility
-    [
-      path.join(outputDir, fontFilename),
-      path.join(outputDir, '_next', fontFilename),
-      path.join(outputDir, '_next', 'static', fontFilename)
-    ].forEach(destPath => {
-      try {
-        fs.copyFileSync(interFontFile, destPath);
-        console.log(`Copied font to ${destPath} for better access`);
-      } catch (err) {
-        console.error(`Failed to copy font to ${destPath}:`, err.message);
-      }
+    try {
+      fs.copyFileSync(fontFile, destPath);
+      console.log(`Copied ${fontFilename} to /fonts directory`);
+    } catch (err) {
+      console.error(`Failed to copy ${fontFilename}:`, err.message);
+    }
+  });
+
+  // Add font preload links to all HTML files
+  const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
+  
+  // Get all font filenames
+  const fontFilenames = fs.existsSync(fontDir) 
+    ? fs.readdirSync(fontDir).filter(file => file.endsWith('.woff2') || file.endsWith('.woff') || file.endsWith('.ttf'))
+    : [];
+  
+  // Create preload tags for each font
+  if (fontFilenames.length > 0) {
+    const preloadTags = fontFilenames.map(font => {
+      const type = font.endsWith('.woff2') ? 'woff2' : (font.endsWith('.woff') ? 'woff' : 'ttf');
+      return `<link rel="preload" href="./fonts/${font}" as="font" type="font/${type}" crossorigin="anonymous">`;
+    }).join('\n');
+    
+    htmlFiles.forEach(file => {
+      let content = fs.readFileSync(file, 'utf8');
+      // Add font preload tags right after the head tag
+      content = content.replace('<head>', '<head>\n' + preloadTags);
+      fs.writeFileSync(file, content);
+      console.log(`Added font preload tags to ${file}`);
     });
   }
   
-  // Add standalone font loading script
+  // Add standalone font loading script with string replacements instead of regex
   const fontFixScript = `
   // Font loading fix
   (function() {
@@ -545,15 +575,18 @@ const createFallbackResources = () => {
           const newLink = document.createElement('link');
           newLink.rel = 'preload';
           newLink.as = 'font';
-          newLink.type = 'font/' + (link.href.endsWith('.woff2') ? 'woff2' : 'woff');
+          newLink.type = link.type || 'font/' + (link.href.endsWith('.woff2') ? 'woff2' : 'woff');
           newLink.crossOrigin = 'anonymous';
           
           // Try different relative paths
-          if (link.href.indexOf('/_next/static/media/') !== -1) {
+          if (link.href.includes('/_next/static/media/')) {
+            const fontName = link.href.split('/').pop();
+            newLink.href = './fonts/' + fontName;
+          } else if (link.href.includes('/_next/')) {
             const fontName = link.href.split('/').pop();
             newLink.href = './_next/static/media/' + fontName;
           } else {
-            newLink.href = './' + link.href.split('/').pop();
+            newLink.href = './fonts/' + link.href.split('/').pop();
           }
           
           newLink.dataset.fixed = 'true';
@@ -562,17 +595,37 @@ const createFallbackResources = () => {
         }
       });
       
-      // Also fix style tags that reference fonts
+      // Also fix style tags that reference fonts - using string operations
       document.querySelectorAll('style').forEach(style => {
-        if (!style.dataset.fixed && style.textContent.indexOf('@font-face') !== -1) {
-          const fixedCss = style.textContent.replace(
-            /url\(['"]?\/_next\/static\/media\/([^'"]+)['"]?\)/g, 
-            "url('./_next/static/media/$1')"
-          );
-          if (fixedCss !== style.textContent) {
-            style.textContent = fixedCss;
+        if (!style.dataset.fixed && style.textContent.includes('@font-face')) {
+          let cssText = style.textContent;
+          
+          // Find font-face declarations with url references
+          if (cssText.includes('url(') && cssText.includes('/_next/')) {
+            // Fix each url reference individually to avoid regex
+            const segments = cssText.split('url(');
+            for (let i = 1; i < segments.length; i++) {
+              if (segments[i].includes('/_next/')) {
+                // Extract the path and filename
+                const pathEnd = segments[i].indexOf(')');
+                const originalPath = segments[i].substring(0, pathEnd);
+                const strippedPath = originalPath.replace(/["']/g, '');
+                
+                // Get just the filename without path
+                const filename = strippedPath.split('/').pop();
+                
+                // Create new path referencing the fonts directory
+                const newPath = '"./fonts/' + filename + '"';
+                
+                // Replace just this path segment
+                segments[i] = segments[i].replace(originalPath, newPath);
+              }
+            }
+            
+            // Reconstruct the CSS
+            cssText = segments.join('url(');
+            style.textContent = cssText;
             style.dataset.fixed = 'true';
-            console.log('Fixed font paths in style tag');
           }
         }
       });
@@ -588,11 +641,11 @@ const createFallbackResources = () => {
   `;
   
   // Add this script to all HTML files
-  const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
   htmlFiles.forEach(file => {
     let content = fs.readFileSync(file, 'utf8');
     content = content.replace('</head>', `<script>${fontFixScript}</script></head>`);
     fs.writeFileSync(file, content);
+    console.log(`Added font fix script to ${file}`);
   });
   
   console.log('Created fallback resources');

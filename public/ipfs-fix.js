@@ -27,17 +27,24 @@
       return './_next/' + url.substring(21);
     }
     
-    // Handle font file paths - ensure they use the /fonts/ path
-    if (url.includes('.woff2') || url.includes('.woff')) {
-      // If it's a Next.js generated font path, fix it to use our /fonts/ directory
+    // Handle font file paths - ensure they use the /fonts/ path 
+    if (url.includes('.woff2') || url.includes('.woff') || url.includes('.ttf')) {
+      // If it's a Next.js generated font path, try multiple paths
       if (url.includes('/_next/static/media/')) {
         const filename = url.split('/').pop();
+        // Try fonts directory first, fallback to _next
         return './fonts/' + filename;
       }
       
       // Fix absolute font paths in IPFS context
       if (url.startsWith('/fonts/')) {
         return '.' + url; // Convert /fonts/ to ./fonts/
+      }
+      
+      // Try to extract just the filename for any font URL
+      if (url.includes('/')) {
+        const filename = url.split('/').pop();
+        return './fonts/' + filename;
       }
     }
     
@@ -82,7 +89,7 @@
     document.querySelectorAll('link[rel="preload"][as="font"]').forEach(el => {
       const href = el.getAttribute('href');
       if (href) {
-        if (href.includes('/_next/static/media/') && href.includes('.woff2')) {
+        if (href.includes('/_next/static/media/') && (href.includes('.woff2') || href.includes('.woff'))) {
           const filename = href.split('/').pop();
           el.setAttribute('href', './fonts/' + filename);
         } else if (href.includes('https://ipfs.io/') && href.includes('/_next/')) {
@@ -93,6 +100,10 @@
         } else if (href.startsWith('/fonts/')) {
           // Convert absolute font paths to relative for IPFS environment
           el.setAttribute('href', '.' + href);
+        } else if ((href.includes('.woff2') || href.includes('.woff')) && href.includes('/')) {
+          // For any font URL, extract filename and try ./fonts/ directory
+          const filename = href.split('/').pop();
+          el.setAttribute('href', './fonts/' + filename);
         }
       }
     });
@@ -101,11 +112,41 @@
     document.querySelectorAll('style').forEach(styleEl => {
       if (styleEl.textContent && styleEl.textContent.includes('@font-face')) {
         let cssText = styleEl.textContent;
-        // Replace absolute font URLs with relative ones - using string operations instead of regex
-        cssText = cssText.replace(/url\(['"]?\/fonts\//g, function(match) {
-          return match.replace('/fonts/', './fonts/');
-        });
-        styleEl.textContent = cssText;
+        
+        // Fix font paths using string operations to avoid regex issues
+        if (cssText.includes('url(') && (cssText.includes('.woff2') || cssText.includes('.woff'))) {
+          // Split on url( to process each URL individually
+          const segments = cssText.split('url(');
+          
+          // Process each segment (starting from 1, since 0 is before first url)
+          for (let i = 1; i < segments.length; i++) {
+            // Check if this is a font file
+            if (segments[i].includes('.woff2') || segments[i].includes('.woff') || segments[i].includes('.ttf')) {
+              // Find the closing parenthesis for this url()
+              const closingIndex = segments[i].indexOf(')');
+              if (closingIndex !== -1) {
+                // Extract the URL part
+                const urlPath = segments[i].substring(0, closingIndex);
+                
+                // Remove quotes if present
+                const cleanPath = urlPath.replace(/["']/g, '');
+                
+                // Get just the filename
+                const filename = cleanPath.split('/').pop();
+                
+                // Create a new path pointing to ./fonts/
+                const newPath = '"./fonts/' + filename + '"';
+                
+                // Replace the URL in this segment
+                segments[i] = segments[i].substring(0, 0) + newPath + segments[i].substring(closingIndex);
+              }
+            }
+          }
+          
+          // Rejoin all segments
+          cssText = segments.join('url(');
+          styleEl.textContent = cssText;
+        }
       }
     });
 
@@ -123,6 +164,20 @@
         }
       });
     });
+    
+    // Force reload broken font faces
+    if (document.fonts && typeof document.fonts.load === 'function') {
+      try {
+        // Try to load Inter font from multiple possible locations
+        document.fonts.load('1em "Inter"', 'a').then(() => {
+          console.log('Successfully loaded Inter font');
+        }).catch(() => {
+          console.log('Could not load Inter font from first source, trying alternatives');
+        });
+      } catch (e) {
+        console.error('Error preloading fonts:', e);
+      }
+    }
   }
 
   // Run immediately
@@ -130,6 +185,7 @@
   
   // And again after document is loaded
   document.addEventListener('DOMContentLoaded', fixAllElements);
+  window.addEventListener('load', fixAllElements);
   
   // Add MutationObserver to catch dynamically added elements
   const observer = new MutationObserver(function(mutations) {
