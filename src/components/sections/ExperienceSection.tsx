@@ -6,8 +6,9 @@ import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useBackground } from '../effects/BackgroundProvider';
 import { experiences, additionalExperiences } from '@/data/content';
-import { FaFilePdf, FaExternalLinkAlt, FaTimes, FaSearch, FaShieldAlt } from 'react-icons/fa';
+import { FaFilePdf, FaExternalLinkAlt, FaTimes, FaSearch, FaShieldAlt, FaFileAlt } from 'react-icons/fa';
 import { parseTextWithBookLinks } from '@/components/utils/textParser';
+import { useImagePreloader } from '@/hooks/useImagePreloader';
 
 const ExperienceContainer = styled.section`
   padding: 8rem 2rem;
@@ -545,6 +546,53 @@ const ProofImage = styled.img`
   border-radius: 8px;
   border: 1px solid rgba(115, 74, 253, 0.3);
   background-color: rgba(0, 0, 0, 0.2);
+  transition: opacity 0.3s ease, filter 0.5s ease;
+  
+  /* Add fade-in effect for images */
+  opacity: 0;
+  filter: blur(10px);
+  &.loaded {
+    opacity: 1;
+    filter: blur(0);
+  }
+`;
+
+// Create an image wrapper component for loading state
+const ProofImageWrapper = styled.div`
+  position: relative;
+  height: 375px;
+  min-width: 200px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const ImageLoadingIndicator = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  
+  svg {
+    font-size: 1.5rem;
+    animation: pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.6; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0.6; transform: scale(0.95); }
+  }
 `;
 
 const ProofLinks = styled.div`
@@ -615,7 +663,23 @@ export default function ExperienceSection() {
   const [imageZoom, setImageZoom] = useState(1);
   const [imageRatio, setImageRatio] = useState({ width: 3, height: 2 }); // Default ratio
   const [selectedProof, setSelectedProof] = useState<any | null>(null);
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
   
+  // Extract all proof images for preloading
+  const allProofImages = experiences.concat(additionalExperiences)
+    .flatMap(exp => exp.proof ? exp.proof.images || [] : [])
+    .map(img => img.startsWith('/images/') ? `.${img}` : img);
+  
+  // Use our preloader hook
+  const { imagesStatus, loadedSrcs } = useImagePreloader(allProofImages);
+  
+  // Update preloadedImages set when images load through the hook
+  useEffect(() => {
+    if (loadedSrcs.length > 0) {
+      setPreloadedImages(prev => new Set([...prev, ...loadedSrcs]));
+    }
+  }, [loadedSrcs]);
+
   useEffect(() => {
     if (inView) {
       controls.start('visible');
@@ -626,6 +690,22 @@ export default function ExperienceSection() {
       setColorScheme('blue');
     }
   }, [inView, controls, setBackgroundType, setIntensity, setColorScheme]);
+  
+  // Function to preload specific proof images when hovering over proof button
+  const handleProofButtonHover = (proof: any) => {
+    if (proof && proof.images && proof.images.length > 0) {
+      proof.images.forEach((image: string) => {
+        const formattedUrl = image.startsWith('/images/') ? `.${image}` : image;
+        if (!preloadedImages.has(formattedUrl)) {
+          const img = new Image();
+          img.src = formattedUrl;
+          img.onload = () => {
+            setPreloadedImages(prev => new Set([...prev, formattedUrl]));
+          };
+        }
+      });
+    }
+  };
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -864,11 +944,12 @@ export default function ExperienceSection() {
                     {experience.proof && (
                       <ButtonsContainer>
                         <ProofButton 
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.03 }} 
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => openProofModal(experience.proof)}
+                          onMouseEnter={() => handleProofButtonHover(experience.proof)}
                         >
-                          <FaShieldAlt /> View Proof
+                          <FaFileAlt /> View Proof
                         </ProofButton>
                         
                         {experience.company === "Various Projects" && (
@@ -915,11 +996,12 @@ export default function ExperienceSection() {
                     {experience.proof && (
                       <ButtonsContainer>
                         <ProofButton 
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.03 }} 
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => openProofModal(experience.proof)}
+                          onMouseEnter={() => handleProofButtonHover(experience.proof)}
                         >
-                          <FaShieldAlt /> View Proof
+                          <FaFileAlt /> View Proof
                         </ProofButton>
                         
                         {experience.company === "Various Projects" && (
@@ -1091,13 +1173,50 @@ export default function ExperienceSection() {
               
               {selectedProof.images && selectedProof.images.length > 0 && (
                 <ProofImageGrid>
-                  {selectedProof.images.map((image: string, index: number) => (
-                    <ProofImage 
-                      key={index} 
-                      src={image.startsWith('/images/') ? `.${image}` : image} 
-                      alt={`Proof ${index + 1}`} 
-                    />
-                  ))}
+                  {selectedProof.images.map((image: string, index: number) => {
+                    const formattedSrc = image.startsWith('/images/') ? `.${image}` : image;
+                    const isPreloaded = preloadedImages.has(formattedSrc) || 
+                                       (imagesStatus[formattedSrc] === 'loaded');
+                    
+                    // Create low-quality placeholder URL for progressive loading
+                    const thumbnailSrc = formattedSrc.replace(/\.(png|jpe?g|webp)$/i, '-thumb.$1');
+                    
+                    return (
+                      <ProofImageWrapper key={index}>
+                        {!isPreloaded && (
+                          <ImageLoadingIndicator>
+                            <FaSearch />
+                          </ImageLoadingIndicator>
+                        )}
+                        
+                        {/* Low quality placeholder image that loads first */}
+                        {!isPreloaded && (
+                          <ProofImage 
+                            src={thumbnailSrc} 
+                            alt={`Proof ${index + 1} thumbnail`}
+                            style={{ position: 'absolute' }}
+                            loading="eager"
+                          />
+                        )}
+                        
+                        {/* Main high quality image */}
+                        <ProofImage 
+                          src={formattedSrc} 
+                          alt={`Proof ${index + 1}`} 
+                          loading="eager"
+                          decoding="async"
+                          className={isPreloaded ? 'loaded' : ''}
+                          onLoad={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.classList.add('loaded');
+                            if (!preloadedImages.has(formattedSrc)) {
+                              setPreloadedImages(prev => new Set([...prev, formattedSrc]));
+                            }
+                          }}
+                        />
+                      </ProofImageWrapper>
+                    );
+                  })}
                 </ProofImageGrid>
               )}
               
