@@ -136,7 +136,7 @@ export const experiences: Experience[] = [
 
 export const additionalExperiences: Experience[] = [
   {
-    title: "Protocol Engineer",
+    title: "Smart Contract Infrastructure Engineer",
     company: "HIRO",
     period: "2025",
     description: "Executed adaptation of Uniswap v3 for custom blockchain, overcoming significant technical barriers in contract deployment and EVM compatibility issues to deliver a functional decentralized exchange.",
