@@ -724,7 +724,7 @@ const main = () => {
         }
       });
     }
-
+    
     // CRITICAL FIX: Direct fix for doubled _next paths in CSS files
     // This needs to run first, before any other processing
     console.log('Applying critical fix for doubled font paths in CSS files');
@@ -734,12 +734,8 @@ const main = () => {
       if (cssContent.includes('_next/static/css/_next/static/media/')) {
         const originalContent = cssContent;
         
-        // Direct replacement for the problematic pattern
-        cssContent = cssContent.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
-        
-        // Also fix any variations
-        cssContent = cssContent.replace(/url\(['"](\.\/)?_next\/static\/css\/_next\/static\/media\//g, 'url("_next/static/media/');
-        cssContent = cssContent.replace(/url\(['"](\.\/)?_next\/static\/css\/_next\//g, 'url("_next/');
+        // Direct replacement for the problematic pattern - using string splitting instead of regex
+        cssContent = cssContent.split('_next/static/css/_next/static/media/').join('_next/static/media/');
         
         if (cssContent !== originalContent) {
           fs.writeFileSync(cssFile, cssContent);

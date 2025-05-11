@@ -1,6 +1,8 @@
 (function() {
   // Immediately run a direct fix for the problematic font
   const PROBLEMATIC_FONT = 'a34f9d1faa5f3315-s.p.woff2';
+  const PROBLEMATIC_PATH = '_next/static/css/_next/static/media';
+  const FIXED_PATH = '_next/static/media';
   
   // Function to check and fix any paths containing the problematic pattern
   function fixElement(el) {
@@ -11,8 +13,8 @@
         const value = el.getAttribute(attr);
         if (value && typeof value === 'string') {
           // Fix doubled _next paths
-          if (value.indexOf('_next/static/css/_next/static/media') !== -1) {
-            const fixed = value.replace('_next/static/css/_next/static/media', '_next/static/media');
+          if (value.indexOf(PROBLEMATIC_PATH) !== -1) {
+            const fixed = value.split(PROBLEMATIC_PATH).join(FIXED_PATH);
             el.setAttribute(attr, fixed);
           }
           
@@ -42,10 +44,10 @@
       if (!style.textContent) return;
       
       if (style.textContent.indexOf('@font-face') !== -1 && 
-          style.textContent.indexOf('_next/static/css/_next/static/media') !== -1) {
+          style.textContent.indexOf(PROBLEMATIC_PATH) !== -1) {
         // Replace problematic path without using regex
         let content = style.textContent;
-        content = content.split('_next/static/css/_next/static/media').join('_next/static/media');
+        content = content.split(PROBLEMATIC_PATH).join(FIXED_PATH);
         style.textContent = content;
       }
       
@@ -88,6 +90,22 @@
         document.head.appendChild(link);
       });
     }
+    
+    // Fix any inline scripts that might contain problematic regex
+    document.querySelectorAll('script').forEach(script => {
+      if (script.id === 'emergency-fix') return; // Don't modify ourselves
+      
+      if (script.textContent && 
+          script.textContent.indexOf('fontFaceDeclaration') !== -1 && 
+          script.textContent.indexOf('replace(') !== -1) {
+        // This might be the problematic script with regex syntax errors
+        // Disable it to prevent syntax errors
+        script.textContent = `
+          // Original script disabled by emergency fix due to regex issues
+          console.log('Problematic script with regex detected and disabled');
+        `;
+      }
+    });
   }
   
   // Run the fix immediately
