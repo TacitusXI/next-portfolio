@@ -434,6 +434,92 @@ const fixAssetFilenames = () => {
   const cssDir = path.join(staticDir, 'css');
   const mediaDir = path.join(staticDir, 'media');
   
+  // CRITICAL - Direct fix for specific problematic font
+  const PROBLEMATIC_FONT = 'a34f9d1faa5f3315-s.p.woff2';
+  
+  // Find the specific font file in the media directory
+  if (fs.existsSync(mediaDir)) {
+    const files = fs.readdirSync(mediaDir);
+    const matchingFontFile = files.find(file => file === PROBLEMATIC_FONT || file.includes('a34f9d1faa5f3315'));
+    
+    if (matchingFontFile) {
+      console.log(`[CRITICAL] Found the problematic font file: ${matchingFontFile}`);
+      const sourceFile = path.join(mediaDir, matchingFontFile);
+      
+      // Copy the font file to multiple locations for maximum availability
+      [
+        path.join(fontsDir, matchingFontFile),           // ./fonts/ directory
+        path.join(outputDir, matchingFontFile),          // Root directory
+        path.join(outputDir, '_next', matchingFontFile), // _next directory
+        path.join(cssDir, matchingFontFile),             // CSS directory (for doubled path)
+        // Create the problematic doubled path directory and copy there too
+        path.join(cssDir, '_next', 'static', 'media', matchingFontFile)
+      ].forEach(destPath => {
+        try {
+          // Create directory if it doesn't exist
+          const destDir = path.dirname(destPath);
+          if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, { recursive: true });
+            console.log(`[CRITICAL] Created directory: ${destDir}`);
+          }
+          
+          fs.copyFileSync(sourceFile, destPath);
+          console.log(`[CRITICAL] Copied font file to: ${destPath}`);
+        } catch (err) {
+          console.error(`Failed to copy to ${destPath}:`, err.message);
+        }
+      });
+    } else {
+      console.error(`[CRITICAL] Could not find the problematic font file: ${PROBLEMATIC_FONT}`);
+    }
+  }
+  
+  // Directly fix all CSS files
+  if (fs.existsSync(cssDir)) {
+    const cssFiles = fs.readdirSync(cssDir).filter(file => file.endsWith('.css'));
+    
+    // Process each CSS file
+    cssFiles.forEach(cssFile => {
+      const cssFilePath = path.join(cssDir, cssFile);
+      let cssContent = fs.readFileSync(cssFilePath, 'utf8');
+      
+      // Fix the doubled path pattern
+      if (cssContent.includes('_next/static/css/_next/static/media/')) {
+        console.log(`[CRITICAL] Found doubled path in CSS file: ${cssFile}`);
+        
+        // Replace using string operations
+        const fixedContent = cssContent.split('_next/static/css/_next/static/media/').join('_next/static/media/');
+        
+        // Write the fixed content back
+        fs.writeFileSync(cssFilePath, fixedContent);
+        console.log(`[CRITICAL] Fixed doubled paths in CSS file: ${cssFile}`);
+      }
+      
+      // Additional fix - ensure font URL starts with ./ or /
+      if (cssContent.includes(PROBLEMATIC_FONT) && !cssContent.includes(`url("./fonts/${PROBLEMATIC_FONT}")`)) {
+        console.log(`[CRITICAL] Adding additional font fallbacks to CSS file: ${cssFile}`);
+        
+        // Add the @font-face declaration at the end of the file
+        const fontFaceFallback = `
+/* Font fallback for IPFS compatibility */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/${PROBLEMATIC_FONT}") format('woff2'),
+       url("./_next/static/media/${PROBLEMATIC_FONT}") format('woff2'),
+       url("./${PROBLEMATIC_FONT}") format('woff2');
+}
+`;
+        cssContent += fontFaceFallback;
+        fs.writeFileSync(cssFilePath, cssContent);
+        console.log(`[CRITICAL] Added font-face fallbacks to CSS file: ${cssFile}`);
+      }
+    });
+  }
+  
+  // Copy all font files to multiple locations
   if (fs.existsSync(mediaDir)) {
     const mediaFiles = fs.readdirSync(mediaDir);
     mediaFiles.forEach(file => {

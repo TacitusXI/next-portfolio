@@ -4,6 +4,92 @@
   const PROBLEMATIC_PATH = '_next/static/css/_next/static/media';
   const FIXED_PATH = '_next/static/media';
   
+  // Store whether we've already created the font style
+  window.__fixedFontStyle = false;
+  
+  // Function to check if a font URL exists
+  function checkFontUrl(url) {
+    return new Promise((resolve) => {
+      const request = new XMLHttpRequest();
+      request.open('HEAD', url, true);
+      request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+          resolve(request.status === 200);
+        }
+      };
+      request.send();
+    });
+  }
+  
+  // Function to add a custom font style that includes all possible paths
+  async function addEmergencyFontStyle() {
+    if (window.__fixedFontStyle) return;
+    window.__fixedFontStyle = true;
+    
+    // Create a list of possible font locations to try
+    const fontPaths = [
+      './fonts/' + PROBLEMATIC_FONT,
+      './_next/static/media/' + PROBLEMATIC_FONT,
+      './' + PROBLEMATIC_FONT,
+      '_next/static/media/' + PROBLEMATIC_FONT
+    ];
+    
+    // Try each path and find one that works
+    let workingPath = null;
+    for (const path of fontPaths) {
+      const exists = await checkFontUrl(path);
+      if (exists) {
+        workingPath = path;
+        console.log('Found working font path:', path);
+        break;
+      }
+    }
+    
+    // If none found, just use the first one
+    if (!workingPath) {
+      workingPath = fontPaths[0];
+    }
+    
+    // Add a new style with the font face
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Emergency font fix for Inter font */
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("${workingPath}") format('woff2');
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Create font preload links for all paths
+    fontPaths.forEach(path => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = path;
+      link.as = 'font';
+      link.type = 'font/woff2';
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    });
+    
+    // Final resort - create the font directory and manually fetch and store the font
+    if (!workingPath) {
+      fetch('https://fonts.googleapis.com/css2?family=Inter&display=swap')
+        .then(response => response.text())
+        .then(css => {
+          const fallbackStyle = document.createElement('style');
+          fallbackStyle.textContent = css;
+          document.head.appendChild(fallbackStyle);
+        })
+        .catch(err => {
+          console.error('Failed to fetch fallback font:', err);
+        });
+    }
+  }
+  
   // Function to check and fix any paths containing the problematic pattern
   function fixElement(el) {
     if (!el || !el.getAttribute) return;
@@ -69,28 +155,6 @@
       }
     });
     
-    // Ensure we have preload links for the font
-    const existingPreloads = Array.from(document.querySelectorAll('link[rel="preload"]'))
-      .filter(link => link.href && link.href.indexOf(PROBLEMATIC_FONT) !== -1);
-    
-    if (existingPreloads.length === 0) {
-      const fontPaths = [
-        './fonts/' + PROBLEMATIC_FONT,
-        './_next/static/media/' + PROBLEMATIC_FONT,
-        './' + PROBLEMATIC_FONT
-      ];
-      
-      fontPaths.forEach(path => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.href = path;
-        link.as = 'font';
-        link.type = 'font/woff2';
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
-      });
-    }
-    
     // Fix any inline scripts that might contain problematic regex
     document.querySelectorAll('script').forEach(script => {
       if (script.id === 'emergency-fix') return; // Don't modify ourselves
@@ -106,6 +170,41 @@
         `;
       }
     });
+    
+    // Fix stylesheet links with doubled paths
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && href.includes('_next/static/css')) {
+        // We need to check the CSS content
+        fetch(href)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Failed to fetch stylesheet');
+            }
+            return response.text();
+          })
+          .then(cssText => {
+            if (cssText.includes(PROBLEMATIC_PATH)) {
+              // Create a fixed version
+              const fixedCss = cssText.split(PROBLEMATIC_PATH).join(FIXED_PATH);
+              
+              // Add as a style tag
+              const style = document.createElement('style');
+              style.textContent = fixedCss;
+              document.head.appendChild(style);
+              
+              // Disable the original
+              link.disabled = true;
+            }
+          })
+          .catch(error => {
+            console.error('Error processing stylesheet:', error);
+          });
+      }
+    });
+    
+    // Add emergency font style with font path check
+    addEmergencyFontStyle();
   }
   
   // Run the fix immediately
@@ -120,4 +219,5 @@
   
   // And once more after a short delay
   setTimeout(fixAllElements, 1000);
+  setTimeout(fixAllElements, 3000);
 })(); 
