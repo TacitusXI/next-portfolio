@@ -7,26 +7,12 @@
   // Store whether we've already created the font style
   window.__fixedFontStyle = false;
   
-  // Function to check if a font URL exists
-  function checkFontUrl(url) {
-    return new Promise((resolve) => {
-      const request = new XMLHttpRequest();
-      request.open('HEAD', url, true);
-      request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-          resolve(request.status === 200);
-        }
-      };
-      request.send();
-    });
-  }
-  
-  // Function to add a custom font style that includes all possible paths
-  async function addEmergencyFontStyle() {
+  // Just force add the font style without checking URLS (since HEAD requests are not allowed)
+  function addEmergencyFontStyle() {
     if (window.__fixedFontStyle) return;
     window.__fixedFontStyle = true;
     
-    // Create a list of possible font locations to try
+    // Create all possible font paths
     const fontPaths = [
       './fonts/' + PROBLEMATIC_FONT,
       './_next/static/media/' + PROBLEMATIC_FONT,
@@ -34,23 +20,7 @@
       '_next/static/media/' + PROBLEMATIC_FONT
     ];
     
-    // Try each path and find one that works
-    let workingPath = null;
-    for (const path of fontPaths) {
-      const exists = await checkFontUrl(path);
-      if (exists) {
-        workingPath = path;
-        console.log('Found working font path:', path);
-        break;
-      }
-    }
-    
-    // If none found, just use the first one
-    if (!workingPath) {
-      workingPath = fontPaths[0];
-    }
-    
-    // Add a new style with the font face
+    // Create @font-face rule with multiple src options
     const style = document.createElement('style');
     style.textContent = `
       /* Emergency font fix for Inter font */
@@ -59,12 +29,14 @@
         font-style: normal;
         font-weight: 400;
         font-display: swap;
-        src: url("${workingPath}") format('woff2');
+        src: url("./fonts/${PROBLEMATIC_FONT}") format('woff2'),
+             url("./_next/static/media/${PROBLEMATIC_FONT}") format('woff2'),
+             url("./${PROBLEMATIC_FONT}") format('woff2');
       }
     `;
     document.head.appendChild(style);
     
-    // Create font preload links for all paths
+    // Create preload links for all paths (browser will handle failed requests)
     fontPaths.forEach(path => {
       const link = document.createElement('link');
       link.rel = 'preload';
@@ -75,19 +47,11 @@
       document.head.appendChild(link);
     });
     
-    // Final resort - create the font directory and manually fetch and store the font
-    if (!workingPath) {
-      fetch('https://fonts.googleapis.com/css2?family=Inter&display=swap')
-        .then(response => response.text())
-        .then(css => {
-          const fallbackStyle = document.createElement('style');
-          fallbackStyle.textContent = css;
-          document.head.appendChild(fallbackStyle);
-        })
-        .catch(err => {
-          console.error('Failed to fetch fallback font:', err);
-        });
-    }
+    // Final resort - load from Google Fonts
+    const googleFonts = document.createElement('link');
+    googleFonts.rel = 'stylesheet';
+    googleFonts.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+    document.head.appendChild(googleFonts);
   }
   
   // Function to check and fix any paths containing the problematic pattern
@@ -122,6 +86,9 @@
   
   // Function to fix all elements in the document
   function fixAllElements() {
+    // Add emergency font style immediately
+    addEmergencyFontStyle();
+    
     // Fix all elements with src or href
     document.querySelectorAll('[src], [href]').forEach(fixElement);
     
@@ -135,23 +102,6 @@
         let content = style.textContent;
         content = content.split(PROBLEMATIC_PATH).join(FIXED_PATH);
         style.textContent = content;
-      }
-      
-      // Ensure we have Inter font declaration
-      if (style.textContent.indexOf('@font-face') !== -1 && 
-          style.textContent.indexOf(PROBLEMATIC_FONT) !== -1) {
-        // Add a direct fallback to the fonts directory
-        const fontFace = document.createElement('style');
-        fontFace.textContent = `
-          @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url('./fonts/${PROBLEMATIC_FONT}') format('woff2');
-          }
-        `;
-        document.head.appendChild(fontFace);
       }
     });
     
@@ -175,8 +125,11 @@
     document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
       const href = link.getAttribute('href');
       if (href && href.includes('_next/static/css')) {
-        // We need to check the CSS content
-        fetch(href)
+        fetch(href, { 
+          method: 'GET',
+          credentials: 'same-origin',
+          mode: 'cors'
+        })
           .then(response => {
             if (!response.ok) {
               throw new Error('Failed to fetch stylesheet');
@@ -198,14 +151,27 @@
             }
           })
           .catch(error => {
-            console.error('Error processing stylesheet:', error);
+            console.log('Non-critical error processing stylesheet');
           });
       }
     });
-    
-    // Add emergency font style with font path check
-    addEmergencyFontStyle();
   }
+  
+  // Create inline style element for the font
+  const inlineFont = document.createElement('style');
+  inlineFont.textContent = `
+    /* Directly embedded emergency font style */
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url("./fonts/${PROBLEMATIC_FONT}") format('woff2'),
+           url("./_next/static/media/${PROBLEMATIC_FONT}") format('woff2'),
+           url("./${PROBLEMATIC_FONT}") format('woff2');
+    }
+  `;
+  document.head.appendChild(inlineFont);
   
   // Run the fix immediately
   if (document.readyState === 'loading') {
@@ -218,6 +184,6 @@
   window.addEventListener('load', fixAllElements);
   
   // And once more after a short delay
-  setTimeout(fixAllElements, 1000);
-  setTimeout(fixAllElements, 3000);
+  setTimeout(fixAllElements, 500);
+  setTimeout(fixAllElements, 2000);
 })(); 
