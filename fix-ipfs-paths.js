@@ -693,6 +693,38 @@ const main = () => {
   console.log('Starting post-build IPFS path fix');
   
   try {
+    // Read in the emergency fix script directly
+    let emergencyFixScript = '';
+    const emergencyFixPath = path.join(process.cwd(), 'public', 'emergency-fix.js');
+    if (fs.existsSync(emergencyFixPath)) {
+      emergencyFixScript = fs.readFileSync(emergencyFixPath, 'utf8');
+      console.log('Loaded emergency font fix script');
+    } else {
+      console.error('Emergency fix script not found at:', emergencyFixPath);
+    }
+    
+    // DIRECT HTML PATCHING: Fix all HTML files by directly embedding the fix
+    if (emergencyFixScript) {
+      console.log('Directly patching HTML files with emergency fix');
+      const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
+      
+      htmlFiles.forEach(htmlFile => {
+        let htmlContent = fs.readFileSync(htmlFile, 'utf8');
+        
+        // Inject the emergency fix script at the top of the head
+        if (!htmlContent.includes('emergency-fix')) {
+          // Wrap in script tags
+          const scriptTag = `<script id="emergency-fix">${emergencyFixScript}</script>`;
+          
+          // Add immediately after head tag
+          htmlContent = htmlContent.replace('<head>', '<head>' + scriptTag);
+          
+          fs.writeFileSync(htmlFile, htmlContent);
+          console.log(`Injected emergency fix script into: ${htmlFile}`);
+        }
+      });
+    }
+
     // CRITICAL FIX: Direct fix for doubled _next paths in CSS files
     // This needs to run first, before any other processing
     console.log('Applying critical fix for doubled font paths in CSS files');
