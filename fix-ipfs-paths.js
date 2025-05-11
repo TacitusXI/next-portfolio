@@ -829,28 +829,20 @@ const main = () => {
     htmlFiles.forEach(htmlFile => {
       let htmlContent = fs.readFileSync(htmlFile, 'utf8');
       
-      // Add a direct font preload for the problematic font
-      if (!htmlContent.includes('a34f9d1faa5f3315-s.p.woff2')) {
-        // Create a preload link for this specific font
-        const preloadTag = `
-<link rel="preload" href="./_next/static/media/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-<link rel="preload" href="./fonts/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-`;
-        htmlContent = htmlContent.replace('<head>', '<head>' + preloadTag);
-        fs.writeFileSync(htmlFile, htmlContent);
-        console.log(`[CRITICAL] Added direct font preload to: ${htmlFile}`);
-      }
-      
-      // Add emergency font loading script
-      if (!htmlContent.includes('emergencyFontFix')) {
-        const emergencyScript = `
+      // CRITICAL: Remove any problematic regex patterns that might cause syntax errors
+      // Look for the specific error pattern and remove/replace those entire script blocks
+      if (htmlContent.includes('fontFaceDeclaration') && htmlContent.includes('/_next/static/css/_next/static/media//g')) {
+        console.log(`[CRITICAL] Found problematic regex in: ${htmlFile}`);
+        
+        // Replace the entire problematic emergencyFontFix function with a safe version
+        const safeEmergencyScript = `
 <script>
-  // Emergency font fix for doubled _next paths
-  (function emergencyFontFix() {
+  // Safe emergency font fix for doubled _next paths - no regex
+  (function emergencyFontFixSafe() {
     // Fix for the specific problematic font
     const specificFontFile = 'a34f9d1faa5f3315-s.p.woff2';
     
-    // Function to create a font style element
+    // Function to create a font style element - NO REGEX VERSION
     function createFontFaceStyle() {
       // Find any @font-face declarations in the page
       const styles = document.querySelectorAll('style');
@@ -858,7 +850,7 @@ const main = () => {
       
       styles.forEach(style => {
         if (style.textContent.includes('@font-face') && style.textContent.includes(specificFontFile)) {
-          const fontFaceMatch = style.textContent.match(/@font-face\s*{[^}]*}/g);
+          const fontFaceMatch = style.textContent.match(/@font-face\\s*{[^}]*}/);
           if (fontFaceMatch) {
             fontFaceDeclaration = fontFaceMatch[0];
           }
@@ -866,21 +858,23 @@ const main = () => {
       });
       
       if (fontFaceDeclaration) {
-        // Fix the path in the declaration
-        fontFaceDeclaration = fontFaceDeclaration.replace(
-          /_next\/static\/css\/_next\/static\/media\//g, 
-          '_next/static/media/'
-        );
+        // Fix the path in the declaration using string operations instead of regex
+        fontFaceDeclaration = fontFaceDeclaration.split('_next/static/css/_next/static/media').join('_next/static/media');
         
         // Also try with the fonts directory
-        const fontVersions = fontFaceDeclaration.replace(
-          /url\([^)]+\)/g,
-          'url("./fonts/' + specificFontFile + '")'
-        );
+        fontFaceDeclaration = fontFaceDeclaration.split('url(').join('url("./fonts/' + specificFontFile + '")').split(')').join('');
         
         // Create a new style element with the fixed declaration
         const fixedStyle = document.createElement('style');
-        fixedStyle.textContent = fontVersions;
+        fixedStyle.textContent = \`
+          @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('./fonts/${specificFontFile}') format('woff2');
+          }
+        \`;
         document.head.appendChild(fixedStyle);
       }
     }
@@ -911,11 +905,29 @@ const main = () => {
     tryLoadFont();
     window.addEventListener('load', tryLoadFont);
   })();
-</script>
-`;
-        htmlContent = htmlContent.replace('</head>', emergencyScript + '</head>');
+</script>`;
+
+        // Replace the problematic script with our safe version
+        htmlContent = htmlContent.replace(
+          /<script>[\s\S]*?fontFaceDeclaration[\s\S]*?replace[\s\S]*?\/g[\s\S]*?<\/script>/,
+          safeEmergencyScript
+        );
+        
+        // Write the fixed HTML back
         fs.writeFileSync(htmlFile, htmlContent);
-        console.log(`[CRITICAL] Added emergency font loading script to: ${htmlFile}`);
+        console.log(`[CRITICAL] Replaced problematic regex script in: ${htmlFile}`);
+      }
+      
+      // Add a direct font preload for the problematic font
+      if (!htmlContent.includes('a34f9d1faa5f3315-s.p.woff2')) {
+        // Create a preload link for this specific font
+        const preloadTag = `
+<link rel="preload" href="./_next/static/media/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="./fonts/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+`;
+        htmlContent = htmlContent.replace('<head>', '<head>' + preloadTag);
+        fs.writeFileSync(htmlFile, htmlContent);
+        console.log(`[CRITICAL] Added direct font preload to: ${htmlFile}`);
       }
     });
     
