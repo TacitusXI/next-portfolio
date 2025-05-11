@@ -1557,7 +1557,7 @@ export default function Chess() {
               id="chess-board"
               boardOrientation={getBoardOrientation()}
               areArrowsAllowed={false}
-              arePiecesDraggable={true}
+              arePiecesDraggable={false}
               onSquareClick={handleSquareClick}
               onPieceDrop={handleDrop}
               customBoardStyle={toCustomSquareStyle({
@@ -1597,7 +1597,7 @@ export default function Chess() {
             id="chess-board"
             boardOrientation={getBoardOrientation()}
             areArrowsAllowed={false}
-            arePiecesDraggable={true}
+            arePiecesDraggable={false}
             onSquareClick={handleSquareClick}
             onPieceDrop={handleDrop}
             customBoardStyle={toCustomSquareStyle({
@@ -1701,6 +1701,14 @@ export default function Chess() {
             <h5>OPPONENT</h5>
             <p>AI Stockfish Engine</p>
             <BotDifficulty>Rating <CyberDot/> 1200</BotDifficulty>
+            <p style={{ 
+              fontSize: '0.85rem', 
+              color: 'rgba(255, 255, 255, 0.7)', 
+              marginTop: '0.5rem',
+              fontStyle: 'italic'
+            }}>
+              Play against Stockfish bot with rating similar to mine
+            </p>
             
             {/* Show engine thinking indicator */}
             {isThinking && (
