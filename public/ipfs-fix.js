@@ -1,8 +1,112 @@
 // IPFS Asset Path Fixer
 (function() {
+  // EMERGENCY FIX for specific known font issue
+  (function emergencyFontFix() {
+    const specificFontFile = 'a34f9d1faa5f3315-s.p.woff2';
+    const problematicPath = '/_next/static/css/_next/static/media/' + specificFontFile;
+    const fixedPaths = [
+      './_next/static/media/' + specificFontFile,
+      './fonts/' + specificFontFile,
+      './' + specificFontFile
+    ];
+    
+    // Create preload links for all possible font locations
+    fixedPaths.forEach(path => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = path;
+      link.as = 'font';
+      link.type = 'font/woff2';
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    });
+    
+    // Fix style tags containing the problematic path
+    function fixFontFace() {
+      document.querySelectorAll('style').forEach(style => {
+        if (style.textContent.includes(problematicPath) || style.textContent.includes('_next/static/css/_next/static/media')) {
+          let fixed = style.textContent.replace(
+            /_next\/static\/css\/_next\/static\/media\//g, 
+            '_next/static/media/'
+          );
+          
+          style.textContent = fixed;
+        }
+      });
+      
+      // Create a direct @font-face rule as a fallback
+      const fontFace = document.createElement('style');
+      fontFace.textContent = `
+        @font-face {
+          font-family: 'Inter';
+          font-style: normal;
+          font-weight: 400;
+          font-display: swap;
+          src: url('./fonts/${specificFontFile}') format('woff2');
+        }
+      `;
+      document.head.appendChild(fontFace);
+    }
+    
+    // Override fetch for CSS files
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+      if (typeof url === 'string' && url.includes('.css')) {
+        return originalFetch.apply(this, arguments)
+          .then(response => {
+            const clonedResponse = response.clone();
+            
+            clonedResponse.text().then(text => {
+              if (text.includes('_next/static/css/_next/static/media')) {
+                const fixed = text.replace(
+                  /_next\/static\/css\/_next\/static\/media\//g, 
+                  '_next/static/media/'
+                );
+                
+                if (fixed !== text) {
+                  // Create and inject a style tag with the fixed CSS
+                  const style = document.createElement('style');
+                  style.textContent = fixed;
+                  document.head.appendChild(style);
+                  console.log('Fixed doubled paths in CSS at runtime');
+                }
+              }
+            }).catch(() => {});
+            
+            return response;
+          });
+      }
+      return originalFetch.apply(this, arguments);
+    };
+    
+    // Run immediately
+    fixFontFace();
+    
+    // And again after load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fixFontFace);
+    } else {
+      fixFontFace();
+    }
+    
+    // And once more after all resources are loaded
+    window.addEventListener('load', fixFontFace);
+    
+    // Try again after a delay
+    setTimeout(fixFontFace, 1000);
+  })();
+  
   // Function to fix asset URLs
   function fixAssetUrl(url) {
     if (typeof url !== 'string') return url;
+    
+    // Emergency direct fix for the specific problematic font
+    if (url.includes('a34f9d1faa5f3315-s.p.woff2')) {
+      if (url.includes('/_next/static/css/_next/static/media/')) {
+        return url.replace('/_next/static/css/_next/static/media/', '/_next/static/media/');
+      }
+      return './fonts/a34f9d1faa5f3315-s.p.woff2';
+    }
     
     // Fix doubled _next paths in CSS (common issue with font files)
     if (url.includes('/_next/static/css/_next/static/media/')) {

@@ -693,6 +693,55 @@ const main = () => {
   console.log('Starting post-build IPFS path fix');
   
   try {
+    // CRITICAL FIX: Direct fix for doubled _next paths in CSS files
+    // This needs to run first, before any other processing
+    console.log('Applying critical fix for doubled font paths in CSS files');
+    const cssFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.css'));
+    cssFiles.forEach(cssFile => {
+      let cssContent = fs.readFileSync(cssFile, 'utf8');
+      if (cssContent.includes('_next/static/css/_next/static/media/')) {
+        const originalContent = cssContent;
+        
+        // Direct replacement for the problematic pattern
+        cssContent = cssContent.replace(/_next\/static\/css\/_next\/static\/media\//g, '_next/static/media/');
+        
+        // Also fix any variations
+        cssContent = cssContent.replace(/url\(['"](\.\/)?_next\/static\/css\/_next\/static\/media\//g, 'url("_next/static/media/');
+        cssContent = cssContent.replace(/url\(['"](\.\/)?_next\/static\/css\/_next\//g, 'url("_next/');
+        
+        if (cssContent !== originalContent) {
+          fs.writeFileSync(cssFile, cssContent);
+          console.log(`[CRITICAL] Fixed doubled _next paths in CSS file: ${cssFile}`);
+          
+          // Extract font filenames from this CSS
+          const fontFileMatches = originalContent.match(/[a-z0-9\-]+\.(woff2|woff|ttf)/g) || [];
+          if (fontFileMatches.length > 0) {
+            // Create fonts directory if it doesn't exist
+            const fontsDir = path.join(outputDir, 'fonts');
+            if (!fs.existsSync(fontsDir)) {
+              fs.mkdirSync(fontsDir, { recursive: true });
+            }
+            
+            // Find the font files in the build and copy them to /fonts
+            fontFileMatches.forEach(fontFile => {
+              // Try to find the font file in the media directory
+              const mediaDir = path.join(outputDir, '_next', 'static', 'media');
+              if (fs.existsSync(mediaDir)) {
+                const files = fs.readdirSync(mediaDir);
+                const matchingFile = files.find(file => file === fontFile);
+                if (matchingFile) {
+                  const sourceFile = path.join(mediaDir, matchingFile);
+                  const destFile = path.join(fontsDir, matchingFile);
+                  fs.copyFileSync(sourceFile, destFile);
+                  console.log(`[CRITICAL] Copied font file to accessible location: ${fontFile}`);
+                }
+              }
+            });
+          }
+        }
+      }
+    });
+    
     // Find all HTML, JS, and CSS files
     const filesToProcess = findHtmlFiles(outputDir);
     console.log(`Found ${filesToProcess.length} files to process`);
@@ -745,6 +794,140 @@ const main = () => {
     } catch (error) {
       console.error('Error in fixNextDirectory:', error);
       // Continue with other steps
+    }
+    
+    // FINAL PASS: One more check for the specific problematic font path
+    const htmlFiles = findHtmlFiles(outputDir).filter(file => file.endsWith('.html'));
+    htmlFiles.forEach(htmlFile => {
+      let htmlContent = fs.readFileSync(htmlFile, 'utf8');
+      
+      // Add a direct font preload for the problematic font
+      if (!htmlContent.includes('a34f9d1faa5f3315-s.p.woff2')) {
+        // Create a preload link for this specific font
+        const preloadTag = `
+<link rel="preload" href="./_next/static/media/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="./fonts/a34f9d1faa5f3315-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+`;
+        htmlContent = htmlContent.replace('<head>', '<head>' + preloadTag);
+        fs.writeFileSync(htmlFile, htmlContent);
+        console.log(`[CRITICAL] Added direct font preload to: ${htmlFile}`);
+      }
+      
+      // Add emergency font loading script
+      if (!htmlContent.includes('emergencyFontFix')) {
+        const emergencyScript = `
+<script>
+  // Emergency font fix for doubled _next paths
+  (function emergencyFontFix() {
+    // Fix for the specific problematic font
+    const specificFontFile = 'a34f9d1faa5f3315-s.p.woff2';
+    
+    // Function to create a font style element
+    function createFontFaceStyle() {
+      // Find any @font-face declarations in the page
+      const styles = document.querySelectorAll('style');
+      let fontFaceDeclaration = '';
+      
+      styles.forEach(style => {
+        if (style.textContent.includes('@font-face') && style.textContent.includes(specificFontFile)) {
+          const fontFaceMatch = style.textContent.match(/@font-face\s*{[^}]*}/g);
+          if (fontFaceMatch) {
+            fontFaceDeclaration = fontFaceMatch[0];
+          }
+        }
+      });
+      
+      if (fontFaceDeclaration) {
+        // Fix the path in the declaration
+        fontFaceDeclaration = fontFaceDeclaration.replace(
+          /_next\/static\/css\/_next\/static\/media\//g, 
+          '_next/static/media/'
+        );
+        
+        // Also try with the fonts directory
+        const fontVersions = fontFaceDeclaration.replace(
+          /url\([^)]+\)/g,
+          'url("./fonts/' + specificFontFile + '")'
+        );
+        
+        // Create a new style element with the fixed declaration
+        const fixedStyle = document.createElement('style');
+        fixedStyle.textContent = fontVersions;
+        document.head.appendChild(fixedStyle);
+      }
+    }
+    
+    // Try to load the font from multiple possible locations
+    function tryLoadFont() {
+      const fontPaths = [
+        './_next/static/media/' + specificFontFile,
+        './fonts/' + specificFontFile,
+        './' + specificFontFile
+      ];
+      
+      fontPaths.forEach(path => {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = path;
+        link.as = 'font';
+        link.type = 'font/woff2';
+        link.crossOrigin = 'anonymous';
+        document.head.appendChild(link);
+      });
+      
+      // Also create a fixed @font-face style
+      createFontFaceStyle();
+    }
+    
+    // Run immediately and after load
+    tryLoadFont();
+    window.addEventListener('load', tryLoadFont);
+  })();
+</script>
+`;
+        htmlContent = htmlContent.replace('</head>', emergencyScript + '</head>');
+        fs.writeFileSync(htmlFile, htmlContent);
+        console.log(`[CRITICAL] Added emergency font loading script to: ${htmlFile}`);
+      }
+    });
+    
+    // Ensure we have copies of the specific font file mentioned in the error
+    try {
+      const specificFontFile = 'a34f9d1faa5f3315-s.p.woff2';
+      const mediaDir = path.join(outputDir, '_next', 'static', 'media');
+      const fontsDir = path.join(outputDir, 'fonts');
+      
+      if (!fs.existsSync(fontsDir)) {
+        fs.mkdirSync(fontsDir, { recursive: true });
+      }
+      
+      // Search for the font file in the media directory
+      if (fs.existsSync(mediaDir)) {
+        const files = fs.readdirSync(mediaDir);
+        const matchingFile = files.find(file => file === specificFontFile || file.includes(specificFontFile.split('-')[0]));
+        
+        if (matchingFile) {
+          // Copy to multiple locations for maximum compatibility
+          const sourceFile = path.join(mediaDir, matchingFile);
+          
+          [
+            path.join(fontsDir, matchingFile),
+            path.join(outputDir, matchingFile),
+            path.join(outputDir, '_next', matchingFile)
+          ].forEach(destPath => {
+            try {
+              fs.copyFileSync(sourceFile, destPath);
+              console.log(`[CRITICAL] Copied specific font file to: ${destPath}`);
+            } catch (err) {
+              console.error(`Failed to copy to ${destPath}:`, err.message);
+            }
+          });
+        } else {
+          console.error(`Could not find the specific font file: ${specificFontFile}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error in specific font file handling:', error);
     }
     
     console.log('Finished fixing asset paths');
