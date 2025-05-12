@@ -97,7 +97,10 @@ const BulletContent = styled.span`
   white-space: normal;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  overflow: visible;
+  word-break: normal;
+  hyphens: auto;
+  max-width: 100%;
+  display: inline-block;
   
   @media (max-width: 768px) {
     font-size: 0.9rem;
@@ -128,6 +131,8 @@ const BookLink = styled.a`
   position: relative;
   font-weight: 500;
   transition: all 0.2s ease;
+  display: inline;
+  word-break: break-word;
   
   &:hover {
     text-shadow: 0 0 8px rgba(72, 191, 255, 0.5);
@@ -462,7 +467,9 @@ export default function HeroSection() {
               marginTop: '0.8rem', 
               fontWeight: 500, 
               color: 'white',
-              textShadow: 'none'
+              textShadow: 'none',
+              maxWidth: '100%',
+              overflow: 'hidden'
             }}>
               <BulletPoint>
                 <Bullet style={{ color: 'white', textShadow: 'none', filter: 'none' }}>•</Bullet>
@@ -480,12 +487,23 @@ export default function HeroSection() {
               
               <BulletPoint>
                 <Bullet style={{ color: 'white', textShadow: 'none', filter: 'none' }}>•</Bullet>
-                <BulletContent style={{ color: 'white', textShadow: 'none' }}>
-                  Technical reviewer for <BookLink 
+                <BulletContent 
+                  style={{ 
+                    color: 'white', 
+                    textShadow: 'none',
+                    maxWidth: '100%',
+                    display: 'inline-flex',
+                    flexWrap: 'wrap'
+                  }}
+                >
+                  Technical reviewer for{' '} 
+                  <BookLink 
                     href="https://www.amazon.com/Developing-Blockchain-Solutions-Cloud-blockchain-powered-ebook/dp/B0CW59K1M4" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                  >Developing Blockchain Solutions in the Cloud</BookLink>
+                  >
+                    Developing Blockchain Solutions in the Cloud
+                  </BookLink>
                 </BulletContent>
               </BulletPoint>
             </div>
