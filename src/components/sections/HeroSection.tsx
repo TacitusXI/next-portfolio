@@ -73,20 +73,35 @@ const Subtitle = styled(motion.h2)`
 
 const BulletPoint = styled.div`
   display: flex;
-  margin-bottom: 0.5rem;
-  align-items: center;
+  margin-bottom: 0.8rem;
+  align-items: flex-start;
   width: 100%;
   overflow: visible;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+  }
 `;
 
 const Bullet = styled.span`
-  margin-right: 0.5rem;
+  margin-right: 0.7rem;
   flex-shrink: 0;
+  line-height: 1.5;
+  
+  @media (max-width: 768px) {
+    margin-top: 0.15rem;
+  }
 `;
 
 const BulletContent = styled.span`
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
   overflow: visible;
+  
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
 `;
 
 const TypedText = styled.span`
