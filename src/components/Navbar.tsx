@@ -88,6 +88,7 @@ const NavbarContainer = styled(motion.nav)`
   ${glitchAnimation}
 `;
 
+// Modified NavContent component with iPad-specific styling
 const NavContent = styled.div`
   max-width: 1200px;
   width: 100%;
@@ -97,6 +98,11 @@ const NavContent = styled.div`
   justify-content: space-between;
   padding: 0 1rem 0 0;
   margin-left: -67px;
+  
+  @media (min-width: 768px) and (max-width: 1024px) {
+    margin-left: -20px;
+    padding: 0 0.5rem;
+  }
   
   @media (max-width: 767px) {
     margin-left: 0;
@@ -117,6 +123,12 @@ const LogoContainer = styled(motion.div)`
   transform: perspective(500px) rotateY(-2deg);
   transition: all 0.3s ease;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  
+  @media (min-width: 768px) and (max-width: 1024px) {
+    padding: 0.4rem 0.8rem;
+    margin-left: 0.3rem;
+    transform: perspective(500px) rotateY(-1deg);
+  }
   
   &:hover {
     transform: perspective(500px) rotateY(0deg);
@@ -151,6 +163,12 @@ const LogoImage = styled.div`
   filter: drop-shadow(0 0 5px rgba(115, 74, 253, 0.5));
   transition: all 0.3s ease;
   
+  @media (min-width: 768px) and (max-width: 1024px) {
+    width: 34px;
+    height: 34px;
+    margin-right: 0.4rem;
+  }
+  
   img {
     width: 100%;
     height: 100%;
@@ -167,12 +185,21 @@ const LogoText = styled.div`
   -webkit-text-fill-color: transparent;
   position: relative;
   
+  @media (min-width: 768px) and (max-width: 1024px) {
+    font-size: 1.4rem;
+  }
+  
   &.tacitvs {
     font-size: 1.5rem;
     font-family: 'Orbitron', sans-serif;
     letter-spacing: 2px;
     margin-left: 0.25rem;
     position: relative;
+    
+    @media (min-width: 768px) and (max-width: 1024px) {
+      font-size: 1.3rem;
+      letter-spacing: 1.5px;
+    }
     
     &::after {
       content: 'Portfolio';
@@ -185,6 +212,11 @@ const LogoText = styled.div`
       font-weight: 400;
       color: rgb(49, 164, 253);
       -webkit-text-fill-color: rgb(49, 164, 253);
+      
+      @media (min-width: 768px) and (max-width: 1024px) {
+        font-size: 0.6rem;
+        bottom: -8px;
+      }
     }
   }
   
@@ -192,6 +224,11 @@ const LogoText = styled.div`
     position: relative;
     margin-left: 0.75rem;
     font-size: 1.2rem;
+    
+    @media (min-width: 768px) and (max-width: 1024px) {
+      font-size: 1.1rem;
+      margin-left: 0.5rem;
+    }
     
     &::before {
       content: '';
@@ -202,56 +239,31 @@ const LogoText = styled.div`
       width: 1px;
       height: 70%;
       background: rgba(115, 74, 253, 0.5);
+      
+      @media (min-width: 768px) and (max-width: 1024px) {
+        left: -0.35rem;
     }
   }
 `;
 
-// Desktop navigation links with hover effect
+// Modified DesktopNav to handle iPad screens better
 const DesktopNav = styled.div`
-  display: none;
-  align-items: center;
-  gap: 0.25rem;
-  
-  @media (min-width: 768px) {
-    display: flex;
-    gap: 0.4rem;
-  }
-`;
-
-// Mobile menu trigger with animation
-const MobileMenuButton = styled(motion.button)`
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 32px;
-  height: 22px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  z-index: 1100;
+  align-items: center;
+  gap: 2rem;
   
-  @media (min-width: 768px) {
+  @media (min-width: 768px) and (max-width: 1024px) {
+    gap: 1.25rem;
     display: none;
   }
   
-  &:focus {
-    outline: none;
-  }
-  
-  span {
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, rgb(115, 74, 253), rgb(49, 164, 253));
-    border-radius: 2px;
-    transition: all 0.3s ease;
-    transform-origin: left;
-    box-shadow: 0 0 5px rgba(49, 164, 253, 0.5);
+  @media (max-width: 767px) {
+    display: none;
   }
 `;
 
 // Mobile menu panel
-const MobileMenu = styled(motion.div)`
+const MobileMenu = styled(motion.div)<{ isOpen?: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
@@ -268,6 +280,13 @@ const MobileMenu = styled(motion.div)`
   border-left: 1px solid rgba(115, 74, 253, 0.2);
   overflow: hidden;
   
+  @media (min-width: 768px) and (max-width: 1024px) {
+    width: 60%;
+    left: auto;
+    align-items: flex-start;
+    padding: 2rem 1.5rem;
+  }
+  
   &::before {
     content: '';
     position: absolute;
@@ -281,6 +300,57 @@ const MobileMenu = styled(motion.div)`
       rgba(49, 164, 253, 0.1) 100%
     );
     pointer-events: none;
+  }
+`;
+
+const MobileNav = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  
+  @media (min-width: 768px) and (max-width: 1024px) {
+    margin-top: 2.5rem;
+    gap: 1.2rem;
+  }
+`;
+
+// Mobile menu toggle button
+const MobileMenuToggle = styled(motion.button)`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  padding: 0.5rem;
+  z-index: 1100;
+  color: white;
+  font-size: 1.8rem;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-direction: column;
+  gap: 6px;
+  
+  @media (min-width: 768px) and (max-width: 1024px) {
+    display: flex;
+  }
+  
+  @media (max-width: 767px) {
+    display: flex;
+  }
+  
+  span {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, rgb(115, 74, 253), rgb(49, 164, 253));
+    border-radius: 2px;
+    display: block;
+    transition: all 0.3s ease;
+    transform-origin: center;
+    box-shadow: 0 0 5px rgba(49, 164, 253, 0.5);
   }
 `;
 
@@ -308,27 +378,8 @@ const MobileMenuList = styled(motion.div)`
   max-width: 300px;
 `;
 
-// Individual nav link styling
-const NavItem = styled(motion.a).withConfig({
-  shouldForwardProp: (prop) => {
-    // Don't forward Framer Motion and custom props to the DOM
-    const blacklist = [
-      'whileHover', 
-      'whileTap', 
-      'whileFocus', 
-      'whileDrag',
-      'whileInView',
-      'initial', 
-      'animate', 
-      'exit', 
-      'transition',
-      'variants',
-      '$isActive',
-      '$isMobile'
-    ];
-    return !blacklist.includes(prop);
-  }
-})<{ $isActive: boolean; $isMobile?: boolean }>`
+// NavItem with iPad-specific styling
+const NavItem = styled(motion.a)<{ $isActive: boolean; $isMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -341,6 +392,11 @@ const NavItem = styled(motion.a).withConfig({
   position: relative;
   transition: all 0.3s ease;
   border-radius: 4px;
+  
+  @media (min-width: 768px) and (max-width: 1024px) {
+    padding: ${props => props.$isMobile ? '0.75rem 0' : '0.5rem 0.6rem'};
+    font-size: ${props => props.$isMobile ? '1.35rem' : '0.85rem'};
+  }
   
   &:hover {
     color: rgb(72, 191, 255);
@@ -478,14 +534,16 @@ export default function Navbar() {
 
   // Mobile menu content component
   const MobileMenuContent = ({ onClose }: { onClose: () => void }) => {
-    const handleSectionClick = (sectionId: string) => {
+    const handleSectionClick = (e: React.MouseEvent, sectionId: string) => {
+      e.preventDefault();
       onClose();
-      // Only access document on the client side
-      if (typeof document !== 'undefined') {
-        const section = document.getElementById(sectionId);
-        if (section) {
-          section.scrollIntoView({ behavior: 'smooth' });
-        }
+      
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
       }
     };
 
@@ -510,9 +568,9 @@ export default function Navbar() {
               <NavItem
                 $isActive={isActive(route.path)}
                 $isMobile={true}
-                onClick={() => {
+                onClick={(e) => {
                   const sectionId = route.path.substring(route.path.indexOf('#') + 1);
-                  handleSectionClick(sectionId);
+                  handleSectionClick(e, sectionId);
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -588,7 +646,7 @@ export default function Navbar() {
           </DesktopNav>
           
           {/* Mobile menu button */}
-          <MobileMenuButton
+          <MobileMenuToggle
             onClick={() => setIsOpen(!isOpen)}
             initial="closed"
             animate={isOpen ? "open" : "closed"}
@@ -612,7 +670,7 @@ export default function Navbar() {
                 open: { rotate: -45, y: -8, width: '100%' }
               }}
             />
-          </MobileMenuButton>
+          </MobileMenuToggle>
         </NavContent>
       </NavbarContainer>
       
@@ -624,6 +682,7 @@ export default function Navbar() {
             initial="closed"
             animate="open"
             exit="closed"
+            isOpen={isOpen}
           >
             <MobileMenuContent onClose={() => setIsOpen(false)} />
           </MobileMenu>
