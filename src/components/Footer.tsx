@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import Link from 'next/link';
 import { personalInfo, githubInfo } from '@/data/content';
+import { motion } from 'framer-motion';
 
 const FooterContainer = styled.footer`
   background: rgba(10, 10, 15, 0.95);
@@ -229,12 +230,123 @@ const BackToTop = styled.button`
   }
 `;
 
+const ModalOverlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  backdrop-filter: blur(5px);
+`;
+
+const ModalContent = styled(motion.div)`
+  width: 85%;
+  max-width: 800px;
+  max-height: 90vh;
+  background: rgba(15, 15, 25, 0.95);
+  border-radius: 12px;
+  overflow: auto;
+  position: relative;
+  border: 1px solid rgba(58, 134, 255, 0.3);
+  box-shadow: 0 0 30px rgba(58, 134, 255, 0.2);
+  padding: 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    width: 95%;
+  }
+`;
+
+const PolicyTitle = styled.h2`
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(58, 134, 255, 0.3);
+  padding-bottom: 0.75rem;
+`;
+
+const PolicyContent = styled.div`
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  
+  h3 {
+    font-size: 1.3rem;
+    color: white;
+    margin: 1.5rem 0 0.75rem;
+  }
+  
+  p {
+    margin-bottom: 1rem;
+  }
+  
+  ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+  
+  li {
+    margin-bottom: 0.5rem;
+  }
+  
+  a {
+    color: #3a86ff;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(15, 15, 25, 0.8);
+  border: 1px solid rgba(58, 134, 255, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  
+  &:hover {
+    background: rgba(58, 134, 255, 0.2);
+    transform: scale(1.1);
+  }
+`;
+
 export default function Footer() {
+  const [activePolicy, setActivePolicy] = useState<string | null>(null);
+  
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
+  };
+  
+  const openPolicyModal = (policy: string) => {
+    setActivePolicy(policy);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+  };
+  
+  const closePolicyModal = () => {
+    setActivePolicy(null);
+    document.body.style.overflow = 'unset';
   };
   
   return (
@@ -365,9 +477,33 @@ export default function Footer() {
       <BottomBar>
         <Copyright>© {new Date().getFullYear()} Ivan Leskov. All rights reserved.</Copyright>
         <BottomLinks>
-          <BottomLink href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</BottomLink>
-          <BottomLink href="#" onClick={(e) => e.preventDefault()}>Terms of Service</BottomLink>
-          <BottomLink href="#" onClick={(e) => e.preventDefault()}>Cookie Policy</BottomLink>
+          <BottomLink 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault();
+              openPolicyModal('privacy');
+            }}
+          >
+            Privacy Policy
+          </BottomLink>
+          <BottomLink 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault();
+              openPolicyModal('terms');
+            }}
+          >
+            Terms of Service
+          </BottomLink>
+          <BottomLink 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault();
+              openPolicyModal('cookie');
+            }}
+          >
+            Cookie Policy
+          </BottomLink>
         </BottomLinks>
       </BottomBar>
       
@@ -376,6 +512,193 @@ export default function Footer() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
       </BackToTop>
+      
+      {/* Policy Modals */}
+      {activePolicy === 'privacy' && (
+        <ModalOverlay
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={closePolicyModal}
+        >
+          <ModalContent
+            onClick={(e) => e.stopPropagation()}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', damping: 25 }}
+          >
+            <CloseButton onClick={closePolicyModal} aria-label="Close policy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </CloseButton>
+            <PolicyTitle>Privacy Policy</PolicyTitle>
+            <PolicyContent>
+              <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              
+              <h3>Introduction</h3>
+              <p>Welcome to Ivan Leskov's portfolio website. I respect your privacy and am committed to protecting your personal data. This privacy policy explains how I collect, use, and safeguard your information when you visit my website.</p>
+              
+              <h3>Information I Collect</h3>
+              <p>When you visit my website, I may collect the following information:</p>
+              <ul>
+                <li>Usage data including IP address, browser type, pages visited, time and date of visit</li>
+                <li>Contact information you provide when using the contact form (name, email, message content)</li>
+              </ul>
+              
+              <h3>How I Use Your Information</h3>
+              <p>I use the information collected to:</p>
+              <ul>
+                <li>Respond to your inquiries and communication</li>
+                <li>Improve and optimize my website</li>
+                <li>Analyze usage patterns and trends</li>
+              </ul>
+              
+              <h3>Data Security</h3>
+              <p>I implement appropriate security measures to protect your personal information against unauthorized access or disclosure. However, no internet-based system can guarantee complete security.</p>
+              
+              <h3>Third-Party Links</h3>
+              <p>My website may contain links to third-party websites. I am not responsible for the privacy practices or content of these websites.</p>
+              
+              <h3>Your Rights</h3>
+              <p>Depending on your location, you may have rights regarding your personal data, including:</p>
+              <ul>
+                <li>Access to your personal data</li>
+                <li>Correction of inaccurate data</li>
+                <li>Deletion of your data</li>
+                <li>Restriction of processing</li>
+              </ul>
+              
+              <h3>Changes to This Policy</h3>
+              <p>I may update this privacy policy from time to time. Any changes will be posted on this page.</p>
+              
+              <h3>Contact Information</h3>
+              <p>If you have questions about this privacy policy, please contact me at {personalInfo.email}.</p>
+            </PolicyContent>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      
+      {activePolicy === 'terms' && (
+        <ModalOverlay
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={closePolicyModal}
+        >
+          <ModalContent
+            onClick={(e) => e.stopPropagation()}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', damping: 25 }}
+          >
+            <CloseButton onClick={closePolicyModal} aria-label="Close policy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </CloseButton>
+            <PolicyTitle>Terms of Service</PolicyTitle>
+            <PolicyContent>
+              <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              
+              <h3>Introduction</h3>
+              <p>Welcome to Ivan Leskov's portfolio website. By accessing and using this website, you agree to be bound by these Terms of Service.</p>
+              
+              <h3>Intellectual Property</h3>
+              <p>All content on this website, including text, graphics, logos, images, and software, is the property of Ivan Leskov and is protected by intellectual property laws. You may not reproduce, distribute, or create derivative works without explicit permission.</p>
+              
+              <h3>User Conduct</h3>
+              <p>When using this website, you agree not to:</p>
+              <ul>
+                <li>Use the website in any unlawful manner</li>
+                <li>Attempt to gain unauthorized access to any part of the website</li>
+                <li>Use automated tools or processes to access or scrape content</li>
+                <li>Interfere with the proper functioning of the website</li>
+              </ul>
+              
+              <h3>Disclaimer of Warranties</h3>
+              <p>This website is provided "as is" without any warranties, expressed or implied. I do not guarantee that the website will be error-free or uninterrupted.</p>
+              
+              <h3>Limitation of Liability</h3>
+              <p>I will not be liable for any damages arising from the use or inability to use this website, including direct, indirect, incidental, or consequential damages.</p>
+              
+              <h3>External Links</h3>
+              <p>My website may contain links to external websites. I am not responsible for the content or practices of these websites.</p>
+              
+              <h3>Modifications</h3>
+              <p>I reserve the right to modify these Terms of Service at any time. Continued use of the website after changes constitutes acceptance of the updated terms.</p>
+              
+              <h3>Governing Law</h3>
+              <p>These Terms of Service shall be governed by and construed in accordance with the laws of Poland, without regard to its conflict of law principles.</p>
+            </PolicyContent>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      
+      {activePolicy === 'cookie' && (
+        <ModalOverlay
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={closePolicyModal}
+        >
+          <ModalContent
+            onClick={(e) => e.stopPropagation()}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', damping: 25 }}
+          >
+            <CloseButton onClick={closePolicyModal} aria-label="Close policy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </CloseButton>
+            <PolicyTitle>Cookie Policy</PolicyTitle>
+            <PolicyContent>
+              <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              
+              <h3>What Are Cookies</h3>
+              <p>Cookies are small text files that are placed on your device when you visit a website. They are widely used to make websites work more efficiently and provide information to the website owners.</p>
+              
+              <h3>How I Use Cookies</h3>
+              <p>My website uses cookies for the following purposes:</p>
+              <ul>
+                <li>Essential cookies: Required for the basic functionality of the website</li>
+                <li>Analytics cookies: Help me understand how visitors interact with the website</li>
+                <li>Preference cookies: Allow the website to remember your preferences</li>
+              </ul>
+              
+              <h3>Types of Cookies Used</h3>
+              <h4>Essential Cookies</h4>
+              <p>These cookies are necessary for the website to function properly. They enable core functionality such as security, network management, and accessibility.</p>
+              
+              <h4>Analytics Cookies</h4>
+              <p>I use analytics cookies, such as those provided by Google Analytics, to collect information about how visitors use my website. This helps me improve the website and user experience.</p>
+              
+              <h4>Third-Party Cookies</h4>
+              <p>Some cookies may be set by third-party services used on my website, such as social media plugins or embedded content.</p>
+              
+              <h3>Managing Cookies</h3>
+              <p>You can control and manage cookies in various ways. Most web browsers allow you to:</p>
+              <ul>
+                <li>View and delete cookies</li>
+                <li>Block third-party cookies</li>
+                <li>Block cookies from particular websites</li>
+                <li>Block all cookies</li>
+                <li>Delete all cookies when you close your browser</li>
+              </ul>
+              
+              <p>Please note that blocking cookies may impact your experience on this and other websites, as certain features may not function properly.</p>
+              
+              <h3>Changes to This Cookie Policy</h3>
+              <p>I may update this Cookie Policy from time to time. Any changes will be posted on this page.</p>
+            </PolicyContent>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </FooterContainer>
   );
 } 

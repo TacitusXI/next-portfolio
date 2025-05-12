@@ -136,7 +136,7 @@ export const experiences: Experience[] = [
 
 export const additionalExperiences: Experience[] = [
   {
-    title: "Protocol Engineer",
+    title: "Smart Contract Infrastructure Engineer",
     company: "HIRO",
     period: "2025",
     description: "Executed adaptation of Uniswap v3 for custom blockchain, overcoming significant technical barriers in contract deployment and EVM compatibility issues to deliver a functional decentralized exchange.",
@@ -199,7 +199,7 @@ export const projects: Project[] = [
     description: "A sophisticated fork of Uniswap with custom Tacitus implementations, featuring an enhanced user interface with modern design elements. The platform incorporates a distinctive digital rain animation for a cyberpunk aesthetic, while maintaining the robust trading functionality of the original DEX. Supports multiple chains and token swaps with optimized transaction processing.",
     links: {
       github: "https://github.com/TacitusXI/tacitus-swap",
-      live: "https://swap.tacitvs.eth.limo/"
+      live: "https://tacitus-swap.vercel.app/"
     },
     githubInfo: {
       stars: 4,

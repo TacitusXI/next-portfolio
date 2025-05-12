@@ -528,6 +528,22 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
   const CLICK_COOLDOWN = 500; // Minimum milliseconds between click effects
   const MAX_BLOCK_EFFECTS = 5; // Maximum number of simultaneous block effects
   
+  // Rate limiting for blocks - track creation over time (max 10 per minute)
+  const blockCreationTimes = useRef<number[]>([]);
+  const MAX_BLOCKS_PER_MINUTE = 10;
+  const ONE_MINUTE_MS = 60000;
+  const [rateLimitReached, setRateLimitReached] = useState(false);
+  
+  // Reset rate limit reached indicator after a short delay
+  useEffect(() => {
+    if (rateLimitReached) {
+      const timer = setTimeout(() => {
+        setRateLimitReached(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [rateLimitReached]);
+  
   // Detect device performance level
   useEffect(() => {
     // Check if we're on a mobile device
@@ -570,6 +586,21 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
       return; // Skip this click if too soon after the last one
     }
     
+    // Rate limiting - first clean up old timestamps
+    // Remove timestamps older than one minute
+    const oneMinuteAgo = now - ONE_MINUTE_MS;
+    blockCreationTimes.current = blockCreationTimes.current.filter(
+      time => time > oneMinuteAgo
+    );
+    
+    // If we already have the maximum number of blocks in the last minute, don't create more
+    if (blockCreationTimes.current.length >= MAX_BLOCKS_PER_MINUTE) {
+      // Show visual feedback that rate limit was hit
+      console.log("Block creation rate limit reached (max 10 per minute)");
+      setRateLimitReached(true);
+      return;
+    }
+    
     // Update the last click time
     lastClickTime.current = now;
     
@@ -588,6 +619,12 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
       
       // Create block effect (only on desktop)
       blockEffects.current.push(new BlockEffect(x, y, color));
+      
+      // Record the timestamp for rate limiting
+      blockCreationTimes.current.push(now);
+      
+      // Debug - log current count after adding
+      console.log(`Block count in last minute: ${blockCreationTimes.current.length}/${MAX_BLOCKS_PER_MINUTE}`);
     }
     
     // Skip particle burst on low performance devices
@@ -620,7 +657,7 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
         raindrops.current.push(drop);
       }
     }
-  }, [intensity, performanceMode]);
+  }, [intensity, performanceMode, setRateLimitReached]);
   
   // Track mouse position and handle clicks
   useEffect(() => {
@@ -1062,6 +1099,25 @@ export default function CryptoRain({ intensity = 50, colorScheme = 'blue' }: Cry
   };
   
   return (
-    <RainCanvas ref={setRefs} />
+    <>
+      <RainCanvas ref={setRefs} />
+      {rateLimitReached && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(0, 0, 0, 0.7)',
+          color: '#ff5555',
+          padding: '8px 16px',
+          borderRadius: '4px',
+          fontSize: '14px',
+          zIndex: 1000,
+          pointerEvents: 'none'
+        }}>
+          Block limit reached (max 10 per minute)
+        </div>
+      )}
+    </>
   );
 } 

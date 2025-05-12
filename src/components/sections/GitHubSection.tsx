@@ -749,6 +749,7 @@ const GitHubSection: React.FC = () => {
         // Format repositories data
         const topRepositories = reposData
           .filter((repo: any) => !repo.fork) // Filter out forked repositories
+          .sort((a: any, b: any) => b.stargazers_count - a.stargazers_count) // Sort by stars (highest first)
           .slice(0, 6) // Take top 6 repositories
           .map((repo: any) => ({
             name: repo.name,
@@ -900,20 +901,13 @@ const GitHubSection: React.FC = () => {
 
   const { profile, topRepositories } = githubData;
 
-  // Sort repositories by description length (most detailed first)
-  const sortedRepositories = [...topRepositories].sort((a, b) => {
-    const descA = a.description || '';
-    const descB = b.description || '';
-    return descB.length - descA.length;
-  });
-
   // Calculate pagination values
-  const paginatedRepositories = sortedRepositories.slice(
+  const paginatedRepositories = topRepositories.slice(
     currentPage * reposPerPage, 
     currentPage * reposPerPage + reposPerPage
   );
   
-  const pageCount = Math.ceil(sortedRepositories.length / reposPerPage);
+  const pageCount = Math.ceil(topRepositories.length / reposPerPage);
 
   // Navigation functions
   const goToPage = (page: number) => {

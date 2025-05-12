@@ -90,7 +90,7 @@
   background: transparent;
   transform: translate(-2px, 0);
   -webkit-text-fill-color: rgb(49, 164, 253);
-  clip-path: polygon(0 35%, 100% 55%, 100% 100%, 0 100%);
+  clip-path: polygon(0 37%, 100% 55%, 100% 100%, 0 100%);
   animation: glitch-effect 2s infinite linear alternate-reverse;
   opacity: 0.8;
 }

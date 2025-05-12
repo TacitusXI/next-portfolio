@@ -8,6 +8,7 @@ import { useBackground } from '../effects/BackgroundProvider';
 import { personalInfo } from '@/data/content';
 import { FaCheck, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 import emailjs from '@emailjs/browser';
+import { trackEvent, setTag, upgradeSession } from '@/utils/analytics';
 
 // EmailJS configuration
 const EMAILJS_CONFIG = {
@@ -357,6 +358,12 @@ Email: ${formState.email}
       );
       
       if (result.status === 200) {
+        // Track successful form submission with Clarity
+        trackEvent('contact_form_submitted');
+        setTag('contact_subject', formState.subject || 'No Subject');
+        // Mark this as an important session to prioritize in Clarity
+        upgradeSession('contact_form_submission');
+        
         // Reset form after successful submission
         setFormState({
           name: '',
@@ -376,6 +383,10 @@ Email: ${formState.email}
       }
     } catch (error) {
       console.error("Error sending email:", error);
+      // Track form submission errors
+      trackEvent('contact_form_error');
+      setTag('form_error', error instanceof Error ? error.message : 'Unknown error');
+      
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
