@@ -496,11 +496,12 @@ export default function HeroSection() {
                     flexWrap: 'wrap'
                   }}
                 >
-                  Technical reviewer for{' '} 
+                  Technical reviewer for{' '}
                   <BookLink 
                     href="https://www.amazon.com/Developing-Blockchain-Solutions-Cloud-blockchain-powered-ebook/dp/B0CW59K1M4" 
                     target="_blank" 
                     rel="noopener noreferrer"
+                    style={{ marginLeft: '0.25rem' }}
                   >
                     Developing Blockchain Solutions in the Cloud
                   </BookLink>
