@@ -374,6 +374,38 @@ export default function HeroSection() {
     };
 
     fetchGithubData();
+    
+    // Listen for storage changes (when GitHubSection updates the data)
+    const handleStorageChange = () => {
+      const storedData = sessionStorage.getItem('githubData');
+      if (storedData) {
+        try {
+          const parsedData = JSON.parse(storedData);
+          if (parsedData && parsedData.totalContributions) {
+            setGithubContributions(parsedData.totalContributions);
+          }
+        } catch (err) {
+          console.error('Error parsing stored GitHub data:', err);
+        }
+      }
+    };
+    
+    // Add storage event listener
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for a custom event that we can dispatch from GitHubSection
+    const handleCustomUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.totalContributions) {
+        setGithubContributions(event.detail.totalContributions);
+      }
+    };
+    
+    window.addEventListener('githubDataUpdated', handleCustomUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('githubDataUpdated', handleCustomUpdate as EventListener);
+    };
   }, []);
   
   useEffect(() => {

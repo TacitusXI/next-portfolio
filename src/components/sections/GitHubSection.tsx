@@ -780,6 +780,11 @@ const GitHubSection: React.FC = () => {
         
         // Store the data in sessionStorage for other components to use
         sessionStorage.setItem('githubData', JSON.stringify(formattedData));
+        
+        // Dispatch custom event to notify other components (like HeroSection)
+        window.dispatchEvent(new CustomEvent('githubDataUpdated', { 
+          detail: formattedData 
+        }));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Error fetching GitHub data:', err);
