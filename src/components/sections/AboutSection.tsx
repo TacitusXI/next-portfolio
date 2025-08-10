@@ -655,7 +655,7 @@ export default function AboutSection() {
             {isClient && (
               <>
                 <BioTextContent>
-                  I write <HighlightText>smart contracts</HighlightText> that don&apos;t just function — they deliver.
+                  Focused on <HighlightText>security research</HighlightText> and finding vulnerabilities that matter.
                 </BioTextContent>
                 <BioTextContent>
                   With 3+ years in blockchain dev and deep hands-on experience in EVM-based ecosystems, 

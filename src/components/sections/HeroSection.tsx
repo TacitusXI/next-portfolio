@@ -410,11 +410,9 @@ export default function HeroSection() {
   
   useEffect(() => {
     const phrases = [
-
-      'Smart Contract Engineer',
-      'Technical Reviewer',
-      'Solidity Dev',
-      'Blockchain Enthusiast'
+      'Security Researcher',
+      'Solidity Engineer',
+      'Technical Reviewer'
     ];
     
     const timer = setTimeout(() => {
@@ -492,7 +490,7 @@ export default function HeroSection() {
             variants={animationVariants}
             className="enhanced-text"
           >
-            I&apos;m a <TypedText>{typedText}</TypedText>
+            I&apos;m a Blockchain <TypedText>{typedText}</TypedText>
             <br />
             <div style={{ 
               display: 'block', 
@@ -589,7 +587,7 @@ export default function HeroSection() {
             </StatItem>
             
             <StatItem>
-              <StatValue>{githubContributions > 0 ? githubContributions : '4000+' }</StatValue>
+              <StatValue>{githubContributions > 0 ? githubContributions : '2000+' }</StatValue>
               <StatLabel>
                 <span>CONTRIBUTIONS IN</span>
                 <span>THE LAST YEAR</span>

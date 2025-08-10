@@ -601,6 +601,7 @@ const ExternalLink = styled.a`
   width: 100%;
   box-sizing: border-box;
   backdrop-filter: blur(10px);
+  cursor: pointer;
   
   &::before {
     content: '';
@@ -1093,16 +1094,7 @@ export default function NotesSection() {
             ))}
           </div>
 
-          <ExternalLinksContainer>
-            <ExternalLink href={`https://github.com/${REPO_OWNER}/${REPO_NAME}`} target="_blank" rel="noopener noreferrer">
-              <FaGithub />
-              <span>View on GitHub</span>
-            </ExternalLink>
-            <ExternalLink href="https://tacitusxi.github.io/t-notes/" target="_blank" rel="noopener noreferrer">
-              <FaExternalLinkAlt />
-              <span>Read on Quartz</span>
-            </ExternalLink>
-          </ExternalLinksContainer>
+
         </Sidebar>
 
         <MainContent>
@@ -1157,22 +1149,22 @@ export default function NotesSection() {
               <FaRocket />
               Quick Actions
             </QuickActionsTitle>
-            <ActionButton onClick={() => window.open(`https://github.com/${REPO_OWNER}/${REPO_NAME}`, '_blank')}>
+            <ExternalLink href={`https://github.com/${REPO_OWNER}/${REPO_NAME}`} target="_blank" rel="noopener noreferrer" style={{ marginBottom: '0.75rem' }}>
               <FaGithub />
-              Browse Repository
-            </ActionButton>
-            <ActionButton onClick={() => window.open('https://tacitusxi.github.io/t-notes/', '_blank')}>
+              <span>Browse Repository</span>
+            </ExternalLink>
+            <ExternalLink href="https://tacitusxi.github.io/t-notes/" target="_blank" rel="noopener noreferrer" style={{ marginBottom: '0.75rem' }}>
               <FaExternalLinkAlt />
-              Open Quartz Site
-            </ActionButton>
-            <ActionButton onClick={() => setSearchTerm('')}>
+              <span>Open Quartz Site</span>
+            </ExternalLink>
+            <ExternalLink as="button" onClick={() => setSearchTerm('')} style={{ marginBottom: '0.75rem' }}>
               <FaSearch />
-              Clear Search
-            </ActionButton>
-            <ActionButton onClick={() => setExpandedFolders(new Set(Object.keys(groupedFiles)))}>
+              <span>Clear Search</span>
+            </ExternalLink>
+            <ExternalLink as="button" onClick={() => setExpandedFolders(new Set(Object.keys(groupedFiles)))}>
               <FaFolder />
-              Expand All
-            </ActionButton>
+              <span>Expand All</span>
+            </ExternalLink>
           </QuickActionsPanel>
         </RightPanel>
       </ContentWrapper>
