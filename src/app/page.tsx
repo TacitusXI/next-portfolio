@@ -11,6 +11,7 @@ import ContactSection from '@/components/sections/ContactSection';
 import GitHubSection from '@/components/sections/GitHubSection';
 import RecommendationsSection from '@/components/sections/RecommendationsSection';
 import HobbiesSection from '@/components/sections/HobbiesSection';
+import NotesSection from '@/components/sections/NotesSection';
 import PublicationsSection from '@/components/sections/PublicationsSection';
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
     <Layout>
       <HeroSection />
       <AboutSection />
+      <NotesSection />
       <SkillsSection />
       <ExperienceSection />
       <ProjectsSection />

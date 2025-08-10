@@ -2,7 +2,7 @@ import React from 'react';
 import Skills from '@/components/skills/Skills';
 
 export const metadata = {
-  title: 'Skills & Expertise | Portfolio',
+  title: 'Skills & Expertise | Digital Hub',
   description: 'Explore my technical skills and expertise across various domains including frontend, backend, mobile development, and more.',
 };
 

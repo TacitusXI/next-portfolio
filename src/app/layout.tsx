@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Ivan Leskov | Blockchain & Web3 Engineer',
-  description: 'Solidity developer with focus on smart contract architecture and secure blockchain applications',
+  title: 'Tacitvs | Digital Hub',
+  description: 'Personal digital hub showcasing blockchain development, writeups, notes, projects, and comprehensive digital presence',
 };
 
 export default function RootLayout({

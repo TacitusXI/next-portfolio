@@ -1,4 +1,14 @@
 /* Custom CSS - placed before Tailwind imports to avoid processing conflicts */
+
+/* Audit system animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 /* Font face for Inter font */
 @font-face {
   font-family: '__Inter_Fallback';

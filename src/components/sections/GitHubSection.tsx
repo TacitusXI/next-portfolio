@@ -802,8 +802,8 @@ const GitHubSection: React.FC = () => {
           })),
           topRepositories: [
             {
-              name: 'next-portfolio',
-              description: 'Personal portfolio website built with Next.js',
+              name: 'tacitus-digital-hub',
+description: 'Personal digital hub built with Next.js',
               url: 'https://github.com/TacitusXI/next-portfolio',
               language: 'TypeScript',
               stars: 5,

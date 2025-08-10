@@ -2,7 +2,7 @@ import React from 'react';
 import Projects from '@/components/projects/Projects';
 
 export const metadata = {
-  title: 'Projects | Portfolio',
+  title: 'Projects | Digital Hub',
   description: 'Explore my featured projects in blockchain development, decentralized applications, and smart contract implementation.',
 };
 

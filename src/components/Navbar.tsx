@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCode, FaBriefcase, FaFlask, FaBook, FaGamepad, FaEnvelope, FaUser, FaGithub } from 'react-icons/fa';
+import { FaCode, FaBriefcase, FaFlask, FaBook, FaGamepad, FaEnvelope, FaUser, FaGithub, FaStickyNote } from 'react-icons/fa';
 import Image from 'next/image';
 
 // Neon glitch animation for logo
@@ -90,17 +90,16 @@ const NavbarContainer = styled(motion.nav)`
 
 // Modified NavContent component with iPad-specific styling
 const NavContent = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem 0 0;
-  margin-left: -67px;
+  padding: 0 1rem;
+  margin: 0 auto;
   
   @media (min-width: 768px) and (max-width: 1024px) {
-    margin-left: -20px;
     padding: 0 0.5rem;
   }
   
@@ -202,7 +201,7 @@ const LogoText = styled.div`
     }
     
     &::after {
-      content: 'Portfolio';
+      content: 'Digital Hub';
       position: absolute;
       bottom: -10px;
       left: 0;
@@ -250,10 +249,14 @@ const LogoText = styled.div`
 const DesktopNav = styled.div`
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.2rem;
+  justify-content: center;
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
   
   @media (min-width: 768px) and (max-width: 1024px) {
-    gap: 1.25rem;
+    gap: 0.8rem;
     display: none;
   }
   
@@ -306,12 +309,12 @@ const MobileMenu = styled(motion.div)<{ isOpen?: boolean }>`
 const MobileNav = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 3rem;
+  gap: 1rem;
+  margin-top: 2rem;
   
   @media (min-width: 768px) and (max-width: 1024px) {
-    margin-top: 2.5rem;
-    gap: 1.2rem;
+    margin-top: 1.5rem;
+    gap: 0.8rem;
   }
 `;
 
@@ -357,13 +360,13 @@ const MobileMenuToggle = styled(motion.button)`
 const MobileLogoContainer = styled(motion.div)`
   display: flex;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   cursor: pointer;
   background: rgba(10, 11, 20, 0.3);
   padding: 0.5rem 1rem;
   border-radius: 12px;
   border: 1px solid rgba(115, 74, 253, 0.15);
-  align-self: flex-start;
+  align-self: center;
   
   &:hover {
     border-color: rgba(115, 74, 253, 0.3);
@@ -371,36 +374,53 @@ const MobileLogoContainer = styled(motion.div)`
 `;
 
 const MobileMenuList = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
 `;
 
 // NavItem with iPad-specific styling
 const NavItem = styled(motion.a)<{ $isActive: boolean; $isMobile?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: ${props => props.$isMobile ? '0.75rem 0' : '0.5rem 0.8rem'};
+  gap: 0.3rem;
+  padding: ${props => props.$isMobile ? '0.8rem 1rem' : '0.5rem 0.6rem'};
   color: ${props => props.$isActive ? 'rgb(72, 191, 255)' : 'rgba(255, 255, 255, 0.75)'};
   text-decoration: none;
-  font-size: ${props => props.$isMobile ? '1.35rem' : '0.95rem'};
+  font-size: ${props => props.$isMobile ? '1rem' : '0.85rem'};
   font-weight: ${props => props.$isActive ? '600' : '500'};
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   position: relative;
   transition: all 0.3s ease;
-  border-radius: 4px;
+  border-radius: ${props => props.$isMobile ? '8px' : '4px'};
+  white-space: nowrap;
+  background: ${props => props.$isMobile ? 'rgba(255, 255, 255, 0.03)' : 'transparent'};
+  border: ${props => props.$isMobile ? '1px solid rgba(255, 255, 255, 0.08)' : 'none'};
+  justify-content: ${props => props.$isMobile ? 'flex-start' : 'center'};
   
   @media (min-width: 768px) and (max-width: 1024px) {
-    padding: ${props => props.$isMobile ? '0.75rem 0' : '0.5rem 0.6rem'};
-    font-size: ${props => props.$isMobile ? '1.35rem' : '0.85rem'};
+    padding: ${props => props.$isMobile ? '0.7rem 0.8rem' : '0.4rem 0.5rem'};
+    font-size: ${props => props.$isMobile ? '0.95rem' : '0.8rem'};
+  }
+  
+  @media (max-width: 480px) {
+    padding: ${props => props.$isMobile ? '1rem' : '0.5rem 0.6rem'};
+    font-size: ${props => props.$isMobile ? '1.1rem' : '0.85rem'};
+    justify-content: ${props => props.$isMobile ? 'center' : 'center'};
   }
   
   &:hover {
     color: rgb(72, 191, 255);
-    background: ${props => props.$isMobile ? 'transparent' : 'rgba(115, 74, 253, 0.1)'};
+    background: ${props => props.$isMobile ? 'rgba(115, 74, 253, 0.1)' : 'rgba(115, 74, 253, 0.1)'};
+    border-color: ${props => props.$isMobile ? 'rgba(115, 74, 253, 0.3)' : 'transparent'};
+    transform: ${props => props.$isMobile ? 'translateY(-2px)' : 'none'};
   }
   
   ${props => props.$isActive && `
@@ -494,9 +514,10 @@ export default function Navbar() {
   // Navigation routes
   const routes: NavRoute[] = [
     { path: './#about', label: 'About', icon: <FaUser /> },
-    { path: './#projects', label: 'Projects', icon: <FaCode /> },
-    { path: './#experience', label: 'Experience', icon: <FaBriefcase /> },
+    { path: './#notes', label: 'Notes', icon: <FaStickyNote /> },
     { path: './#skills', label: 'Skills', icon: <FaFlask /> },
+    { path: './#experience', label: 'Experience', icon: <FaBriefcase /> },
+    { path: './#projects', label: 'Projects', icon: <FaCode /> },
     { path: './#github', label: 'GitHub', icon: <FaGithub /> },
     { path: './#publications', label: 'Publications', icon: <FaBook /> },
     { path: './#hobbies', label: 'Hobbies', icon: <FaGamepad /> },
@@ -563,8 +584,10 @@ export default function Navbar() {
           <LogoText>TACITVS</LogoText>
         </MobileLogoContainer>
         <MobileMenuList>
-          {routes.map((route) => (
-            <motion.div key={route.path} variants={navItemVariants}>
+          {routes.map((route, index) => (
+            <motion.div key={route.path} variants={navItemVariants} style={{
+              gridColumn: route.label === 'Contact' ? '1 / -1' : 'auto'
+            }}>
               <NavItem
                 $isActive={isActive(route.path)}
                 $isMobile={true}
@@ -573,6 +596,14 @@ export default function Navbar() {
                   handleSectionClick(e, sectionId);
                 }}
                 whileTap={{ scale: 0.95 }}
+                style={{
+                  background: route.label === 'Contact' 
+                    ? 'linear-gradient(135deg, rgba(115, 74, 253, 0.15), rgba(49, 164, 253, 0.1))' 
+                    : undefined,
+                  borderColor: route.label === 'Contact' 
+                    ? 'rgba(115, 74, 253, 0.3)' 
+                    : undefined
+                }}
               >
                 {route.icon}
                 <span>{route.label}</span>

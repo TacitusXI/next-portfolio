@@ -2,7 +2,7 @@ import React from 'react';
 import GitHub from '@/components/github/GitHub';
 
 export const metadata = {
-  title: 'GitHub Activity | Portfolio',
+  title: 'GitHub Activity | Digital Hub',
   description: 'Explore my GitHub contributions and repositories with interactive visualizations',
 };
 

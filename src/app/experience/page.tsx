@@ -2,7 +2,7 @@ import React from 'react';
 import Experience from '@/components/experience/Experience';
 
 export const metadata = {
-  title: 'Professional Experience | Portfolio',
+  title: 'Professional Experience | Digital Hub',
   description: 'View my professional experience in blockchain development, smart contract implementation, and software engineering.',
 };
 

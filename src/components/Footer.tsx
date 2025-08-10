@@ -538,7 +538,7 @@ export default function Footer() {
               <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               
               <h3>Introduction</h3>
-              <p>Welcome to Ivan Leskov's portfolio website. I respect your privacy and am committed to protecting your personal data. This privacy policy explains how I collect, use, and safeguard your information when you visit my website.</p>
+              <p>Welcome to Tacitvs's digital hub. I respect your privacy and am committed to protecting your personal data. This privacy policy explains how I collect, use, and safeguard your information when you visit my website.</p>
               
               <h3>Information I Collect</h3>
               <p>When you visit my website, I may collect the following information:</p>
@@ -604,7 +604,7 @@ export default function Footer() {
               <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               
               <h3>Introduction</h3>
-              <p>Welcome to Ivan Leskov's portfolio website. By accessing and using this website, you agree to be bound by these Terms of Service.</p>
+              <p>Welcome to Tacitvs's digital hub. By accessing and using this website, you agree to be bound by these Terms of Service.</p>
               
               <h3>Intellectual Property</h3>
               <p>All content on this website, including text, graphics, logos, images, and software, is the property of Ivan Leskov and is protected by intellectual property laws. You may not reproduce, distribute, or create derivative works without explicit permission.</p>

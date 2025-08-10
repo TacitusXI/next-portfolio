@@ -351,9 +351,9 @@ Email: ${formState.email}
         {
           name: formState.name,
           email: formState.email,
-          subject: formState.subject || "Portfolio Contact Form",
+          subject: formState.subject || "Digital Hub Contact Form",
           message: formattedMessage,
-          title: formState.subject || "Portfolio Contact Form"
+          title: formState.subject || "Digital Hub Contact Form"
         }
       );
       

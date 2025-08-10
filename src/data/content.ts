@@ -332,7 +332,7 @@ export const skills: Skill[] = [
   },
   {
     category: "Development",
-    items: ["Back-End Development", "Front-End Development", "Database Management"]
+    items: ["Back-End", "Front-End", "Database Management"]
   },
   {
     category: "Languages & Frameworks",
