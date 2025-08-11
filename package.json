@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node fix-ipfs-paths.js",
+    "build": "next build && node fix-ipfs-paths.js && node fix-audit-paths.js",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

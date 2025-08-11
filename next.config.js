@@ -5,11 +5,20 @@ const nextConfig = {
   images: {
     unoptimized: true,
     domains: ['github.com', 'raw.githubusercontent.com'],
+    loader: 'custom',
+    loaderFile: './src/lib/imageLoader.js'
   },
   output: 'export',
-  assetPrefix: '/',
+  distDir: 'out',
+  // For IPFS compatibility - use relative paths from root
+  assetPrefix: '',
   basePath: '',
-  transpilePackages: ['next/font']
+  transpilePackages: ['next/font'],
+  generateEtags: false,
+  poweredByHeader: false,
+  // Ensure clean IPFS-compatible output
+  compress: false,
+  generateBuildId: () => 'build'
 }
 
 module.exports = nextConfig 
