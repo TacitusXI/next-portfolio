@@ -162,16 +162,6 @@
       return './images/' + url.substring(8);
     }
     
-    // Handle API requests
-    if (url.startsWith('/api/')) {
-      return './api/' + url.substring(5);
-    }
-    
-    // Handle audit metadata requests
-    if (url.startsWith('/audits/')) {
-      return '.' + url;
-    }
-    
     return url;
   }
 
@@ -179,39 +169,7 @@
   const originalFetch = window.fetch;
   window.fetch = function(url, options) {
     if (arguments.length >= 1 && typeof arguments[0] === 'string') {
-      const origUrl = arguments[0];
       arguments[0] = fixAssetUrl(arguments[0]);
-      
-      // Add fallback for audit metadata requests
-      if (origUrl.indexOf('/audits/') !== -1) {
-        return originalFetch.apply(this, arguments).catch(err => {
-          console.warn('Audit fetch error, falling back to static data:', err);
-          // For passwordstore-v1 metadata, return static data
-          if (origUrl.indexOf('/audits/passwordstore-v1/metadata.json') !== -1) {
-            return new Response(JSON.stringify({
-              "slug": "passwordstore-v1",
-              "timestamp": "2025-08-10T12:09:08Z",
-              "sha256": "e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9",
-              "ipfs_cid": "Qmcf5b65dde3948b30515caaf163004f557b7633f32a01",
-              "transaction_hash": "0xf7c0c70020bdb32ff2116956d4acfa31a68a4cb1ce5bea7ed6407f2508d6d800",
-              "blockchain_network": "base",
-              "audit_url": "https://tacitvs.eth.limo/audit/passwordstore-v1",
-              "ipfs_url": "https://ipfs.io/ipfs/Qmcf5b65dde3948b30515caaf163004f557b7633f32a01",
-              "protocol_name": "PasswordStore",
-              "files": {
-                "final_pdf": "report-final.pdf",
-                "dark_pdf": "report-dark.pdf",
-                "light_pdf": "report-light.pdf",
-                "source_markdown": "report.md"
-              }
-            }), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            });
-          }
-          throw err;
-        });
-      }
     }
     return originalFetch.apply(this, arguments);
   };
