@@ -260,50 +260,12 @@ export default function AuditClient({ slug }: AuditClientProps) {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        // Fallback metadata for IPFS environment
-        const fallbackMetadata = {
-          slug: "passwordstore-v1",
-          timestamp: "2025-08-10T12:09:08Z",
-          sha256: "e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9",
-          ipfs_cid: "Qmcf5b65dde3948b30515caaf163004f557b7633f32a01",
-          transaction_hash: "0xf7c0c70020bdb32ff2116956d4acfa31a68a4cb1ce5bea7ed6407f2508d6d800",
-          blockchain_network: "base",
-          audit_url: "https://tacitvs.eth.limo/audit/passwordstore-v1",
-          ipfs_url: "https://ipfs.io/ipfs/Qmcf5b65dde3948b30515caaf163004f557b7633f32a01",
-          protocol_name: "PasswordStore",
-          files: {
-            final_pdf: "report-final.pdf",
-            dark_pdf: "report-dark.pdf",
-            light_pdf: "report-light.pdf",
-            source_markdown: "report.md"
-          }
-        };
-
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-          
-          const response = await fetch(`/audits/${slug}/metadata.json`, {
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          
-          if (response.ok) {
-            const data = await response.json();
-            setMetadata(data);
-            return;
-          }
-        } catch (fetchError) {
-          console.log(`Fetch failed for ${slug}, using fallback metadata`);
-        }
-
-        // Use fallback data if fetch fails (for IPFS compatibility)
-        if (slug === 'passwordstore-v1') {
-          console.log('Using fallback metadata for IPFS compatibility');
-          setMetadata(fallbackMetadata);
-        } else {
+        const response = await fetch(`/audits/${slug}/metadata.json`);
+        if (!response.ok) {
           throw new Error('Audit not found');
         }
+        const data = await response.json();
+        setMetadata(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load audit');
       } finally {
