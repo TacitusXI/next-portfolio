@@ -259,13 +259,34 @@ export default function AuditIndexPage() {
   useEffect(() => {
     const fetchAudits = async () => {
       try {
+        // Fallback data for IPFS environment when fetch fails
+        const fallbackAudits: AuditSummary[] = [
+          {
+            slug: "passwordstore-v1",
+            timestamp: "2025-08-10T12:09:08Z",
+            protocol_name: "PasswordStore",
+            blockchain_network: "base",
+            files: {
+              final_pdf: "report-final.pdf"
+            }
+          }
+        ];
+
         // In a real implementation, you'd have an API endpoint that lists all audits
         // For now, we'll manually list known audits
         const knownAudits = ['passwordstore-v1']; // Add more as you create them
         
+        // Try to fetch from API first, with timeout for IPFS compatibility
         const auditPromises = knownAudits.map(async (slug) => {
           try {
-            const response = await fetch(`/audits/${slug}/metadata.json`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+            
+            const response = await fetch(`/audits/${slug}/metadata.json`, {
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
             if (response.ok) {
               const metadata = await response.json();
               return {
@@ -277,7 +298,7 @@ export default function AuditIndexPage() {
               };
             }
           } catch (error) {
-            console.error(`Failed to load audit ${slug}:`, error);
+            console.log(`Fetch failed for ${slug}, using fallback data`);
           }
           return null;
         });
@@ -285,12 +306,27 @@ export default function AuditIndexPage() {
         const results = await Promise.all(auditPromises);
         const validAudits = results.filter(audit => audit !== null) as AuditSummary[];
         
-        // Sort by timestamp (newest first)
-        validAudits.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        
-        setAudits(validAudits);
+        // If no audits were fetched successfully, use fallback data
+        if (validAudits.length === 0) {
+          console.log('Using fallback audit data for IPFS compatibility');
+          setAudits(fallbackAudits);
+        } else {
+          // Sort by timestamp (newest first)
+          validAudits.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          setAudits(validAudits);
+        }
       } catch (error) {
         console.error('Failed to fetch audits:', error);
+        // Use fallback data as last resort
+        setAudits([{
+          slug: "passwordstore-v1",
+          timestamp: "2025-08-10T12:09:08Z",
+          protocol_name: "PasswordStore",
+          blockchain_network: "base",
+          files: {
+            final_pdf: "report-final.pdf"
+          }
+        }]);
       } finally {
         setLoading(false);
       }
