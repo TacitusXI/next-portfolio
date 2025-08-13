@@ -105,6 +105,11 @@ const NotesContainer = styled.section`
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(0, 255, 163, 0.5), rgba(0, 224, 255, 0.8), rgba(0, 255, 163, 0.5), transparent);
   }
+  
+  @media (max-width: 768px) {
+    padding: 2rem 0;
+    overflow-x: hidden;
+  }
 `;
 
 const SectionHeader = styled.div`
@@ -177,8 +182,10 @@ const ContentWrapper = styled.div`
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
     gap: 1rem;
-    padding: 0 1rem;
+    padding: 0;
     max-width: 100%;
+    margin: 0;
+    width: 100%;
   }
 `;
 
@@ -210,6 +217,8 @@ const Sidebar = styled.div`
   @media (max-width: 900px) {
     height: 500px;
     padding: 1rem;
+    margin: 0 1rem 1rem 1rem;
+    width: calc(100% - 2rem);
   }
   
   /* Custom scrollbar */
@@ -260,6 +269,8 @@ const MainContent = styled.div`
   @media (max-width: 900px) {
     height: 500px;
     padding: 1.5rem;
+    margin: 0 1rem 1rem 1rem;
+    width: calc(100% - 2rem);
   }
   
   /* Custom scrollbar */
@@ -310,6 +321,8 @@ const RightPanel = styled.div`
   @media (max-width: 900px) {
     height: auto;
     padding: 1rem;
+    margin: 0 1rem;
+    width: calc(100% - 2rem);
   }
 `;
 

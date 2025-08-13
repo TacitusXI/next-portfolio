@@ -67,6 +67,15 @@ const Tab = styled.button<{ $isActive: boolean }>`
   position: relative;
   backdrop-filter: blur(10px);
   
+  /* Hide short name by default */
+  .short-name {
+    display: none;
+  }
+  
+  .full-name {
+    display: inline;
+  }
+  
   &:hover {
     background: rgba(115, 74, 253, 0.1);
     color: ${props => props.$isActive ? 'rgb(115, 74, 253)' : 'rgba(255, 255, 255, 0.9)'};
@@ -79,27 +88,38 @@ const Tab = styled.button<{ $isActive: boolean }>`
   }
   
   @media (max-width: 768px) {
-    padding: 0.7rem 0.9rem;
-    font-size: 0.9rem;
-    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 8px;
     flex: 1;
-    max-width: 120px;
+    min-height: 48px;
+    font-weight: 600;
+    
+    /* Show short name on tablet and mobile */
+    .short-name {
+      display: inline;
+    }
+    
+    .full-name {
+      display: none;
+    }
   }
   
   @media (max-width: 480px) {
-    padding: 0.6rem 0.7rem;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    min-width: 90px;
-    max-width: 110px;
+    padding: 1.1rem 1rem;
+    font-size: 1.05rem;
+    border-radius: 10px;
+    min-height: 52px;
+    font-weight: 600;
     flex: 1;
+    box-shadow: ${props => props.$isActive ? '0 6px 20px rgba(49, 164, 253, 0.3)' : '0 4px 15px rgba(0, 0, 0, 0.1)'};
   }
   
   @media (max-width: 360px) {
-    padding: 0.5rem 0.5rem;
-    font-size: 0.8rem;
-    min-width: 80px;
-    max-width: 100px;
+    padding: 1rem 0.8rem;
+    font-size: 1rem;
+    min-height: 50px;
+    font-weight: 600;
   }
 `;
 
@@ -446,20 +466,30 @@ const CloseButton = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(15, 15, 25, 0.8);
-  border: 1px solid rgba(115, 74, 253, 0.3);
+  background: rgba(15, 15, 25, 0.9);
+  border: 1px solid rgba(115, 74, 253, 0.4);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  z-index: 20;
   transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
   
   &:hover {
-    background: rgba(115, 74, 253, 0.2);
+    background: rgba(115, 74, 253, 0.3);
     transform: scale(1.1);
+  }
+  
+  @media (max-width: 768px) {
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(15, 15, 25, 0.95);
+    border: 2px solid rgba(115, 74, 253, 0.5);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
   }
 `;
 
@@ -531,16 +561,30 @@ const ProofButton = styled(motion.button)`
   }
   
   @media (max-width: 768px) {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
     width: 100%;
     justify-content: center;
+    min-height: 48px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(115, 74, 253, 0.15);
   }
   
   @media (max-width: 480px) {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.8rem;
-    gap: 0.4rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.05rem;
+    min-height: 52px;
+    border-radius: 10px;
+    gap: 0.6rem;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(115, 74, 253, 0.2);
+  }
+  
+  @media (max-width: 360px) {
+    padding: 0.9rem 1.2rem;
+    font-size: 1rem;
+    min-height: 50px;
   }
 `;
 
@@ -560,34 +604,97 @@ const ProofModal = styled(motion.div)`
 `;
 
 const ProofContent = styled(motion.div)`
-  width: 85%;
-  max-width: 900px;
-  max-height: 90vh;
+  width: 90%;
+  max-width: 950px;
+  height: 85vh;
   background: rgba(15, 15, 25, 0.95);
   border-radius: 12px;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
   border: 1px solid rgba(115, 74, 253, 0.3);
   box-shadow: 0 0 30px rgba(115, 74, 253, 0.2);
-  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
   
   @media (max-width: 768px) {
-    padding: 1.25rem;
     width: 95%;
+    height: 88vh;
   }
 `;
 
 const ProofTitle = styled.h3`
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: white;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   text-align: center;
+  text-shadow: 0 0 10px rgba(115, 74, 253, 0.5);
+  font-weight: 600;
+  line-height: 1.3;
+  word-wrap: break-word;
+  
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-align: left;
+    line-height: 1.4;
+    padding-right: 0.5rem;
+  }
 `;
 
 const ProofDescription = styled.p`
   margin-bottom: 1.5rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.95rem;
+  padding: 1.25rem;
+  background: rgba(10, 10, 20, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  &.desktop-only {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    padding: 1rem;
+    line-height: 1.6;
+  }
+`;
+
+const MobileDescriptionContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+`;
+
+const MobileDescriptionText = styled.div`
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.9rem;
+  padding: 1rem;
+  background: rgba(10, 10, 20, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+    padding: 0.875rem;
+    line-height: 1.5;
+  }
 `;
 
 const ProofImageGrid = styled.div`
@@ -595,21 +702,138 @@ const ProofImageGrid = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  width: 100%;
-  overflow-x: auto;
+  gap: 1rem;
+  margin: 0 auto 1.5rem auto;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.5rem;
+  
+  &.desktop-only {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+`;
+
+const MobileImageContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    max-height: 60vh;
+    align-items: center;
+  }
+`;
+
+const MobileImageDisplay = styled.div`
+  width: calc(100% - 1rem);
+  flex: 1;
+  min-height: 180px;
+  max-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  overflow: hidden;
+  margin: 0 auto 0.75rem auto;
+  box-shadow: 0 4px 15px rgba(115, 74, 253, 0.1);
+`;
+
+const MobileProofImage = styled.img`
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+`;
+
+const ImageNavigation = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0 auto;
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 10, 20, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(115, 74, 253, 0.2);
+  width: fit-content;
+  max-width: calc(100% - 2rem);
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    max-width: calc(100% - 1rem);
+    width: fit-content;
+  }
+`;
+
+const ImageNavButton = styled.button`
+  padding: 0.6rem 1rem;
+  background: rgba(115, 74, 253, 0.15);
+  border: 1px solid rgba(115, 74, 253, 0.3);
+  color: rgb(115, 74, 253);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-height: 40px;
+  min-width: 70px;
+  backdrop-filter: blur(5px);
+  flex-shrink: 0;
+  
+  &:hover {
+    background: rgba(115, 74, 253, 0.25);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+    min-width: 60px;
+  }
+`;
+
+const ImageCounter = styled.span`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: center;
+  flex-shrink: 0;
+  padding: 0 0.5rem;
+  
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+    min-width: 45px;
+    padding: 0 0.25rem;
+  }
 `;
 
 const ProofImage = styled.img`
-  height: 375px;
+  max-height: 100%;
+  max-width: 100%;
   width: auto;
-  max-width: none;
+  height: auto;
   object-fit: contain;
   border-radius: 8px;
-  border: 1px solid rgba(115, 74, 253, 0.3);
-  background-color: rgba(0, 0, 0, 0.2);
-  transition: opacity 0.3s ease, filter 0.5s ease;
+  transition: opacity 0.3s ease, filter 0.5s ease, transform 0.3s ease;
   
   /* Add fade-in effect for images */
   opacity: 0;
@@ -618,20 +842,29 @@ const ProofImage = styled.img`
     opacity: 1;
     filter: blur(0);
   }
+  
+  &:hover {
+    transform: scale(1.02);
+  }
 `;
 
 // Create an image wrapper component for loading state
 const ProofImageWrapper = styled.div`
   position: relative;
-  height: 375px;
-  min-width: 200px;
+  height: 350px;
+  width: auto;
+  min-width: 220px;
+  max-width: 400px;
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid rgba(115, 74, 253, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  margin: 0 auto;
 `;
 
 const ImageLoadingIndicator = styled.div`
@@ -658,27 +891,76 @@ const ImageLoadingIndicator = styled.div`
   }
 `;
 
+const ProofHeader = styled.div`
+  padding: 1.5rem 4rem 0 1.5rem;
+  flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    padding: 1rem 3.5rem 0 1rem;
+  }
+`;
+
+const ProofMainContent = styled.div`
+  flex: 1;
+  padding: 0 1.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+  }
+`;
+
+const ProofFooter = styled.div`
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(115, 74, 253, 0.2);
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+`;
+
 const ProofLinks = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 0.75rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
 
 const ProofLink = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: rgba(49, 164, 253, 0.1);
+  padding: 0.75rem 1.25rem;
+  background: rgba(49, 164, 253, 0.15);
   border: 1px solid rgba(49, 164, 253, 0.3);
   color: rgb(49, 164, 253);
-  border-radius: 4px;
+  border-radius: 6px;
   text-decoration: none;
   transition: all 0.3s ease;
+  font-weight: 500;
+  backdrop-filter: blur(5px);
+  font-size: 0.9rem;
+  flex: 1;
+  justify-content: center;
   
   &:hover {
-    background: rgba(49, 164, 253, 0.2);
+    background: rgba(49, 164, 253, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(49, 164, 253, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 1rem 1rem;
+    font-size: 1rem;
+    min-height: 48px;
+    font-weight: 600;
   }
 `;
 
@@ -737,6 +1019,7 @@ export default function ExperienceSection() {
   const [imageRatio, setImageRatio] = useState({ width: 3, height: 2 }); // Default ratio
   const [selectedProof, setSelectedProof] = useState<any | null>(null);
   const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Extract all proof images for preloading
   const allProofImages = experiences.concat(additionalExperiences)
@@ -816,9 +1099,9 @@ export default function ExperienceSection() {
   };
   
   const tabs = [
-    { id: 'work', name: 'Work Experience' },
-    { id: 'side', name: 'Side Projects' },
-    { id: 'education', name: 'Certifications' }
+    { id: 'work', name: 'Work Experience', shortName: 'Work' },
+    { id: 'side', name: 'Side Projects', shortName: 'Projects' },
+    { id: 'education', name: 'Certifications', shortName: 'Certs' }
   ];
   
   const certifications: Certificate[] = [
@@ -947,12 +1230,30 @@ export default function ExperienceSection() {
   
   const openProofModal = (proof: any) => {
     setSelectedProof(proof);
+    setCurrentImageIndex(0);
     document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
   };
   
   const closeProofModal = () => {
     setSelectedProof(null);
+    setCurrentImageIndex(0);
     document.body.style.overflow = 'auto'; // Re-enable scrolling
+  };
+  
+  const nextImage = () => {
+    if (selectedProof && selectedProof.images) {
+      setCurrentImageIndex((prev) => 
+        prev < selectedProof.images.length - 1 ? prev + 1 : 0
+      );
+    }
+  };
+  
+  const prevImage = () => {
+    if (selectedProof && selectedProof.images) {
+      setCurrentImageIndex((prev) => 
+        prev > 0 ? prev - 1 : selectedProof.images.length - 1
+      );
+    }
   };
   
   // Clean up on unmount
@@ -995,7 +1296,8 @@ export default function ExperienceSection() {
                 onClick={() => setActiveTab(tab.id)}
                 className="neotech-button"
               >
-                {tab.name}
+                <span className="full-name">{tab.name}</span>
+                <span className="short-name">{tab.shortName}</span>
               </Tab>
             ))}
           </TabsContainer>
@@ -1248,76 +1550,121 @@ export default function ExperienceSection() {
                 <FaTimes />
               </CloseButton>
               
-              {selectedProof.title && (
-                <ProofTitle>{selectedProof.title}</ProofTitle>
-              )}
+              {/* Header Section */}
+              <ProofHeader>
+                {selectedProof.title && (
+                  <ProofTitle>{selectedProof.title}</ProofTitle>
+                )}
+              </ProofHeader>
+              
+              {/* Main Content Section */}
+              <ProofMainContent>
               
               {selectedProof.description && (
-                <ProofDescription>{selectedProof.description}</ProofDescription>
+                <>
+                  {/* Desktop description */}
+                  <ProofDescription className="desktop-only">
+                    {selectedProof.description}
+                  </ProofDescription>
+                  
+                  {/* Mobile scrollable description */}
+                  <MobileDescriptionContainer>
+                    <MobileDescriptionText>
+                      {selectedProof.description}
+                    </MobileDescriptionText>
+                  </MobileDescriptionContainer>
+                </>
               )}
               
               {selectedProof.images && selectedProof.images.length > 0 && (
-                <ProofImageGrid>
-                  {selectedProof.images.map((image: string, index: number) => {
-                    const formattedSrc = image.startsWith('/images/') ? `.${image}` : image;
-                    const isPreloaded = preloadedImages.has(formattedSrc) || 
-                                       (imagesStatus[formattedSrc] === 'loaded');
-                    
-                    // Create low-quality placeholder URL for progressive loading
-                    const thumbnailSrc = formattedSrc.replace(/\.(png|jpe?g|webp)$/i, '-thumb.$1');
-                    
-                    return (
-                      <ProofImageWrapper key={index}>
-                        {!isPreloaded && (
-                          <ImageLoadingIndicator>
-                            <FaSearch />
-                          </ImageLoadingIndicator>
-                        )}
-                        
-                        {/* Low quality placeholder image that loads first */}
-                        {!isPreloaded && (
+                <>
+                  {/* Desktop image grid */}
+                  <ProofImageGrid className="desktop-only">
+                    {selectedProof.images.map((image: string, index: number) => {
+                      const formattedSrc = image.startsWith('/images/') ? `.${image}` : image;
+                      const isPreloaded = preloadedImages.has(formattedSrc) || 
+                                         (imagesStatus[formattedSrc] === 'loaded');
+                      
+                      return (
+                        <ProofImageWrapper key={index}>
+                          {!isPreloaded && (
+                            <ImageLoadingIndicator>
+                              <FaSearch />
+                            </ImageLoadingIndicator>
+                          )}
                           <ProofImage 
-                            src={thumbnailSrc} 
-                            alt={`Proof ${index + 1} thumbnail`}
-                            style={{ position: 'absolute' }}
+                            src={formattedSrc} 
+                            alt={`Proof ${index + 1}`} 
                             loading="eager"
+                            decoding="async"
+                            className={isPreloaded ? 'loaded' : ''}
+                            onLoad={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.classList.add('loaded');
+                              if (!preloadedImages.has(formattedSrc)) {
+                                setPreloadedImages(prev => new Set([...prev, formattedSrc]));
+                              }
+                            }}
                           />
-                        )}
+                        </ProofImageWrapper>
+                      );
+                    })}
+                  </ProofImageGrid>
+                  
+                  {/* Mobile single image with navigation */}
+                  <MobileImageContainer>
+                    <MobileImageDisplay>
+                      <MobileProofImage 
+                        src={selectedProof.images[currentImageIndex]?.startsWith('/images/') 
+                          ? `.${selectedProof.images[currentImageIndex]}` 
+                          : selectedProof.images[currentImageIndex]
+                        }
+                        alt={`Proof ${currentImageIndex + 1}`}
+                      />
+                    </MobileImageDisplay>
+                    
+                    {selectedProof.images.length > 1 && (
+                      <ImageNavigation>
+                        <ImageNavButton 
+                          onClick={prevImage}
+                          disabled={selectedProof.images.length <= 1}
+                        >
+                          ← Prev
+                        </ImageNavButton>
                         
-                        {/* Main high quality image */}
-                        <ProofImage 
-                          src={formattedSrc} 
-                          alt={`Proof ${index + 1}`} 
-                          loading="eager"
-                          decoding="async"
-                          className={isPreloaded ? 'loaded' : ''}
-                          onLoad={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.classList.add('loaded');
-                            if (!preloadedImages.has(formattedSrc)) {
-                              setPreloadedImages(prev => new Set([...prev, formattedSrc]));
-                            }
-                          }}
-                        />
-                      </ProofImageWrapper>
-                    );
-                  })}
-                </ProofImageGrid>
+                        <ImageCounter>
+                          {currentImageIndex + 1} / {selectedProof.images.length}
+                        </ImageCounter>
+                        
+                        <ImageNavButton 
+                          onClick={nextImage}
+                          disabled={selectedProof.images.length <= 1}
+                        >
+                          Next →
+                        </ImageNavButton>
+                      </ImageNavigation>
+                    )}
+                  </MobileImageContainer>
+                </>
               )}
+              </ProofMainContent>
               
+              {/* Footer Section */}
               {selectedProof.links && selectedProof.links.length > 0 && (
-                <ProofLinks>
-                  {selectedProof.links.map((link: any, index: number) => (
-                    <ProofLink 
-                      key={index} 
-                      href={link.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      {link.title} <FaExternalLinkAlt size={12} />
-                    </ProofLink>
-                  ))}
-                </ProofLinks>
+                <ProofFooter>
+                  <ProofLinks>
+                    {selectedProof.links.map((link: any, index: number) => (
+                      <ProofLink 
+                        key={index} 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        {link.title} <FaExternalLinkAlt size={12} />
+                      </ProofLink>
+                    ))}
+                  </ProofLinks>
+                </ProofFooter>
               )}
             </ProofContent>
           </ProofModal>

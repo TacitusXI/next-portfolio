@@ -49,7 +49,7 @@ export const experiences: Experience[] = [
     ],
     proof: {
       title: "Technical Book Reviewer",
-      description: "Over the last year and a half, I focused on side projects, startups, audits on Code4rena, and technical reviews. One of my achievements during this time was serving as a technical reviewer for 'Developing Blockchain Solutions in the Cloud' by Stefano Tempesta and Michael Peña. The book was published by Packt and covers comprehensive approaches to building blockchain applications in cloud environments.",
+      description: "Served as technical reviewer for 'Developing Blockchain Solutions in the Cloud' by Stefano Tempesta and Michael Peña, published by Packt. Focused on side projects, startup consulting, and Code4rena audits during this period.",
       images: [
         "/images/proofs/packt/packt1.webp",
         "/images/proofs/packt/packt2.webp"
@@ -74,7 +74,7 @@ export const experiences: Experience[] = [
     ],
     proof: {
       title: "Charity NFT Project",
-      description: "One of the firearms (number 022) from the collection I worked on was gifted by Czech President Petr Pavel to President Zelensky. The certificate of authenticity contract was created by me, with the NFT sold at auction and proceeds going to charity.",
+      description: "Created certificate of authenticity contract for firearm #022, gifted by Czech President Pavel to President Zelensky. NFT auctioned with proceeds donated to charity.",
       images: [
         "/images/proofs/blocktrust/blocktrust1.webp",
         "/images/proofs/blocktrust/blocktrust2.webp",
@@ -104,7 +104,7 @@ export const experiences: Experience[] = [
     ],
     proof: {
       title: "Crypto Trading & Technical Expertise",
-      description: "From 2019, blockchain and crypto fully captured my mind. I delved deeply into trading, mastering technical analysis and blockchain concepts. I became recognized as a technical guy and was invited to several local events as a speaker, where I presented on technical analysis and blockchain/crypto concepts. In the background, I was learning coding, developing trading bots, and exploring smart contracts in depth - this formed the foundation of my career as a blockchain engineer.",
+      description: "Mastered technical analysis and blockchain concepts while developing trading strategies. Spoke at local events on crypto/blockchain topics. Built trading bots and studied smart contracts, laying the foundation for my blockchain engineering career.",
       images: [
         "/images/proofs/technical/technical1.webp",
         "/images/proofs/technical/technical2.webp"
@@ -124,7 +124,7 @@ export const experiences: Experience[] = [
     ],
     proof: {
       title: "Top Sales Performance",
-      description: "I was one of the best sellers in banking products, making deals with agencies and bringing new clients to the bank. My sales were distinguished not just by quantity but also by quality. I maintained the #1 position by quantity/quality metrics in one of the 4 regions in Poland, consistently holding this lead position almost every month during my tenure.",
+      description: "Achieved #1 sales position in regional banking network through high-quality client acquisition and agency partnerships. Maintained top performance across quantity and quality metrics consistently throughout tenure.",
       images: [
         "/images/proofs/seller/seller1.webp",
         "/images/proofs/seller/seller2.webp"

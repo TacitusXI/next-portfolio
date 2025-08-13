@@ -259,16 +259,30 @@ const ProofButton = styled(motion.button)`
   }
   
   @media (max-width: 768px) {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
     width: 100%;
     justify-content: center;
+    min-height: 48px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
   }
   
   @media (max-width: 480px) {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.8rem;
-    gap: 0.4rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.05rem;
+    min-height: 52px;
+    border-radius: 10px;
+    gap: 0.6rem;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+  }
+  
+  @media (max-width: 360px) {
+    padding: 0.9rem 1.2rem;
+    font-size: 1rem;
+    min-height: 50px;
   }
 `;
 
@@ -415,6 +429,8 @@ const CloseProofButton = styled.button`
 const Experience: React.FC = () => {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [selectedProof, setSelectedProof] = useState<any | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isTextExpanded, setIsTextExpanded] = useState(false);
 
   const toggleCard = (index: string) => {
     setExpandedCard(expandedCard === index ? null : index);
