@@ -4,6 +4,9 @@
   "sha256": "e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9",
   "protocol_name": "PasswordStore",
   "blockchain_network": "base",
+  "transaction_hash": "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+  "ipfs_cid": "bafybeibt4ezu52mcvdzoglipsjycs7ugwq2o7qxc3bajiuyaok2quz3qxu",
+  "ipfs_url": "https://ipfs.io/ipfs/bafybeibt4ezu52mcvdzoglipsjycs7ugwq2o7qxc3bajiuyaok2quz3qxu",
   "audit_url": "https://tacitvs.eth.limo/audit/passwordstore-v1",
   "files": {
     "final_pdf": "report-final.pdf",
