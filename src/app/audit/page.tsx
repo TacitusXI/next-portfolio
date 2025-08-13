@@ -266,8 +266,12 @@ export default function AuditIndexPage() {
         const auditPromises = knownAudits.map(async (slug) => {
           try {
             // Use absolute path in development, relative in production (IPFS)
-            const basePath = typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '/audits' : './audits';
-            const response = await fetch(`${basePath}/${slug}/metadata.json`);
+            const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+            const basePath = isLocalhost ? '/audits' : '../audits';
+            const url = `${basePath}/${slug}/metadata.json`;
+            
+            const response = await fetch(url);
+            
             if (response.ok) {
               const metadata = await response.json();
               return {
@@ -410,7 +414,7 @@ export default function AuditIndexPage() {
                   </PrimaryButton>
                   
                   <SecondaryButton
-                    href={`${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '/audits' : './audits'}/${audit.slug}/${audit.files.final_pdf}`}
+                    href={`${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '/audits' : '../audits'}/${audit.slug}/${audit.files.final_pdf}`}
                     download
                   >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">

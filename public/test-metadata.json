@@ -1,0 +1,14 @@
+{
+  "slug": "passwordstore-v1",
+  "timestamp": "2025-01-27T21:20:00Z",
+  "sha256": "e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9",
+  "protocol_name": "PasswordStore",
+  "blockchain_network": "base",
+  "audit_url": "https://tacitvs.eth.limo/audit/passwordstore-v1",
+  "files": {
+    "final_pdf": "report-final.pdf",
+    "dark_pdf": "report-dark.pdf",
+    "light_pdf": "report-light.pdf",
+    "source_markdown": "report.md"
+  }
+}
