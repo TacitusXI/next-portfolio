@@ -1,0 +1,406 @@
+%% TACITVS Classical Audit Report Template
+%% Roman/Latin inspired design with cyberpunk color accents
+%% Based on eisvogel template with custom modifications
+
+\documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$babel-lang$,$endif$$if(papersize)$$papersize$paper,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
+
+% Use classical Roman fonts
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% Set up classical fonts using commonly available packages
+\usepackage{lmodern} % Latin Modern fonts (classical appearance)
+\usepackage{times} % Times Roman for classical serif look
+\usepackage{helvet} % Helvetica for clean sans-serif
+\usepackage{courier} % Courier for monospace
+
+% Alternative classical approach using available fonts
+\renewcommand{\rmdefault}{ptm} % Times Roman
+\renewcommand{\sfdefault}{phv} % Helvetica 
+\renewcommand{\ttdefault}{pcr} % Courier
+
+% Classical typography settings
+\usepackage{microtype}
+\usepackage{lettrine} % For drop caps
+\usepackage{titlesec}
+
+% ── Preamble additions ──
+\usepackage{qrcode}        % generate QR codes in-line
+\usepackage{multicol}      % 2-column layout
+% ────────────────────────
+
+% Epigraph package for memorable quotes
+\usepackage{epigraph}
+\setlength\epigraphwidth{0.6\textwidth}   % narrow block for visual focus
+\setlength\epigraphrule{0pt}              % no rule above quote
+\renewcommand{\epigraphflush}{center}     % center-align
+\renewcommand{\sourceflush}{flushright}   % right-align the source
+\renewcommand{\textflush}{flushleft}      % left-align the quote text
+\setlength\beforeepigraphskip{2em}
+\setlength\afterepigraphskip{2em}
+
+% Color definitions - Refined TACITVS brand palette (elegant blues & teals)
+\usepackage{xcolor}
+
+% Light/Dark mode support with conditional colors
+$if(backgroundcolor)$
+% Light mode colors (for printing/annotation)
+\definecolor{tacitvsbackground}{RGB}{255, 255, 255}   % White background
+\definecolor{tacitvstext}{RGB}{33, 37, 41}            % Dark text
+\definecolor{tacitvslight}{RGB}{248, 249, 250}        % Light gray background
+\definecolor{tacitvscodebg}{RGB}{248, 249, 250}       % Light code background
+\definecolor{tacitvssilver}{RGB}{108, 117, 125}       % Darker gray for readability
+% Light mode brand colors (darker, readable on white)
+\definecolor{tacitvsblue}{RGB}{0, 123, 191}           % Darker blue for readability
+\definecolor{tacitvsdarkcyan}{RGB}{0, 140, 186}       % Darker cyan for print readability
+\definecolor{tacitvsgreen}{RGB}{25, 135, 84}          % Dark green for print
+\definecolor{tacitvsslate}{RGB}{90, 120, 115}         % Darker slate for contrast
+\definecolor{tacitvsaccent}{RGB}{0, 86, 179}          % Darker accent blue
+\definecolor{tacitvsviolet}{RGB}{102, 16, 169}        % Darker violet for print
+$else$
+% Dark mode colors (default elegant theme)
+\definecolor{tacitvsbackground}{RGB}{9, 10, 26}       % Dark background
+\definecolor{tacitvstext}{RGB}{229, 229, 229}         % Light text
+\definecolor{tacitvslight}{RGB}{15, 20, 35}           % Dark light background
+\definecolor{tacitvscodebg}{RGB}{5, 8, 15}            % Dark code background
+\definecolor{tacitvssilver}{RGB}{156, 163, 175}       % Light silver
+% Dark mode brand colors (bright, readable on dark)
+\definecolor{tacitvsblue}{RGB}{49, 164, 253}          % Bright blue for dark theme
+\definecolor{tacitvsdarkcyan}{RGB}{0, 224, 255}       % Bright cyan for dark theme
+\definecolor{tacitvsgreen}{RGB}{0, 255, 163}          % Bright green for dark theme
+\definecolor{tacitvsslate}{RGB}{132, 165, 157}        % Refined slate blue
+\definecolor{tacitvsaccent}{RGB}{58, 134, 255}        % Bright accent blue
+\definecolor{tacitvsviolet}{RGB}{138, 43, 226}        % Bright violet for dark theme
+$endif$
+
+% Page layout with classical proportions and dark background
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=3cm, headheight=27pt]{geometry}
+
+% Set page background (conditional for light/dark mode)
+\usepackage{pagecolor}
+\pagecolor{tacitvsbackground}
+\color{tacitvstext}
+
+% Headers and footers with classical styling and logo branding
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+% Header: Logo on left, empty on right
+\fancyhead[L]{%
+  $if(logo)$%
+  \includegraphics[height=0.8cm]{$logo$}%
+  $else$%
+  {\color{tacitvsblue}\scshape\small TACITVS}%
+  $endif$%
+}
+\fancyhead[R]{}
+% Footer: Page number and TACITVS branding centered
+\fancyfoot[C]{\color{tacitvstext}\thepage \quad \textbullet \quad {\color{tacitvsblue}\scshape TACITVS}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Title formatting with refined classical styling
+\titleformat{\section}
+  {\color{tacitvsblue}\Large\scshape\bfseries}
+  {\color{tacitvssilver}\Roman{section}.}
+  {1em}
+  {}
+  [\color{tacitvsaccent}\titlerule]
+
+\titleformat{\subsection}
+  {\color{tacitvsdarkcyan}\large\scshape\bfseries}
+  {\color{tacitvssilver}\Alph{subsection}.}
+  {1em}
+  {}
+
+\titleformat{\subsubsection}
+  {\color{tacitvsslate}\normalsize\scshape\bfseries}
+  {\color{tacitvssilver}\roman{subsubsection}.}
+  {1em}
+  {}
+
+% Classical paragraph styling
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.5em}
+
+% Enhanced quote styling with classical elements - Dark theme
+\usepackage{csquotes}
+\usepackage{mdframed}
+
+\newmdenv[
+  linecolor=tacitvsaccent,
+  linewidth=2pt,
+  leftline=true,
+  rightline=false,
+  topline=false,
+  bottomline=false,
+  leftmargin=1em,
+  rightmargin=0em,
+  innerleftmargin=1em,
+  innerrightmargin=0em,
+  innertopmargin=0.5em,
+  innerbottommargin=0.5em,
+  backgroundcolor=tacitvslight
+]{tacitvsquote}
+
+% Code styling with classical borders - Dark theme
+\usepackage{listings}
+\usepackage{tcolorbox}
+
+% Configure listings for dark theme
+\lstset{
+  backgroundcolor=\color{tacitvscodebg},
+  basicstyle=\color{tacitvstext}\ttfamily\small,
+  commentstyle=\color{tacitvsgreen},
+  keywordstyle=\color{tacitvsblue},
+  stringstyle=\color{tacitvsdarkcyan},
+  numberstyle=\color{tacitvsaccent},
+  frame=single,
+  frameround=tttt,
+  rulecolor=\color{tacitvsaccent},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2
+}
+
+\newtcolorbox{tacitvscodebox}{
+  colback=tacitvscodebg,
+  colframe=tacitvsaccent,
+  coltext=tacitvstext,
+  fonttitle=\bfseries\scshape\color{tacitvsblue},
+  title={Codex},
+  arc=2pt,
+  boxrule=1pt,
+  left=0.5em,
+  right=0.5em,
+  top=0.5em,
+  bottom=0.5em
+}
+
+% Enhanced vulnerability callout boxes
+\definecolor{findingred}{RGB}{220, 53, 69}      % High severity
+\definecolor{findingorange}{RGB}{255, 143, 28}  % Medium severity  
+\definecolor{findinggreen}{RGB}{40, 167, 69}    % Low severity
+\definecolor{findingblue}{RGB}{13, 110, 253}    % Info severity
+
+\newtcolorbox{FindingBox}[2][]{
+  colback=#2!10!tacitvsbackground,
+  colframe=#2!80!tacitvstext,
+  coltext=tacitvstext,
+  sharp corners,
+  boxrule=1.5pt,
+  arc=3pt,
+  left=1em,
+  right=1em,
+  top=0.8em,
+  bottom=0.8em,
+  fonttitle=\bfseries\scshape,
+  #1
+}
+
+% Define specific finding box types for direct use
+\newtcolorbox{HighFinding}{
+  colback=findingred!10!tacitvsbackground,
+  colframe=findingred!80!tacitvstext,
+  coltext=tacitvstext,
+  sharp corners,
+  boxrule=1.5pt,
+  arc=3pt,
+  left=1em,
+  right=1em,
+  top=0.8em,
+  bottom=0.8em
+}
+
+\newtcolorbox{MediumFinding}{
+  colback=findingorange!10!tacitvsbackground,
+  colframe=findingorange!80!tacitvstext,
+  coltext=tacitvstext,
+  sharp corners,
+  boxrule=1.5pt,
+  arc=3pt,
+  left=1em,
+  right=1em,
+  top=0.8em,
+  bottom=0.8em
+}
+
+\newtcolorbox{LowFinding}{
+  colback=findinggreen!10!tacitvsbackground,
+  colframe=findinggreen!80!tacitvstext,
+  coltext=tacitvstext,
+  sharp corners,
+  boxrule=1.5pt,
+  arc=3pt,
+  left=1em,
+  right=1em,
+  top=0.8em,
+  bottom=0.8em
+}
+
+\newtcolorbox{InfoFinding}{
+  colback=findingblue!10!tacitvsbackground,
+  colframe=findingblue!80!tacitvstext,
+  coltext=tacitvstext,
+  sharp corners,
+  boxrule=1.5pt,
+  arc=3pt,
+  left=1em,
+  right=1em,
+  top=0.8em,
+  bottom=0.8em
+}
+
+% Table styling with classical elements - Dark theme
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+
+% Classical table formatting for dark theme - refined colors
+\renewcommand{\arraystretch}{1.3}
+\newcommand{\tacitvsTableHeader}[1]{\textcolor{tacitvsdarkcyan}{\textsc{\textbf{#1}}}}
+
+% Configure table colors for dark theme
+\usepackage{colortbl}
+\arrayrulecolor{tacitvsaccent}
+\global\arrayrulewidth=1pt
+
+% Enhanced links styling with better visual effects
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=tacitvsviolet,
+  urlcolor=tacitvsdarkcyan,
+  citecolor=tacitvsviolet,
+  anchorcolor=tacitvsviolet,
+  filecolor=tacitvsviolet,
+  pdfborder={0 0 1},
+  pdfborderstyle={/S/U/W 0.8},
+  linkbordercolor={0.54 0.17 0.89},
+  urlbordercolor={0 0.88 1},
+  citebordercolor={0.54 0.17 0.89},
+  pdfhighlight=/I,
+  pdfauthor={TACITVS},
+  pdftitle={Protocol Audit Report},
+  pdfsubject={Security Audit},
+  pdfkeywords={security, audit, blockchain, smart contracts}
+}
+
+% Enhanced link appearance with better visual styling
+\renewcommand{\UrlFont}{\color{tacitvsdarkcyan}\ttfamily\bfseries}
+
+% Custom commands for better link styling
+\newcommand{\styledlink}[2]{%
+  \href{#1}{\color{tacitvsviolet}\textbf{\underline{#2}}}%
+}
+
+\newcommand{\styledurl}[1]{%
+  \href{#1}{\color{tacitvsdarkcyan}\textbf{\texttt{#1}}}%
+}
+
+% Enhance existing hyperref command for internal links
+\let\originalhyperref\hyperref
+\renewcommand{\hyperref}[2][]{%
+  \begingroup
+  \color{tacitvsviolet}%
+  \textbf{#2}%
+  \endgroup
+}
+
+% Classical emphasis
+\renewcommand{\emph}[1]{\textcolor{tacitvsgreen}{\textit{#1}}}
+\newcommand{\strong}[1]{\textcolor{tacitvsblue}{\textbf{#1}}}
+
+% Classical section dividers
+\newcommand{\tacitvsrule}{\vspace{0.5em}\noindent\textcolor{tacitvsaccent}{\rule{\textwidth}{0.5pt}}\vspace{0.5em}}
+
+% Mathematical notation with classical styling
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Define missing commands for Pandoc compatibility
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Define passthrough command for code formatting
+\providecommand{\passthrough}[1]{#1}
+
+% Fix for section numbering in Pandoc
+\renewcommand*{\thetable}{\Roman{table}}
+\renewcommand*{\thefigure}{\Roman{figure}}
+
+% Begin document
+\begin{document}
+
+% Classical title page - Dark theme with epigraph
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    
+    % Logo if provided
+    $if(logo)$
+    \includegraphics[width=0.4\textwidth]{$logo$}
+    \vspace{1cm}
+    $endif$
+    
+    % Main title with refined classical styling
+    {\color{tacitvsblue}\Huge\scshape\bfseries TACITVS\par}
+    \vspace{0.5cm}
+    {\color{tacitvsdarkcyan}\Large Protocol Security Audit Report\par}
+    \vspace{2.5em}
+    
+    % Epigraph block with memorable Tacitus quote
+    \begin{epigraph}
+        {\color{tacitvstext}\textit{Sine ira et studio.}\\
+        \color{tacitvssilver}\textsc{"Without anger or bias."}}
+        {{\color{tacitvsaccent}\textit{—Tacitus, \textit{Annals} 1.1}}}
+    \end{epigraph}
+    
+    \vfill
+    
+    % Author with refined classical styling
+    {\color{tacitvsaccent}\Large\scshape TACITVS\par}
+    \vspace{0.3cm}
+    {\color{tacitvssilver}\normalsize\textit{Auctor Princeps}\par}
+    \vspace{1cm}
+    
+    % Date 
+    {\color{tacitvstext}\small \today\par}
+    
+\end{titlepage}
+
+% Table of contents with classical styling
+\newpage
+\tableofcontents
+\newpage
+
+% Main content begins
+$body$
+
+% ── Proof & Connect Appendix ──
+\appendix
+\section*{Proof \& Connect}
+\addcontentsline{toc}{section}{Proof \& Connect}
+
+This report is cryptographically anchored on-chain. Scan the left QR to verify the exact SHA-256 fingerprint and blockchain transaction. Scan the right QR to explore my portfolio or book a call.
+
+\begin{multicols}{2}
+  %── Left column: Integrity Proof ──
+  \centering
+  \vspace{0.5em}
+  \qrcode[height=3cm]{https://tacitvs.eth.limo/audit}
+  
+  \small\textit{Scan to verify on-chain proof}
+
+  \columnbreak
+
+  %── Right column: Marketing/Contact ──
+  \centering
+  \vspace{0.5em}
+  \qrcode[height=3cm]{https://bit.ly/TacitvsAudit}
+  
+  \small\textit{Scan for portfolio \& booking}
+\end{multicols}
+% ───────────────────────────────
+
+\end{document}

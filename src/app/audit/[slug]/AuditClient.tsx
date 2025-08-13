@@ -260,7 +260,7 @@ export default function AuditClient({ slug }: AuditClientProps) {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const response = await fetch(`/audits/${slug}/metadata.json`);
+        const response = await fetch(`../audits/${slug}/metadata.json`);
         if (!response.ok) {
           throw new Error('Audit not found');
         }
@@ -517,7 +517,7 @@ export default function AuditClient({ slug }: AuditClientProps) {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-          <BackButton href="/">
+          <BackButton href="../../">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>

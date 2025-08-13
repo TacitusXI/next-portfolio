@@ -370,6 +370,26 @@ const createIpfsCompatibleFiles = () => {
           el.setAttribute(attr, './_next/' + parts[1]);
         }
       });
+
+      // Fix navigation links that point to root (/) to prevent IPFS gateway redirects
+      document.querySelectorAll('a[href="/"], a[href="#/"]').forEach(el => {
+        el.href = './';
+      });
+      
+      // Fix audit navigation links
+      document.querySelectorAll('a[href^="/audit/"]').forEach(el => {
+        const path = el.getAttribute('href');
+        el.href = '.' + path;
+      });
+      
+      // Fix any other root-relative paths that might cause gateway redirects
+      document.querySelectorAll('a[href^="/"][href*="/"]').forEach(el => {
+        const href = el.getAttribute('href');
+        // Skip external URLs and already fixed paths
+        if (!href.startsWith('http') && !href.startsWith('./') && !href.startsWith('../')) {
+          el.href = '.' + href;
+        }
+      });
     }
     
     // Run immediately and again after load

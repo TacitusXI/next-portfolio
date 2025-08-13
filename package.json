@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NEXT_EXPORT=true next build && node fix-ipfs-paths.js && node fix-audit-paths.js",
+    "build-audits": "node audits/auto-build.js",
+    "build": "node audits/simple-build.js && NEXT_EXPORT=true next build && node fix-ipfs-paths.js && node fix-audit-paths.js",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

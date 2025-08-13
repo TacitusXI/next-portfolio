@@ -1,0 +1,23 @@
+{
+  "protocol_name": "PasswordStore",
+  "date": "2024-01-08",
+  "protocol_description": "PasswordStore is a protocol dedicated to storage and retrieval of a user's passwords. The protocol is designed to be used by a single user, and not designed to be used by multiple users. Only the owner should be able to set and access this password.",
+  "commit_hash": "7d55682ddc4301a7b13ae9413095feffd9924566",
+  "scope": "./src/\n|-- PasswordStore.sol",
+  "roles": "- Owner: The user who can set the password and read the password.\n- Outsiders: No one else should be able to set or read password.",
+  "audit_objective": "Comprehensive security review of the PasswordStore v1.0 smart contract for access control vulnerabilities, data privacy issues, and code quality assessment.",
+  "issues": {
+    "high": 2,
+    "medium": 0,
+    "low": 0,
+    "info": 1
+  },
+  "key_risks": "- **Critical Access Control Gaps:** Missing owner-only restrictions\n- **Data Privacy Violations:** On-chain password storage\n- **Documentation Inconsistencies:** Misleading NatSpec comments",
+  "top_recommendations": "1. Implement proper access control with `onlyOwner` modifier\n2. Reconsider the fundamental architecture for password privacy\n3. Update documentation to match actual function signatures",
+  "findings": {
+    "high": "\\begin{HighFinding}\n\\textbf{[H-1] Password Storage on Public Blockchain}\n\nAll data stored on-chain is visible to anyone. The \\passthrough{\\lstinline!PasswordStore::s_password!} variable can be read directly from blockchain storage, completely breaking the protocol's privacy.\n\\end{HighFinding}\n\n**Impact:** Anyone can read the private password, severely breaking the functionality of the protocol.\n\n**Proof of Concept:** The below test case shows how anyone can read the password directly from the blockchain.\n\n1. Create a locally running chain:\n   ```bash\n   make anvil\n   ```\n\n2. Deploy the contract to the chain:\n   ```bash\n   make deploy\n   ```\n\n3. Run the storage tool (slot 1 for `s_password`):\n   ```bash\n   cast storage <CONTRACT_ADDRESS_HERE> 1\n   ```\n\n**Recommended Mitigation:** Due to this, the overall architecture of the contract should be rethought. One could encrypt the password off-chain, and then store the encrypted password on-chain.\n\n\\begin{HighFinding}\n\\textbf{[H-2] Missing Access Control on setPassword()}\n\nThe \\passthrough{\\lstinline!PasswordStore::setpassword!} function lacks \\passthrough{\\lstinline!onlyOwner!} modifier, allowing anyone to change the password and break the contract's intended functionality.\n\\end{HighFinding}\n\n**Impact:** Anyone can set/change the password of the contract, severely breaking the contract intended functionality.\n\n**Recommended Mitigation:** Add an access control conditional to the `setPassword` function.",
+    "medium": "No medium severity findings were identified during this audit.",
+    "low": "No low severity findings were identified during this audit.",
+    "info": "\\begin{InfoFinding}\n\\textbf{[I-1] Incorrect NatSpec Documentation}\n\nThe \\passthrough{\\lstinline!PasswordStore::getPassword!} function documentation incorrectly specifies a parameter that doesn't exist in the function signature.\n\\end{InfoFinding}\n\n**Description:** The `PasswordStore::getPassword` function signature is `getPassword()` which the natspec say it should be `getPassword(string)`.\n\n**Impact:** The natspec is incorrect.\n\n**Recommended Mitigation:** Remove the incorrect natspec line."
+  }
+}
