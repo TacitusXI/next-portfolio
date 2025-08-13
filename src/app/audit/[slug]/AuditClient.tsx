@@ -260,7 +260,9 @@ export default function AuditClient({ slug }: AuditClientProps) {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const response = await fetch(`../audits/${slug}/metadata.json`);
+        // Use absolute path in development, relative in production (IPFS)
+        const basePath = typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '/audits' : '../audits';
+        const response = await fetch(`${basePath}/${slug}/metadata.json`);
         if (!response.ok) {
           throw new Error('Audit not found');
         }

@@ -45,21 +45,5 @@ if (!indexContent.includes("'passwordstore-v1'")) {
   }
 }
 
-// Fix IPFS path issues in audit files
-const auditIndexPath = path.join(__dirname, '..', 'src', 'app', 'audit', 'page.tsx');
-let auditIndexContent = fs.readFileSync(auditIndexPath, 'utf8');
-
-// Ensure relative paths for IPFS compatibility
-auditIndexContent = auditIndexContent.replace(/fetch\(`\/audits/g, 'fetch(`./audits');
-auditIndexContent = auditIndexContent.replace(/href=\{`\/audits/g, 'href={`./audits');
-fs.writeFileSync(auditIndexPath, auditIndexContent);
-
-const auditClientPath = path.join(__dirname, '..', 'src', 'app', 'audit', '[slug]', 'AuditClient.tsx');
-let auditClientContent = fs.readFileSync(auditClientPath, 'utf8');
-
-// Fix fetch paths for IPFS
-auditClientContent = auditClientContent.replace(/fetch\(`\/audits/g, 'fetch(`../audits');
-fs.writeFileSync(auditClientPath, auditClientContent);
-
-console.log('✅ Fixed IPFS paths in audit components');
+console.log('✅ Audit components use conditional paths (localhost vs IPFS)');
 console.log('✅ PasswordStore audit is now available at /audit/passwordstore-v1');

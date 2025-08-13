@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audit Debug Test</title>
+</head>
+<body>
+    <h1>Audit Debug Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testAuditFetch() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing audit fetch...<br>';
+            
+            try {
+                // Test absolute path (development)
+                result.innerHTML += 'Testing absolute path: /audits/passwordstore-v1/metadata.json<br>';
+                const response1 = await fetch('/audits/passwordstore-v1/metadata.json');
+                result.innerHTML += `Response status: ${response1.status}<br>`;
+                
+                if (response1.ok) {
+                    const data1 = await response1.json();
+                    result.innerHTML += `✅ Success! Protocol: ${data1.protocol_name}<br>`;
+                } else {
+                    result.innerHTML += `❌ Failed with status ${response1.status}<br>`;
+                }
+                
+                // Test relative path (production)
+                result.innerHTML += '<br>Testing relative path: ./audits/passwordstore-v1/metadata.json<br>';
+                const response2 = await fetch('./audits/passwordstore-v1/metadata.json');
+                result.innerHTML += `Response status: ${response2.status}<br>`;
+                
+                if (response2.ok) {
+                    const data2 = await response2.json();
+                    result.innerHTML += `✅ Success! Protocol: ${data2.protocol_name}<br>`;
+                } else {
+                    result.innerHTML += `❌ Failed with status ${response2.status}<br>`;
+                }
+                
+            } catch (error) {
+                result.innerHTML += `❌ Error: ${error.message}<br>`;
+            }
+        }
+        
+        // Run test when page loads
+        window.onload = testAuditFetch;
+    </script>
+</body>
+</html>
