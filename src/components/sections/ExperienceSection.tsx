@@ -36,9 +36,19 @@ const TabsContainer = styled(motion.div)`
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 3rem;
   gap: 1rem;
+  padding: 0 1rem;
   
   @media (max-width: 768px) {
-    gap: 0.5rem;
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.125rem;
+    padding: 0 0.25rem;
+    margin-bottom: 2rem;
   }
 `;
 
@@ -47,21 +57,49 @@ const Tab = styled.button<{ $isActive: boolean }>`
   background: ${props => props.$isActive ? 'rgba(49, 164, 253, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
   color: ${props => props.$isActive ? 'rgb(49, 164, 253)' : 'rgba(255, 255, 255, 0.7)'};
   border: 1px solid ${props => props.$isActive ? 'rgb(49, 164, 253)' : 'rgba(255, 255, 255, 0.1)'};
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
   min-width: fit-content;
+  position: relative;
+  backdrop-filter: blur(10px);
   
   &:hover {
     background: rgba(115, 74, 253, 0.1);
     color: ${props => props.$isActive ? 'rgb(115, 74, 253)' : 'rgba(255, 255, 255, 0.9)'};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(115, 74, 253, 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
   
   @media (max-width: 768px) {
-    padding: 0.8rem 1rem;
-    font-size: 0.95rem;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    flex: 1;
+    max-width: 120px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.6rem 0.7rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    min-width: 90px;
+    max-width: 110px;
+    flex: 1;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 80px;
+    max-width: 100px;
   }
 `;
 
@@ -473,13 +511,36 @@ const ProofButton = styled(motion.button)`
   background: rgba(115, 74, 253, 0.1);
   border: 1px solid rgba(115, 74, 253, 0.2);
   color: rgb(115, 74, 253);
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+  backdrop-filter: blur(5px);
   
   &:hover {
     background: rgba(115, 74, 253, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(115, 74, 253, 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    gap: 0.4rem;
   }
 `;
 
@@ -626,6 +687,16 @@ const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.75rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.4rem;
+  }
 `;
 
 const SideProjectsButton = styled(ProofButton)`

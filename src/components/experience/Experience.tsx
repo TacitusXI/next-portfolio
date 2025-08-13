@@ -239,13 +239,36 @@ const ProofButton = styled(motion.button)`
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
   color: #3b82f6;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+  backdrop-filter: blur(5px);
   
   &:hover {
     background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    gap: 0.4rem;
   }
 `;
 
@@ -253,6 +276,16 @@ const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.75rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.4rem;
+  }
 `;
 
 const SideProjectsButton = styled(ProofButton)`
