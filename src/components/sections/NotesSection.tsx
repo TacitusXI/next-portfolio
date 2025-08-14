@@ -94,9 +94,7 @@ const NotesContainer = styled.section`
   position: relative;
   overflow-x: hidden;
   min-height: 100vh;
-  width: 100vw;
-  max-width: 100vw;
-  box-sizing: border-box;
+  width: 100%;
   
   &::before {
     content: '';
@@ -111,8 +109,6 @@ const NotesContainer = styled.section`
   @media (max-width: 900px) {
     padding: 2rem 0;
     overflow-x: hidden;
-    width: 100vw;
-    max-width: 100vw;
   }
 `;
 
@@ -187,17 +183,19 @@ const ContentWrapper = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 0 0.75rem;
-    max-width: 100vw;
-    margin: 0;
-    width: 100vw;
+    padding: 0 1rem;
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
     box-sizing: border-box;
   }
 `;
 
 // Enhanced sidebar with floating elements
 const Sidebar = styled.div`
-  background: rgba(0, 0, 0, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(0, 224, 255, 0.05), rgba(0, 255, 163, 0.05)),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.25));
   border: 1px solid rgba(0, 224, 255, 0.2);
   border-radius: 16px;
   padding: 1.5rem;
@@ -208,30 +206,17 @@ const Sidebar = styled.div`
   min-width: 0;
   width: 100%;
   
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 224, 255, 0.05), rgba(0, 255, 163, 0.05));
-    border-radius: 16px;
-    pointer-events: none;
-  }
-  
   @media (max-width: 900px) {
     height: auto;
     max-height: 350px;
-    padding: 0.75rem;
+    padding: 1rem;
     margin: 0;
-    width: calc(100vw - 1.5rem);
-    max-width: calc(100vw - 1.5rem);
-    overflow: hidden;
+    width: 100%;
+    overflow-y: auto;
     box-sizing: border-box;
   }
   
-  /* Hide scrollbars */
+  /* Hide scrollbars completely */
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
@@ -241,7 +226,9 @@ const Sidebar = styled.div`
 
 // Main content area
 const MainContent = styled.div`
-  background: rgba(0, 0, 0, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(0, 224, 255, 0.03), rgba(0, 255, 163, 0.03)),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.25));
   border: 1px solid rgba(0, 224, 255, 0.2);
   border-radius: 16px;
   padding: 2rem;
@@ -252,30 +239,17 @@ const MainContent = styled.div`
   min-width: 0;
   width: 100%;
   
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 224, 255, 0.03), rgba(0, 255, 163, 0.03));
-    border-radius: 16px;
-    pointer-events: none;
-  }
-  
   @media (max-width: 900px) {
     height: auto;
     max-height: 400px;
-    padding: 0.75rem;
+    padding: 1rem;
     margin: 0;
-    width: calc(100vw - 1.5rem);
-    max-width: calc(100vw - 1.5rem);
-    overflow: hidden;
+    width: 100%;
+    overflow-y: auto;
     box-sizing: border-box;
   }
   
-  /* Hide scrollbars */
+  /* Hide scrollbars completely */
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
@@ -285,7 +259,9 @@ const MainContent = styled.div`
 
 // Right panel with stats and quick actions
 const RightPanel = styled.div`
-  background: rgba(0, 0, 0, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(0, 224, 255, 0.05), rgba(0, 255, 163, 0.05)),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.25));
   border: 1px solid rgba(0, 224, 255, 0.2);
   border-radius: 16px;
   padding: 1.5rem;
@@ -294,29 +270,23 @@ const RightPanel = styled.div`
   position: relative;
   min-width: 0;
   width: 100%;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 224, 255, 0.05), rgba(0, 255, 163, 0.05));
-    border-radius: 16px;
-    pointer-events: none;
-  }
+  overflow-y: auto;
   
   @media (max-width: 900px) {
     height: auto;
     max-height: 300px;
-    padding: 0.75rem;
+    padding: 1rem;
     margin: 0;
-    width: calc(100vw - 1.5rem);
-    max-width: calc(100vw - 1.5rem);
-    overflow: hidden;
+    width: 100%;
+    overflow-y: auto;
     box-sizing: border-box;
+  }
+  
+  /* Hide scrollbars completely */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 `;
 
