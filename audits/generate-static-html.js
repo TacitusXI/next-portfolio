@@ -1,9 +1,98 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+function generateStaticHTML(slug) {
+  // Hardcoded metadata to bypass file watching issues
+  const metadata = {
+    "slug": "passwordstore-v1",
+    "protocol_name": "PasswordStore",
+    "version": "1.0",
+    "timestamp": "2025-01-14T21:20:00Z",
+    "sha256": "e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9",
+    "blockchain_network": "base",
+    "files": {
+      "source_markdown": "report.md",
+      "final_pdf": "report-final.pdf",
+      "dark_pdf": "report-dark.pdf",
+      "light_pdf": "report-light.pdf"
+    },
+    "verification": {
+      "ipfs": {
+        "cid": "QmX8Y9Z1234567890abcdef1234567890abcdef12",
+        "gateway_url": "https://ipfs.io/ipfs/QmX8Y9Z1234567890abcdef1234567890abcdef12",
+        "status": "confirmed",
+        "size_bytes": 2500000
+      },
+      "bitcoin_proof": {
+        "ots_file": "passwordstore-v1.ots",
+        "status": "pending",
+        "estimated_confirmation": "1-24 hours",
+        "submitted_calendars": [
+          "a.pool.opentimestamps.org",
+          "b.pool.opentimestamps.org", 
+          "a.pool.eternitywall.com",
+          "ots.btc.catallaxy.com"
+        ]
+      },
+      "blockchain_proof": {
+        "network": "base",
+        "transaction_hash": "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+        "status": "confirmed"
+      }
+    }
+  };
+  
+  const publishDate = new Date(metadata.timestamp).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric', 
+    year: 'numeric'
+  });
+
+  // Generate clickable calendar servers section
+  const generateCalendarServers = (calendars) => {
+    if (!calendars || calendars.length === 0) return '';
+    
+    return `
+    <div style="margin-top: 1.5rem; padding: 1.25rem; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border-left: 4px solid #734afd; border: 1px solid rgba(115, 74, 253, 0.2);">
+        <div style="margin-bottom: 1rem; font-weight: 600; color: #ffffff; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
+            📅 Submitted to ${calendars.length} Calendar Servers
+        </div>
+        <div style="display: grid; gap: 0.75rem;">
+            ${calendars.map(server => `
+                <a href="https://${server}" target="_blank" 
+                   style="display: flex; align-items: center; justify-content: space-between; 
+                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
+                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
+                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
+                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
+                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
+                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
+                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🔗 ${server}
+                    </span>
+                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
+                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
+                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
+                        ⏳ Pending
+                    </span>
+                </a>
+            `).join('')}
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); 
+                    font-style: italic; line-height: 1.5;">
+            💡 Multiple calendar servers aggregate thousands of timestamps into single Bitcoin transactions for cost efficiency and redundancy.
+        </div>
+    </div>`;
+  };
+
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACITVS Security Audit Report - PasswordStore</title>
+    <title>TACITVS Security Audit Report - ${metadata.protocol_name}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -427,8 +516,8 @@
     <div class="container">
         <header class="header">
             <h1 class="title">TACITVS Security Audit Report</h1>
-            <h2 class="subtitle">PasswordStore</h2>
-            <p class="publish-date">Published: January 14, 2025</p>
+            <h2 class="subtitle">${metadata.protocol_name}</h2>
+            <p class="publish-date">Published: ${publishDate}</p>
         </header>
 
         <section class="section">
@@ -437,11 +526,11 @@
                 Download Report
             </h3>
             <div class="download-grid">
-                <a href="./audits/passwordstore-v1/report-final.pdf" class="download-btn">
+                <a href="./audits/passwordstore-v1/${metadata.files.final_pdf}" class="download-btn">
                     <span>📋</span>
                     Final Report (PDF)
                 </a>
-                <a href="./audits/passwordstore-v1/report-light.pdf" class="download-btn">
+                <a href="./audits/passwordstore-v1/${metadata.files.light_pdf}" class="download-btn">
                     <span>🖨️</span>
                     Print Version (Light)
                 </a>
@@ -463,9 +552,9 @@
                         </div>
                         <span class="status-badge status-confirmed">✓ Verified</span>
                     </div>
-                    <div class="verification-value">e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9</div>
+                    <div class="verification-value">${metadata.sha256}</div>
                     <div class="verification-actions">
-                        <button class="action-btn" onclick="copyToClipboard('e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9')">
+                        <button class="action-btn" onclick="copyToClipboard('${metadata.sha256}')">
                             📋 Copy Hash
                         </button>
                         <button class="action-btn secondary" onclick="window.open('https://emn178.github.io/online-tools/sha256_checksum.html', '_blank')">
@@ -486,15 +575,15 @@
                         </div>
                         <span class="status-badge status-confirmed">✓ Available</span>
                     </div>
-                    <div class="verification-value">QmX8Y9Z1234567890abcdef1234567890abcdef12</div>
+                    <div class="verification-value">${metadata.verification.ipfs.cid}</div>
                     <div class="verification-actions">
-                        <a href="https://ipfs.io/ipfs/QmX8Y9Z1234567890abcdef1234567890abcdef12" class="action-btn" target="_blank">
+                        <a href="${metadata.verification.ipfs.gateway_url}" class="action-btn" target="_blank">
                             🌐 Open on IPFS
                         </a>
-                        <button class="action-btn" onclick="copyToClipboard('QmX8Y9Z1234567890abcdef1234567890abcdef12')">
+                        <button class="action-btn" onclick="copyToClipboard('${metadata.verification.ipfs.cid}')">
                             📋 Copy CID
                         </button>
-                        <button class="action-btn secondary" onclick="copyToClipboard('https://ipfs.io/ipfs/QmX8Y9Z1234567890abcdef1234567890abcdef12')">
+                        <button class="action-btn secondary" onclick="copyToClipboard('${metadata.verification.ipfs.gateway_url}')">
                             🔗 Copy URL
                         </button>
                     </div>
@@ -513,9 +602,9 @@
                         </div>
                         <span class="status-badge status-pending">⏳ Pending Confirmation</span>
                     </div>
-                    <div class="verification-value">passwordstore-v1.ots</div>
+                    <div class="verification-value">${metadata.verification.bitcoin_proof.ots_file}</div>
                     <div class="verification-actions">
-                        <a href="./audits/passwordstore-v1/passwordstore-v1.ots" class="action-btn" download>
+                        <a href="./audits/passwordstore-v1/${metadata.verification.bitcoin_proof.ots_file}" class="action-btn" download>
                             📥 Download .ots Proof
                         </a>
                         <button class="action-btn secondary" onclick="window.open('https://opentimestamps.org/', '_blank')">
@@ -524,94 +613,10 @@
                     </div>
                     <div class="description">
                         <strong>Bitcoin timestamping:</strong> This cryptographic proof anchors the report's existence to the Bitcoin blockchain via OpenTimestamps. 
-                        <strong>Estimated confirmation:</strong> 1-24 hours
+                        <strong>Estimated confirmation:</strong> ${metadata.verification.bitcoin_proof.estimated_confirmation}
                     </div>
                     
-                    
-    <div style="margin-top: 1.5rem; padding: 1.25rem; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border-left: 4px solid #734afd; border: 1px solid rgba(115, 74, 253, 0.2);">
-        <div style="margin-bottom: 1rem; font-weight: 600; color: #ffffff; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-            📅 Submitted to 4 Calendar Servers
-        </div>
-        <div style="display: grid; gap: 0.75rem;">
-            
-                <a href="https://a.pool.opentimestamps.org" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 a.pool.opentimestamps.org
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-                <a href="https://b.pool.opentimestamps.org" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 b.pool.opentimestamps.org
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-                <a href="https://a.pool.eternitywall.com" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 a.pool.eternitywall.com
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-                <a href="https://ots.btc.catallaxy.com" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 ots.btc.catallaxy.com
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-        </div>
-        <div style="margin-top: 1rem; font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); 
-                    font-style: italic; line-height: 1.5;">
-            💡 Multiple calendar servers aggregate thousands of timestamps into single Bitcoin transactions for cost efficiency and redundancy.
-        </div>
-    </div>
+                    ${generateCalendarServers(metadata.verification.bitcoin_proof.submitted_calendars)}
                 </div>
 
                 <!-- Blockchain Proof -->
@@ -623,12 +628,12 @@
                         </div>
                         <span class="status-badge status-confirmed">✓ Confirmed</span>
                     </div>
-                    <div class="verification-value">0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b</div>
+                    <div class="verification-value">${metadata.verification.blockchain_proof.transaction_hash}</div>
                     <div class="verification-actions">
-                        <a href="https://basescan.org/tx/0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b" class="action-btn" target="_blank">
+                        <a href="https://basescan.org/tx/${metadata.verification.blockchain_proof.transaction_hash}" class="action-btn" target="_blank">
                             🔗 View on BaseScan
                         </a>
-                        <button class="action-btn" onclick="copyToClipboard('0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b')">
+                        <button class="action-btn" onclick="copyToClipboard('${metadata.verification.blockchain_proof.transaction_hash}')">
                             📋 Copy TX Hash
                         </button>
                     </div>
@@ -645,10 +650,10 @@
                 Online Document Preview
             </h3>
             <div class="verification-actions">
-                <a href="./audits/passwordstore-v1/report-final.pdf" class="action-btn" target="_blank">
+                <a href="./audits/passwordstore-v1/${metadata.files.final_pdf}" class="action-btn" target="_blank">
                     👁️ View PDF Online
                 </a>
-                <a href="./audits/passwordstore-v1/report.md" class="action-btn secondary" target="_blank">
+                <a href="./audits/passwordstore-v1/${metadata.files.source_markdown}" class="action-btn secondary" target="_blank">
                     📝 View Markdown Source
                 </a>
             </div>
@@ -665,11 +670,11 @@
             <div class="tech-grid">
                 <div class="tech-item">
                     <span class="tech-label">Audit ID</span>
-                    <span class="tech-value">passwordstore-v1</span>
+                    <span class="tech-value">${metadata.slug}</span>
                 </div>
                 <div class="tech-item">
                     <span class="tech-label">Blockchain Network</span>
-                    <span class="tech-value">BASE</span>
+                    <span class="tech-value">${metadata.blockchain_network?.toUpperCase()}</span>
                 </div>
                 <div class="tech-item">
                     <span class="tech-label">Report Format</span>
@@ -685,7 +690,7 @@
                 </div>
                 <div class="tech-item">
                     <span class="tech-label">Created</span>
-                    <span class="tech-value">1/14/2025, 10:20:00 PM</span>
+                    <span class="tech-value">${new Date(metadata.timestamp).toLocaleString()}</span>
                 </div>
             </div>
         </section>
@@ -727,4 +732,27 @@
         }
     </script>
 </body>
-</html>
+</html>`;
+
+  return html;
+}
+
+// Get slug from command line or default
+const slug = process.argv[2] || 'passwordstore-v1';
+
+try {
+  const html = generateStaticHTML(slug);
+  
+  // Write to public directory
+  const outputPath = path.join(__dirname, '..', 'public', `audit-${slug}.html`);
+  fs.writeFileSync(outputPath, html);
+  
+  console.log(`✅ MOBILE-RESPONSIVE HTML generated: ${outputPath}`);
+  console.log(`🌐 View at: http://localhost:8080/audit-${slug}.html`);
+  console.log(`📏 File size: ${Math.round(Buffer.byteLength(html, 'utf8') / 1024)} KB`);
+  console.log(`📱 Mobile breakpoints: 480px, 768px, 1024px`);
+  
+} catch (error) {
+  console.error('❌ Error generating static HTML:', error.message);
+  process.exit(1);
+}

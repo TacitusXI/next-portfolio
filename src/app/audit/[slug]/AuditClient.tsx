@@ -233,18 +233,70 @@ interface AuditMetadata {
   slug: string;
   timestamp: string;
   sha256: string;
-  ipfs_cid: string;
-  transaction_hash: string;
+  protocol_name?: string;
   blockchain_network: string;
   audit_url: string;
-  ipfs_url: string;
-  protocol_name?: string;
   files: {
     final_pdf: string;
     dark_pdf: string;
     light_pdf: string;
     source_markdown: string;
-    ots_proof?: string;
+  };
+  verification?: {
+    ipfs: {
+      cid: string;
+      gateway_url: string;
+      pinned: boolean;
+      size_bytes: number;
+      status: string;
+    };
+    hash_verification: {
+      algorithm: string;
+      hash: string;
+      verified: boolean;
+    };
+    blockchain_proof: {
+      network: string;
+      contract_address: string;
+      transaction_hash: string;
+      status: string;
+    };
+    bitcoin_proof: {
+      ots_file: string;
+      status: string;
+      submitted_calendars?: string[];
+      estimated_confirmation?: string;
+      submitted_at?: string;
+      calendar_aggregation?: string;
+      verification_method?: string;
+    };
+  };
+  timestamps?: {
+    creation: {
+      audit_completed: string;
+      report_generated: string;
+      description: string;
+    };
+    verification_chain: {
+      ipfs_upload: string;
+      bitcoin_submission: string;
+      blockchain_anchor: string;
+      description: string;
+    };
+    compliance: {
+      format: string;
+      source: string;
+      accuracy: string;
+      immutability: string;
+    };
+  };
+  calendar_servers?: {
+    [key: string]: {
+      name: string;
+      url: string;
+      status: string;
+      description: string;
+    };
   };
 }
 
@@ -256,13 +308,16 @@ export default function AuditClient({ slug }: AuditClientProps) {
   const [metadata, setMetadata] = useState<AuditMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+
 
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
         // Use absolute path in development, relative in production (IPFS)
         const basePath = typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '/audits' : '../audits';
-        const response = await fetch(`${basePath}/${slug}/metadata.json`);
+        const cacheBuster = `?v=${Date.now()}`;
+        const response = await fetch(`${basePath}/${slug}/metadata.json${cacheBuster}`);
         if (!response.ok) {
           throw new Error('Audit not found');
         }
@@ -408,15 +463,15 @@ export default function AuditClient({ slug }: AuditClientProps) {
             {/* SHA-256 Hash */}
             <div>
               <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.5rem' }}>
-                SHA-256 Hash
+                SHA-256 Hash {metadata.verification?.hash_verification.verified && '✅'}
               </label>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <HashInput
                   type="text"
-                  value={metadata.sha256}
+                  value={metadata.verification?.hash_verification.hash || metadata.sha256}
                   readOnly
                 />
-                <CopyButton onClick={() => copyToClipboard(metadata.sha256)}>
+                <CopyButton onClick={() => copyToClipboard(metadata.verification?.hash_verification.hash || metadata.sha256)}>
                   Copy
                 </CopyButton>
               </div>
@@ -425,55 +480,309 @@ export default function AuditClient({ slug }: AuditClientProps) {
               </p>
             </div>
 
-            {/* Blockchain Transaction */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.5rem' }}>
-                Blockchain Proof ({metadata.blockchain_network.toUpperCase()})
-              </label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <HashInput
-                  type="text"
-                  value={metadata.transaction_hash}
-                  readOnly
-                />
-                <ViewButton
-                  href={getExplorerUrl(metadata.blockchain_network, metadata.transaction_hash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View
-                </ViewButton>
-              </div>
-              <p style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginTop: '0.25rem' }}>
-                Immutable on-chain proof of report existence and timestamp
-              </p>
-            </div>
-
             {/* IPFS */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.5rem' }}>
-                IPFS Content ID
-              </label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <HashInput
+            {metadata.verification?.ipfs && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.5rem' }}>
+                  IPFS Content ID {metadata.verification?.ipfs?.status === 'confirmed' && '🌐'}
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                  <HashInput
                   type="text"
-                  value={metadata.ipfs_cid}
+                  value={metadata.verification?.ipfs?.cid || 'Loading...'}
                   readOnly
                 />
-                <IPFSButton
-                  href={metadata.ipfs_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  IPFS
-                </IPFSButton>
+                <CopyButton onClick={() => copyToClipboard(metadata.verification?.ipfs?.cid || '')}>
+                  Copy
+                </CopyButton>
+                  <IPFSButton
+                    href={metadata.verification?.ipfs?.gateway_url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    IPFS
+                  </IPFSButton>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginTop: '0.25rem' }}>
+                  Decentralized storage ensuring permanent availability ({metadata.verification?.ipfs?.size_bytes ? Math.round(metadata.verification.ipfs.size_bytes / 1024 / 1024 * 100) / 100 : '...'} MB)
+                </p>
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginTop: '0.25rem' }}>
-                Decentralized storage ensuring permanent availability
-              </p>
-            </div>
+            )}
+
+            {/* Blockchain Transaction */}
+            {metadata.verification?.blockchain_proof && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.5rem' }}>
+                  Blockchain Proof ({metadata.verification?.blockchain_proof?.network?.toUpperCase() || 'BASE'}) {metadata.verification?.blockchain_proof?.status === 'confirmed' ? '⛓️' : '⏳'}
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <HashInput
+                    type="text"
+                    value={metadata.verification?.blockchain_proof?.transaction_hash || 'Pending...'}
+                    readOnly
+                  />
+                  {metadata.verification?.blockchain_proof?.transaction_hash && metadata.verification.blockchain_proof.transaction_hash !== 'pending' && (
+                    <ViewButton
+                      href={getExplorerUrl(metadata.verification?.blockchain_proof?.network || 'base', metadata.verification.blockchain_proof.transaction_hash)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View
+                    </ViewButton>
+                  )}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginTop: '0.25rem' }}>
+                  {metadata.verification.blockchain_proof.status === 'pending' 
+                    ? 'Blockchain anchoring pending - will be completed soon'
+                    : 'Immutable on-chain proof of report existence and timestamp'
+                  }
+                </p>
+              </div>
+            )}
+
+            {/* Bitcoin OpenTimestamps */}
+            {metadata.verification?.bitcoin_proof && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.5rem' }}>
+                  Bitcoin Timestamp {metadata.verification.bitcoin_proof.status === 'confirmed' ? '₿✅' : '₿⏳'}
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)', padding: '0.5rem 1rem', background: 'rgba(255, 165, 0, 0.1)', borderRadius: '6px', border: '1px solid rgba(255, 165, 0, 0.3)' }}>
+                    Status: {metadata.verification.bitcoin_proof.status.replace('_', ' ').toUpperCase()}
+                  </div>
+                  {metadata.verification.bitcoin_proof.ots_file && (
+                    <SecondaryButton
+                      href={`/audits/${metadata.slug}/${metadata.verification.bitcoin_proof.ots_file}`}
+                      download
+                    >
+                      Download .ots
+                    </SecondaryButton>
+                  )}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginTop: '0.25rem' }}>
+                  {metadata.verification.bitcoin_proof.status === 'pending_confirmation' 
+                    ? `Bitcoin timestamp submitted to ${metadata.verification.bitcoin_proof.submitted_calendars?.length || 0} calendar servers. ${metadata.verification.bitcoin_proof.estimated_confirmation || 'Confirmation pending'}.`
+                    : 'Bitcoin blockchain timestamp provides ultimate immutability proof'
+                  }
+                </p>
+              </div>
+            )}
           </div>
         </SectionCard>
+
+        {/* Timestamp Information */}
+        {metadata.timestamps && (
+          <SectionCard
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+          >
+            <SectionTitle>
+              <Icon>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Icon>
+              Audit Timeline & Timestamps
+            </SectionTitle>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {/* Creation Timestamps */}
+              <div>
+                <h3 style={{ color: '#734afd', fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem' }}>
+                  Audit Creation
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', fontSize: '0.875rem' }}>
+                  <div style={{ padding: '1rem', background: 'rgba(115, 74, 253, 0.1)', borderRadius: '8px', border: '1px solid rgba(115, 74, 253, 0.2)' }}>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500', marginBottom: '0.5rem' }}>
+                      Audit Completed
+                    </p>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'Monaco, monospace' }}>
+                      {new Date(metadata.timestamps.creation.audit_completed).toLocaleString('en-US', { 
+                        timeZone: 'UTC', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZoneName: 'short'
+                      })}
+                    </p>
+                  </div>
+                  <div style={{ padding: '1rem', background: 'rgba(58, 134, 255, 0.1)', borderRadius: '8px', border: '1px solid rgba(58, 134, 255, 0.2)' }}>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500', marginBottom: '0.5rem' }}>
+                      Report Generated
+                    </p>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'Monaco, monospace' }}>
+                      {new Date(metadata.timestamps.creation.report_generated).toLocaleString('en-US', { 
+                        timeZone: 'UTC', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZoneName: 'short'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification Chain */}
+              <div>
+                <h3 style={{ color: '#10b981', fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem' }}>
+                  Verification Timeline
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', fontSize: '0.875rem' }}>
+                  <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500', marginBottom: '0.5rem' }}>
+                      🌐 IPFS Upload
+                    </p>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'Monaco, monospace' }}>
+                      {new Date(metadata.timestamps.verification_chain.ipfs_upload).toLocaleString('en-US', { 
+                        timeZone: 'UTC', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZoneName: 'short'
+                      })}
+                    </p>
+                  </div>
+                  <div style={{ padding: '1rem', background: 'rgba(255, 165, 0, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 165, 0, 0.2)' }}>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500', marginBottom: '0.5rem' }}>
+                      ₿ Bitcoin Submission
+                    </p>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontFamily: 'Monaco, monospace' }}>
+                      {new Date(metadata.timestamps.verification_chain.bitcoin_submission).toLocaleString('en-US', { 
+                        timeZone: 'UTC', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZoneName: 'short'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Compliance Information */}
+              <div>
+                <h3 style={{ color: '#f59e0b', fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem' }}>
+                  Timestamp Compliance
+                </h3>
+                <div style={{ padding: '1.5rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', fontSize: '0.875rem' }}>
+                    <div>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.25rem' }}>
+                        <strong>Format:</strong> {metadata.timestamps.compliance.format}
+                      </p>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.25rem' }}>
+                        <strong>Source:</strong> {metadata.timestamps.compliance.source}
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.25rem' }}>
+                        <strong>Accuracy:</strong> {metadata.timestamps.compliance.accuracy}
+                      </p>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '0.25rem' }}>
+                        <strong>Immutability:</strong> {metadata.timestamps.compliance.immutability}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </SectionCard>
+        )}
+
+        {/* Calendar Servers */}
+        {metadata.calendar_servers && (
+          <SectionCard
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <SectionTitle>
+              <Icon>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                </svg>
+              </Icon>
+              OpenTimestamps Calendar Servers
+            </SectionTitle>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+              {Object.entries(metadata.calendar_servers).map(([key, server]) => (
+                <div 
+                  key={key}
+                  style={{ 
+                    padding: '1.5rem', 
+                    background: 'rgba(0, 5, 20, 0.5)', 
+                    borderRadius: '8px', 
+                    border: '1px solid rgba(58, 134, 255, 0.2)',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <h4 style={{ color: '#3a86ff', fontSize: '1rem', fontWeight: '600' }}>
+                      {server.name}
+                    </h4>
+                    <div style={{ 
+                      padding: '0.25rem 0.75rem', 
+                      background: server.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', 
+                      color: server.status === 'active' ? '#10b981' : '#ef4444',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      fontWeight: '500'
+                    }}>
+                      {server.status.toUpperCase()}
+                    </div>
+                  </div>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                    {server.description}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <a 
+                      href={server.url}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ 
+                        color: '#3a86ff', 
+                        textDecoration: 'none', 
+                        fontSize: '0.75rem',
+                        fontFamily: 'Monaco, monospace',
+                        padding: '0.5rem',
+                        background: 'rgba(58, 134, 255, 0.1)',
+                        borderRadius: '4px',
+                        border: '1px solid rgba(58, 134, 255, 0.2)',
+                        flex: 1
+                      }}
+                    >
+                      {server.url}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+              <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem', lineHeight: '1.5' }}>
+                <strong>Calendar Aggregation:</strong> {metadata.verification?.bitcoin_proof?.calendar_aggregation || 'Multiple calendar servers aggregate timestamps in Merkle trees for efficiency and redundancy.'}
+              </p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem', lineHeight: '1.5', marginTop: '0.5rem' }}>
+                <strong>Verification:</strong> {metadata.verification?.bitcoin_proof?.verification_method || 'Independent verification using Bitcoin blockchain without relying on calendar servers.'}
+              </p>
+            </div>
+          </SectionCard>
+        )}
 
         {/* Technical Details */}
         <SectionCard

@@ -1,9 +1,67 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+function generateStaticHTML(slug) {
+  const metadataPath = path.join(__dirname, 'generated', slug, 'metadata.json');
+  
+  if (!fs.existsSync(metadataPath)) {
+    console.error(`❌ Metadata not found: ${metadataPath}`);
+    process.exit(1);
+  }
+
+  const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+  
+  const publishDate = new Date(metadata.timestamp).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric', 
+    year: 'numeric'
+  });
+
+  // Generate clickable calendar servers section
+  const generateCalendarServers = (calendars) => {
+    if (!calendars || calendars.length === 0) return '';
+    
+    return `
+    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border-left: 4px solid #734afd; border: 1px solid rgba(115, 74, 253, 0.2);">
+        <div style="margin-bottom: 1.25rem; font-weight: 600; color: #ffffff; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            📅 Submitted to ${calendars.length} Calendar Servers
+        </div>
+        <div style="display: grid; gap: 0.75rem;">
+            ${calendars.map(server => `
+                <a href="https://${server.replace('https://', '')}" target="_blank" 
+                   style="display: flex; align-items: center; justify-content: space-between; 
+                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
+                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
+                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
+                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
+                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
+                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
+                                 font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🔗 ${server.replace('https://', '')}
+                    </span>
+                    <span style="color: #fbbf24; font-size: 0.8rem; font-weight: 500; 
+                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
+                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
+                        ⏳ Pending
+                    </span>
+                </a>
+            `).join('')}
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); 
+                    font-style: italic; line-height: 1.6;">
+            Multiple calendar servers aggregate thousands of timestamps into single Bitcoin transactions for cost efficiency and redundancy.
+        </div>
+    </div>`;
+  };
+
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACITVS Security Audit Report - PasswordStore</title>
+    <title>TACITVS Security Audit Report - ${metadata.protocol_name}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,45 +70,45 @@
             background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #2d1b69 100%);
             color: #ffffff;
             min-height: 100vh;
-            line-height: 1.6;
-            font-size: 15px;
+            line-height: 1.7;
+            font-size: 16px;
             padding: 0;
         }
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
-            padding: 1.5rem 1rem;
+            padding: 2rem 1rem;
         }
         
         /* Header */
         .header {
             text-align: center;
-            margin-bottom: 2rem;
-            padding: 2rem 1.5rem;
+            margin-bottom: 3rem;
+            padding: 3rem 2rem;
             background: rgba(15, 20, 25, 0.6);
             border: 1px solid rgba(115, 74, 253, 0.2);
             border-radius: 12px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
         .title { 
-            font-size: clamp(1.75rem, 5vw, 2.25rem);
+            font-size: clamp(2rem, 4vw, 3rem);
             font-weight: 700; 
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             background: linear-gradient(135deg, #8b63ff 0%, #734afd 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .subtitle { 
-            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
             color: #734afd; 
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             font-weight: 600;
         }
         .publish-date { 
             color: rgba(255, 255, 255, 0.8);
-            font-size: clamp(0.9rem, 3vw, 1rem);
+            font-size: 1.1rem;
             font-weight: 500;
         }
         
@@ -59,38 +117,38 @@
             background: rgba(15, 20, 25, 0.6);
             border: 1px solid rgba(115, 74, 253, 0.2);
             border-radius: 12px;
-            padding: 1.75rem;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
             backdrop-filter: blur(20px);
             box-shadow: 0 4px 15px rgba(115, 74, 253, 0.1);
             transition: all 0.3s ease;
         }
         .section:hover {
             border-color: #734afd;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
         .section-title {
-            font-size: 1.35rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
             color: #ffffff;
         }
-        .section-icon { font-size: 1.5rem; }
+        .section-icon { font-size: 1.75rem; }
         
         /* Verification Items */
         .verification-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 2rem;
         }
         .verification-item {
             background: rgba(15, 20, 25, 0.8);
             border: 1px solid rgba(115, 74, 253, 0.1);
             border-radius: 8px;
-            padding: 1.5rem;
+            padding: 2rem;
             transition: all 0.3s ease;
         }
         .verification-item:hover {
@@ -103,7 +161,7 @@
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 1rem;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
         }
         .verification-label {
             font-size: 1.1rem;
@@ -119,7 +177,7 @@
             gap: 0.5rem;
             padding: 0.5rem 1rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             font-weight: 500;
             white-space: nowrap;
         }
@@ -139,11 +197,11 @@
             border-radius: 8px;
             padding: 1.25rem;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: #ffffff;
             word-break: break-all;
-            margin-bottom: 1.25rem;
-            line-height: 1.5;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
             transition: all 0.3s ease;
         }
         .verification-value:hover {
@@ -154,16 +212,16 @@
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
         }
         .action-btn {
-            padding: 0.75rem 1.25rem;
+            padding: 0.75rem 1.5rem;
             border: 1px solid #734afd;
             background: rgba(115, 74, 253, 0.1);
             color: #734afd;
             text-decoration: none;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 500;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -188,13 +246,13 @@
             color: #ffffff;
         }
         .description {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.6;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.7;
             margin-bottom: 1rem;
         }
         .description strong {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
         }
         
@@ -217,12 +275,11 @@
         .tech-item:hover {
             border-color: #734afd;
             background: rgba(0, 0, 0, 0.5);
-            transform: translateY(-1px);
         }
         .tech-label { 
             color: rgba(255, 255, 255, 0.6);
             font-weight: 500;
-            font-size: 0.8rem;
+            font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -247,7 +304,7 @@
             background: linear-gradient(135deg, #734afd 0%, #5a37d8 100%);
             color: white;
             text-decoration: none;
-            padding: 1.25rem 1.5rem;
+            padding: 1.25rem 1.75rem;
             border-radius: 8px;
             font-weight: 600;
             font-size: 1.1rem;
@@ -259,7 +316,7 @@
         }
         .download-btn:hover { 
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             background: linear-gradient(135deg, #8b63ff 0%, #734afd 100%);
         }
         
@@ -276,7 +333,7 @@
             z-index: 1000;
             transform: translateX(100%);
             transition: transform 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
         .copy-notification.show {
             transform: translateX(0);
@@ -309,117 +366,14 @@
             transform: translateY(-1px);
         }
         
-        /* ===== MOBILE-RESPONSIVE BREAKPOINTS ===== */
-        @media (max-width: 1024px) {
-            .container { padding: 1.25rem 0.75rem; }
-            .section { padding: 1.5rem; margin-bottom: 1.75rem; }
-            .section-title { font-size: 1.25rem; }
-            .tech-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-        }
-        
+        /* Responsive */
         @media (max-width: 768px) {
-            .container { padding: 1rem 0.75rem; }
-            .header { 
-                padding: 1.5rem 1rem; 
-                margin-bottom: 1.5rem;
-                border-radius: 10px;
-            }
-            .section { 
-                padding: 1.25rem; 
-                margin-bottom: 1.25rem;
-                border-radius: 10px;
-            }
-            .section-title { 
-                font-size: 1.2rem; 
-                margin-bottom: 1.25rem;
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
-            }
-            .verification-item { padding: 1.25rem; }
-            .verification-header { 
-                flex-direction: column; 
-                gap: 0.75rem;
-                text-align: center;
-            }
-            .verification-label { 
-                justify-content: center;
-                font-size: 1rem;
-            }
-            .verification-value { 
-                padding: 1rem; 
-                font-size: 0.8rem;
-                margin-bottom: 1.25rem;
-            }
-            .verification-actions { 
-                flex-direction: column; 
-                gap: 0.75rem;
-            }
-            .action-btn { 
-                justify-content: center; 
-                padding: 0.75rem 1rem;
-                font-size: 0.85rem;
-            }
-            .tech-grid { 
-                grid-template-columns: 1fr; 
-                gap: 1rem;
-            }
-            .tech-item { padding: 1rem; }
-            .download-grid { 
-                grid-template-columns: 1fr; 
-                gap: 1rem;
-            }
-            .download-btn { 
-                padding: 1.25rem 1.25rem; 
-                font-size: 1rem;
-            }
-            .description { font-size: 0.85rem; }
-        }
-
-        @media (max-width: 480px) {
-            body { font-size: 14px; }
-            .container { padding: 0.75rem 0.5rem; }
-            .header { 
-                padding: 1.25rem 0.75rem;
-                margin-bottom: 1.25rem;
-            }
-            .section { 
-                padding: 1rem; 
-                margin-bottom: 1rem;
-            }
-            .verification-item { padding: 1rem; }
-            .verification-value { 
-                font-size: 0.75rem; 
-                padding: 0.75rem;
-                line-height: 1.4;
-            }
-            .action-btn { 
-                padding: 0.65rem 0.85rem; 
-                font-size: 0.8rem;
-            }
-            .status-badge { 
-                padding: 0.4rem 0.75rem; 
-                font-size: 0.75rem;
-            }
-            .tech-item { 
-                padding: 0.75rem; 
-                gap: 0.5rem;
-            }
-            .tech-label { font-size: 0.75rem; }
-            .tech-value { font-size: 0.85rem; }
-            .download-btn { 
-                padding: 1rem 1rem; 
-                font-size: 0.9rem;
-            }
-            .copy-notification {
-                top: 1rem;
-                right: 1rem;
-                left: 1rem;
-                transform: translateY(-100%);
-            }
-            .copy-notification.show {
-                transform: translateY(0);
-            }
+            .container { padding: 1rem 0.5rem; }
+            .header { padding: 2rem 1rem; }
+            .section { padding: 1.5rem; }
+            .verification-actions { flex-direction: column; }
+            .action-btn { justify-content: center; }
+            .tech-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -427,8 +381,8 @@
     <div class="container">
         <header class="header">
             <h1 class="title">TACITVS Security Audit Report</h1>
-            <h2 class="subtitle">PasswordStore</h2>
-            <p class="publish-date">Published: January 14, 2025</p>
+            <h2 class="subtitle">${metadata.protocol_name}</h2>
+            <p class="publish-date">Published: ${publishDate}</p>
         </header>
 
         <section class="section">
@@ -437,11 +391,11 @@
                 Download Report
             </h3>
             <div class="download-grid">
-                <a href="./audits/passwordstore-v1/report-final.pdf" class="download-btn">
+                <a href="./audits/passwordstore-v1/${metadata.files.final_pdf}" class="download-btn">
                     <span>📋</span>
                     Final Report (PDF)
                 </a>
-                <a href="./audits/passwordstore-v1/report-light.pdf" class="download-btn">
+                <a href="./audits/passwordstore-v1/${metadata.files.light_pdf}" class="download-btn">
                     <span>🖨️</span>
                     Print Version (Light)
                 </a>
@@ -463,9 +417,9 @@
                         </div>
                         <span class="status-badge status-confirmed">✓ Verified</span>
                     </div>
-                    <div class="verification-value">e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9</div>
+                    <div class="verification-value">${metadata.sha256}</div>
                     <div class="verification-actions">
-                        <button class="action-btn" onclick="copyToClipboard('e2900ce4af73b9bd22a80bda38860b63fee1acb6f5ab3589b91adfac0c6e52b9')">
+                        <button class="action-btn" onclick="copyToClipboard('${metadata.sha256}')">
                             📋 Copy Hash
                         </button>
                         <button class="action-btn secondary" onclick="window.open('https://emn178.github.io/online-tools/sha256_checksum.html', '_blank')">
@@ -478,44 +432,51 @@
                 </div>
 
                 <!-- IPFS Storage -->
+                ${metadata.verification?.ipfs ? `
                 <div class="verification-item">
                     <div class="verification-header">
                         <div class="verification-label">
                             <span>🌐</span>
                             IPFS Decentralized Storage
                         </div>
-                        <span class="status-badge status-confirmed">✓ Available</span>
+                        <span class="status-badge ${metadata.verification.ipfs.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                            ${metadata.verification.ipfs.status === 'confirmed' ? '✓ Available' : '⏳ Uploading'}
+                        </span>
                     </div>
-                    <div class="verification-value">QmX8Y9Z1234567890abcdef1234567890abcdef12</div>
+                    <div class="verification-value">${metadata.verification.ipfs.cid}</div>
                     <div class="verification-actions">
-                        <a href="https://ipfs.io/ipfs/QmX8Y9Z1234567890abcdef1234567890abcdef12" class="action-btn" target="_blank">
+                        <a href="${metadata.verification.ipfs.gateway_url}" class="action-btn" target="_blank">
                             🌐 Open on IPFS
                         </a>
-                        <button class="action-btn" onclick="copyToClipboard('QmX8Y9Z1234567890abcdef1234567890abcdef12')">
+                        <button class="action-btn" onclick="copyToClipboard('${metadata.verification.ipfs.cid}')">
                             📋 Copy CID
                         </button>
-                        <button class="action-btn secondary" onclick="copyToClipboard('https://ipfs.io/ipfs/QmX8Y9Z1234567890abcdef1234567890abcdef12')">
+                        <button class="action-btn secondary" onclick="copyToClipboard('${metadata.verification.ipfs.gateway_url}')">
                             🔗 Copy URL
                         </button>
                     </div>
                     <div class="description">
                         <strong>Permanent availability:</strong> This report is stored on IPFS (InterPlanetary File System) ensuring it remains accessible even if this website goes offline. 
-                        File size: <strong>2.5 MB</strong>
+                        File size: <strong>${metadata.verification.ipfs.size_bytes ? Math.round(metadata.verification.ipfs.size_bytes / 1024 / 1024 * 100) / 100 : '...'} MB</strong>
                     </div>
                 </div>
+                ` : ''}
 
                 <!-- Bitcoin OpenTimestamps -->
+                ${metadata.verification?.bitcoin_proof ? `
                 <div class="verification-item">
                     <div class="verification-header">
                         <div class="verification-label">
                             <span>₿</span>
                             Bitcoin OpenTimestamps
                         </div>
-                        <span class="status-badge status-pending">⏳ Pending Confirmation</span>
+                        <span class="status-badge ${metadata.verification.bitcoin_proof.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                            ${metadata.verification.bitcoin_proof.status === 'confirmed' ? '✓ Confirmed' : '⏳ Pending Confirmation'}
+                        </span>
                     </div>
-                    <div class="verification-value">passwordstore-v1.ots</div>
+                    <div class="verification-value">${metadata.verification.bitcoin_proof.ots_file}</div>
                     <div class="verification-actions">
-                        <a href="./audits/passwordstore-v1/passwordstore-v1.ots" class="action-btn" download>
+                        <a href="./audits/passwordstore-v1/${metadata.verification.bitcoin_proof.ots_file}" class="action-btn" download>
                             📥 Download .ots Proof
                         </a>
                         <button class="action-btn secondary" onclick="window.open('https://opentimestamps.org/', '_blank')">
@@ -524,118 +485,39 @@
                     </div>
                     <div class="description">
                         <strong>Bitcoin timestamping:</strong> This cryptographic proof anchors the report's existence to the Bitcoin blockchain via OpenTimestamps. 
-                        <strong>Estimated confirmation:</strong> 1-24 hours
+                        <strong>Estimated confirmation:</strong> ${metadata.verification.bitcoin_proof.estimated_confirmation || '1-24 hours'}
                     </div>
                     
-                    
-    <div style="margin-top: 1.5rem; padding: 1.25rem; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border-left: 4px solid #734afd; border: 1px solid rgba(115, 74, 253, 0.2);">
-        <div style="margin-bottom: 1rem; font-weight: 600; color: #ffffff; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
-            📅 Submitted to 4 Calendar Servers
-        </div>
-        <div style="display: grid; gap: 0.75rem;">
-            
-                <a href="https://a.pool.opentimestamps.org" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 a.pool.opentimestamps.org
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-                <a href="https://b.pool.opentimestamps.org" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 b.pool.opentimestamps.org
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-                <a href="https://a.pool.eternitywall.com" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 a.pool.eternitywall.com
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-                <a href="https://ots.btc.catallaxy.com" target="_blank" 
-                   style="display: flex; align-items: center; justify-content: space-between; 
-                          padding: 1rem; background: rgba(0, 0, 0, 0.4); 
-                          border: 1px solid rgba(115, 74, 253, 0.1); border-radius: 8px; 
-                          text-decoration: none; transition: all 0.3s ease; cursor: pointer;"
-                   onmouseover="this.style.background='rgba(0, 0, 0, 0.6)'; this.style.borderColor='#734afd'; this.style.transform='translateY(-1px)';"
-                   onmouseout="this.style.background='rgba(0, 0, 0, 0.4)'; this.style.borderColor='rgba(115, 74, 253, 0.1)'; this.style.transform='translateY(0)';">
-                    <span style="color: rgba(255, 255, 255, 0.8); font-family: 'Courier New', monospace; 
-                                 font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔗 ots.btc.catallaxy.com
-                    </span>
-                    <span style="color: #fbbf24; font-size: 0.75rem; font-weight: 500; 
-                                 padding: 0.25rem 0.5rem; background: rgba(251, 191, 36, 0.15); 
-                                 border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
-                        ⏳ Pending
-                    </span>
-                </a>
-            
-        </div>
-        <div style="margin-top: 1rem; font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); 
-                    font-style: italic; line-height: 1.5;">
-            💡 Multiple calendar servers aggregate thousands of timestamps into single Bitcoin transactions for cost efficiency and redundancy.
-        </div>
-    </div>
+                    ${generateCalendarServers(metadata.verification.bitcoin_proof.submitted_calendars)}
                 </div>
+                ` : ''}
 
                 <!-- Blockchain Proof -->
+                ${metadata.verification?.blockchain_proof ? `
                 <div class="verification-item">
                     <div class="verification-header">
                         <div class="verification-label">
                             <span>⛓️</span>
-                            Blockchain Proof (BASE)
+                            Blockchain Proof (${metadata.verification.blockchain_proof.network?.toUpperCase() || 'BASE'})
                         </div>
-                        <span class="status-badge status-confirmed">✓ Confirmed</span>
+                        <span class="status-badge ${metadata.verification.blockchain_proof.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                            ${metadata.verification.blockchain_proof.status === 'confirmed' ? '✓ Confirmed' : '⏳ Pending'}
+                        </span>
                     </div>
-                    <div class="verification-value">0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b</div>
+                    <div class="verification-value">${metadata.verification.blockchain_proof.transaction_hash || 'Pending blockchain submission...'}</div>
                     <div class="verification-actions">
-                        <a href="https://basescan.org/tx/0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b" class="action-btn" target="_blank">
+                        ${metadata.verification.blockchain_proof.transaction_hash && metadata.verification.blockchain_proof.transaction_hash !== 'pending' ? 
+                          `<a href="https://basescan.org/tx/${metadata.verification.blockchain_proof.transaction_hash}" class="action-btn" target="_blank">
                             🔗 View on BaseScan
-                        </a>
-                        <button class="action-btn" onclick="copyToClipboard('0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b')">
-                            📋 Copy TX Hash
-                        </button>
+                          </a>` : 
+                          '<span class="action-btn secondary" style="opacity: 0.5; cursor: not-allowed;">⏳ Awaiting Submission</span>'
+                        }
                     </div>
                     <div class="description">
-                        <strong>Immutable proof:</strong> This transaction permanently records the existence and timestamp of this audit report on the BASE blockchain.
+                        <strong>Immutable proof:</strong> Once confirmed, this transaction permanently records the existence and timestamp of this audit report on the BASE blockchain.
                     </div>
                 </div>
+                ` : ''}
             </div>
         </section>
 
@@ -645,10 +527,10 @@
                 Online Document Preview
             </h3>
             <div class="verification-actions">
-                <a href="./audits/passwordstore-v1/report-final.pdf" class="action-btn" target="_blank">
+                <a href="./audits/passwordstore-v1/${metadata.files.final_pdf}" class="action-btn" target="_blank">
                     👁️ View PDF Online
                 </a>
-                <a href="./audits/passwordstore-v1/report.md" class="action-btn secondary" target="_blank">
+                <a href="./audits/passwordstore-v1/${metadata.files.source_markdown}" class="action-btn secondary" target="_blank">
                     📝 View Markdown Source
                 </a>
             </div>
@@ -665,11 +547,11 @@
             <div class="tech-grid">
                 <div class="tech-item">
                     <span class="tech-label">Audit ID</span>
-                    <span class="tech-value">passwordstore-v1</span>
+                    <span class="tech-value">${metadata.slug}</span>
                 </div>
                 <div class="tech-item">
                     <span class="tech-label">Blockchain Network</span>
-                    <span class="tech-value">BASE</span>
+                    <span class="tech-value">${metadata.blockchain_network?.toUpperCase()}</span>
                 </div>
                 <div class="tech-item">
                     <span class="tech-label">Report Format</span>
@@ -685,7 +567,7 @@
                 </div>
                 <div class="tech-item">
                     <span class="tech-label">Created</span>
-                    <span class="tech-value">1/14/2025, 10:20:00 PM</span>
+                    <span class="tech-value">${new Date(metadata.timestamp).toLocaleString()}</span>
                 </div>
             </div>
         </section>
@@ -727,4 +609,25 @@
         }
     </script>
 </body>
-</html>
+</html>`;
+
+  return html;
+}
+
+// Get slug from command line or default
+const slug = process.argv[2] || 'passwordstore-v1';
+
+try {
+  const html = generateStaticHTML(slug);
+  
+  // Write to public directory
+  const outputPath = path.join(__dirname, '..', 'public', `audit-${slug}.html`);
+  fs.writeFileSync(outputPath, html);
+  
+  console.log(`✅ Professional static HTML generated: ${outputPath}`);
+  console.log(`🌐 View at: http://localhost:8080/audit-${slug}.html`);
+  
+} catch (error) {
+  console.error('❌ Error generating static HTML:', error.message);
+  process.exit(1);
+}
