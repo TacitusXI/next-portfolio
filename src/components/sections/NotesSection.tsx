@@ -94,7 +94,9 @@ const NotesContainer = styled.section`
   position: relative;
   overflow-x: hidden;
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
+  max-width: 100vw;
+  box-sizing: border-box;
   
   &::before {
     content: '';
@@ -106,9 +108,11 @@ const NotesContainer = styled.section`
     background: linear-gradient(90deg, transparent, rgba(0, 255, 163, 0.5), rgba(0, 224, 255, 0.8), rgba(0, 255, 163, 0.5), transparent);
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     padding: 2rem 0;
     overflow-x: hidden;
+    width: 100vw;
+    max-width: 100vw;
   }
 `;
 
@@ -180,12 +184,14 @@ const ContentWrapper = styled.div`
   }
   
   @media (max-width: 900px) {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
-    padding: 0;
-    max-width: 100%;
+    padding: 0 0.75rem;
+    max-width: 100vw;
     margin: 0;
-    width: 100%;
+    width: 100vw;
+    box-sizing: border-box;
   }
 `;
 
@@ -215,29 +221,21 @@ const Sidebar = styled.div`
   }
   
   @media (max-width: 900px) {
-    height: 500px;
-    padding: 1rem;
-    margin: 0 1rem 1rem 1rem;
-    width: calc(100% - 2rem);
+    height: auto;
+    max-height: 350px;
+    padding: 0.75rem;
+    margin: 0;
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+    overflow: hidden;
+    box-sizing: border-box;
   }
   
-  /* Custom scrollbar */
+  /* Hide scrollbars */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #00e0ff, #00ffa3);
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #00ffa3, #00e0ff);
+    display: none;
   }
 `;
 
@@ -267,29 +265,21 @@ const MainContent = styled.div`
   }
   
   @media (max-width: 900px) {
-    height: 500px;
-    padding: 1.5rem;
-    margin: 0 1rem 1rem 1rem;
-    width: calc(100% - 2rem);
+    height: auto;
+    max-height: 400px;
+    padding: 0.75rem;
+    margin: 0;
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+    overflow: hidden;
+    box-sizing: border-box;
   }
   
-  /* Custom scrollbar */
+  /* Hide scrollbars */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #00e0ff, #00ffa3);
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #00ffa3, #00e0ff);
+    display: none;
   }
 `;
 
@@ -320,9 +310,13 @@ const RightPanel = styled.div`
   
   @media (max-width: 900px) {
     height: auto;
-    padding: 1rem;
-    margin: 0 1rem;
-    width: calc(100% - 2rem);
+    max-height: 300px;
+    padding: 0.75rem;
+    margin: 0;
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+    overflow: hidden;
+    box-sizing: border-box;
   }
 `;
 
@@ -422,6 +416,7 @@ const FolderTitle = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
   }
   
   svg {
@@ -441,6 +436,7 @@ const NoteItem = styled.button`
   align-items: center;
   gap: 0.5rem;
   width: 100%;
+  max-width: 100%;
   padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -450,6 +446,7 @@ const NoteItem = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
+  box-sizing: border-box;
   
   &:hover {
     background: rgba(0, 224, 255, 0.1);
@@ -477,6 +474,7 @@ const NoteTitle = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
   }
   
   svg {
@@ -703,6 +701,10 @@ const ErrorContainer = styled.div`
 const MarkdownContent = styled.div`
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  box-sizing: border-box;
   
   h1, h2, h3, h4, h5, h6 {
     color: rgb(49, 164, 253);
@@ -751,12 +753,18 @@ const MarkdownContent = styled.div`
     background: rgba(0, 0, 0, 0.7);
     padding: 1rem;
     border-radius: 8px;
-    overflow-x: auto;
+    overflow-x: hidden;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
     border: 1px solid rgba(115, 74, 253, 0.3);
+    max-width: 100%;
+    box-sizing: border-box;
     
     code {
       background: none;
       padding: 0;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
   }
   
