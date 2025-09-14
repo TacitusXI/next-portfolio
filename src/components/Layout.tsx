@@ -313,7 +313,7 @@ const Layout = ({ children }: LayoutProps) => {
                 paddingLeft: '52px',
                 flex: 1
               }}>
-                Click the radio button to enable background music for coding and research sessions.
+                Tip: Click the radio button to enable immersive background music while browsing.
               </div>
               
               {/* Close button */}
