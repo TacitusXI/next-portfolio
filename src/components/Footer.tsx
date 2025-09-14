@@ -579,12 +579,12 @@ const BottomLink = styled.a`
     font-size: ${PHI * 0.55}rem;
     padding: 0.5rem 0.8rem;
     min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
     border-radius: ${PHI * 0.2}rem;
-    
-    &:hover {
+  
+  &:hover {
       background: rgba(58, 134, 255, 0.1);
       transform: translateY(-2px);
     }
@@ -617,9 +617,9 @@ const PolicyModal = styled(motion.div)`
   
   /* Tablet optimizations - ensure centering */
   @media (min-width: 769px) and (max-width: 1024px) {
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
     box-sizing: border-box;
   }
 `;
@@ -971,7 +971,7 @@ export default function Footer() {
         </FooterSection>
       </FooterContent>
       
-        <BottomBar>
+      <BottomBar>
           <Copyright>
             © 2024 TacitusXI. All rights reserved. Security researcher & blockchain security expert.
           </Copyright>
@@ -1042,7 +1042,7 @@ export default function Footer() {
                   <h3>Contact</h3>
                   <p>For privacy-related questions, contact: <a href="mailto:ivan.leskov@protonmail.com">ivan.leskov@protonmail.com</a></p>
                 </div>
-              )}
+      )}
       
       {activePolicy === 'terms' && (
                 <div>
