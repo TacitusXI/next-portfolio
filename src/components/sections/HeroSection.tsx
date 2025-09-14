@@ -193,6 +193,35 @@ const HackerText = styled.span`
   }
 `;
 
+const SubliminalText = styled.span`
+  color: #ff0000 !important;
+  font-weight: 700;
+  font-size: 1em;
+  pointer-events: none;
+  font-family: inherit;
+  letter-spacing: inherit;
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.8) !important;
+  animation: subliminal-pulse 0.013s ease-out;
+  
+  @keyframes subliminal-pulse {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.9);
+      filter: brightness(1);
+    }
+  }
+`;
+
 const BookLink = styled.a`
   color: rgb(72, 191, 255);
   text-decoration: none;
@@ -399,12 +428,32 @@ export default function HeroSection() {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [isCorrupting, setIsCorrupting] = useState(false);
   const [corruptedText, setCorruptedText] = useState('');
+  const [subliminalText, setSubliminalText] = useState('');
+  const [showSubliminal, setShowSubliminal] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [subliminalLog, setSubliminalLog] = useState<string[]>([]);
   const [githubContributions, setGithubContributions] = useState(0);
   
   const phrases = [
     'Security Researcher',
     'Solidity Engineer', 
     'Technical Reviewer'
+  ];
+  
+  // Subliminal programming - scientifically optimized for maximum psychological impact
+  const subliminalMessages = [
+    'TACITVS_EXPERT',
+    'TRUST_TACITVS', 
+    'HIRE_TACITVS',
+    'SECURITY_RISK',
+    'NEED_AUDIT',
+    'PREVENT_LOSS',
+    'PAY_EXPERT',
+    'CONTACT_NOW',
+    'URGENT_SECURITY',
+    'BEST_AUDITOR',
+    'SAVE_MONEY',
+    'CHOOSE_TACITVS'
   ];
   
   const generateCorruptedText = (text: string) => {
@@ -419,6 +468,50 @@ export default function HeroSection() {
     threshold: 0.1,
     triggerOnce: false
   });
+  
+  // Hidden Easter eggs - no autocomplete, access via special object
+  useEffect(() => {
+    // Store functions in a deeply nested object that won't autocomplete
+    const tacitVsCore = {
+      sys: {
+        debug: {
+          matrix: {
+            enter: () => {
+              setDebugMode(true);
+              console.log('🕶️ Welcome to the real world, Neo...');
+            },
+            exit: () => {
+              setDebugMode(false);
+              console.log('💊 Back to the illusion...');
+            }
+          },
+          mind: {
+            show: () => {
+              console.log('🧠 PSYCHOLOGICAL PROGRAMMING LOG:', subliminalLog);
+            },
+            wipe: () => {
+              setSubliminalLog([]);
+              console.log('🧹 Memory wiped clean...');
+            }
+          }
+        }
+      }
+    };
+    
+    // Attach to window with obscure name
+    (window as any)._ = tacitVsCore;
+    
+    // Helper function (the only one that might show in autocomplete)
+    (window as any).help = () => {
+      console.log('🔐 TACITVS HIDDEN ARSENAL:');
+      console.log('_.sys.debug.matrix.enter() - Enter the Matrix');
+      console.log('_.sys.debug.matrix.exit() - Exit the Matrix');  
+      console.log('_.sys.debug.mind.show() - Show mind control log');
+      console.log('_.sys.debug.mind.wipe() - Wipe evidence');
+      console.log('help() - Show this message');
+    };
+    
+  }, [subliminalLog]);
   
   useEffect(() => {
     const fetchGithubData = async () => {
@@ -494,9 +587,24 @@ export default function HeroSection() {
       // Start corruption
       setIsCorrupting(true);
       
-      // Phase 1: Corrupt current text
+      // Phase 1: Corrupt current text with subliminal flash
       let corruptionCount = 0;
       const corruptionInterval = setInterval(() => {
+        // SUBLIMINAL FLASH at frame 3 (24fps = ~42ms exposure)
+        if (corruptionCount === 3) {
+          const randomSubliminal = subliminalMessages[Math.floor(Math.random() * subliminalMessages.length)];
+          setSubliminalText(randomSubliminal);
+          setShowSubliminal(true);
+          
+          // Silent logging for easter eggs
+          setSubliminalLog(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${randomSubliminal}`]);
+          
+          // Flash duration: 13ms for maximum subliminal effect, 2000ms in debug mode
+          setTimeout(() => {
+            setShowSubliminal(false);
+          }, debugMode ? 2000 : 13);
+        }
+        
         setCorruptedText(generateCorruptedText(currentText));
         corruptionCount++;
         
@@ -510,6 +618,20 @@ export default function HeroSection() {
           
           let fixCount = 0;
           const fixInterval = setInterval(() => {
+            // SECOND SUBLIMINAL FLASH during reconstruction
+            if (fixCount === 2) {
+              const randomSubliminal = subliminalMessages[Math.floor(Math.random() * subliminalMessages.length)];
+              setSubliminalText(randomSubliminal);
+              setShowSubliminal(true);
+              
+              // Silent logging for easter eggs  
+              setSubliminalLog(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${randomSubliminal}`]);
+              
+              setTimeout(() => {
+                setShowSubliminal(false);
+              }, debugMode ? 2000 : 13);
+            }
+            
             const progress = fixCount / 6;
             const fixedText = nextText.split('').map((char, i) => 
               Math.random() < progress ? char : generateCorruptedText(char).charAt(0)
@@ -530,7 +652,7 @@ export default function HeroSection() {
     }, 4000); // Change every 4 seconds
     
     return () => clearInterval(hackInterval);
-  }, [currentPhraseIndex, phrases]);
+  }, [currentPhraseIndex, phrases, subliminalMessages]);
   
   useEffect(() => {
     if (inView) {
@@ -582,10 +704,22 @@ export default function HeroSection() {
                 animation: isCorrupting 
                   ? 'terminal-flicker 0.1s infinite, data-corruption 0.6s linear, matrix-shift 0.6s linear'
                   : 'terminal-flicker 3s infinite',
-                filter: isCorrupting ? 'brightness(1.3) contrast(1.2)' : 'none'
+                filter: isCorrupting ? 'brightness(1.3) contrast(1.2)' : 'none',
+                position: 'relative'
               }}
             >
-              {isCorrupting && corruptedText ? corruptedText : phrases[currentPhraseIndex]}
+              {showSubliminal ? (
+                  <SubliminalText
+                    style={{
+                      // Наследует цвет от HackerText, только время анимации меняется
+                      animation: debugMode ? 'subliminal-pulse 2s ease-out' : 'subliminal-pulse 0.017s ease-out'
+                    }}
+                >
+                  {subliminalText}
+                </SubliminalText>
+              ) : (
+                isCorrupting && corruptedText ? corruptedText : phrases[currentPhraseIndex]
+              )}
             </HackerText>
             <br />
             <div style={{ 

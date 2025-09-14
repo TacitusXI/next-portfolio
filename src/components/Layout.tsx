@@ -596,7 +596,7 @@ const Layout = ({ children }: LayoutProps) => {
                 maxWidth: 'none',
                 minWidth: '300px'
               } : {
-                right: '20px',
+              right: '20px',
                 left: 'auto',
                 width: '377px', // Golden ratio: 233*1.618≈377 (Fibonacci sequence)
                 maxWidth: '377px',
