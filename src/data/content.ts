@@ -1,21 +1,21 @@
 'use client';
 
 import { PersonalInfo, Experience, Project, Skill, Certificate, Publication, Language, Recommendation } from '@/types/index';
-import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaTwitter, FaMedium } from 'react-icons/fa';
 import React from 'react';
 
 export const personalInfo: PersonalInfo = {
   name: "Ivan Leskov",
-  title: "Blockchain Developer | Smart Contract Engineer",
+  title: "Security Researcher | Blockchain Security Expert",
   email: "ivan.leskov@protonmail.com",
   location: "Europe, Poland",
   linkedin: "https://www.linkedin.com/in/ivan-leskov/",
-  summary: "Experienced Blockchain Developer with a strong focus on Solidity and secure smart contract implementation. I specialize in DeFi protocols, NFT marketplaces, and decentralized applications with a proven track record of delivering secure and efficient blockchain solutions. Technical reviewer for Packt's 'Developing Blockchain Solutions in the Cloud', contributing expertise to industry publications.",
+  summary: "Security Researcher specializing in blockchain security, smart contract auditing, and vulnerability research. I focus on identifying and mitigating security risks in decentralized systems, conducting comprehensive security audits, and developing secure blockchain solutions. Technical reviewer for Packt's 'Developing Blockchain Solutions in the Cloud', contributing security expertise to industry publications.",
   bio: [
-    "Hello! I'm Ivan Leskov, a passionate Blockchain Developer with expertise in building secure and efficient smart contract implementations.",
-    "With a strong focus on DeFi protocols, NFT marketplaces, and decentralized applications, I specialize in creating secure blockchain solutions.",
-    "I serve as a technical reviewer for published blockchain literature, including Packt's 'Developing Blockchain Solutions in the Cloud', where I helped shape technical content across numerous chapters.",
-    "I'm constantly exploring new blockchain technologies and methodologies to build more efficient and secure decentralized systems."
+    "Hello! I'm Ivan Leskov, a dedicated Security Researcher with expertise in blockchain security and smart contract vulnerability analysis.",
+    "With a strong focus on security auditing, threat modeling, and vulnerability research, I specialize in identifying and mitigating risks in decentralized systems.",
+    "I serve as a technical reviewer for published blockchain literature, including Packt's 'Developing Blockchain Solutions in the Cloud', where I contributed security expertise across numerous chapters.",
+    "I'm constantly exploring new security methodologies and research techniques to enhance the security posture of blockchain ecosystems."
   ],
   socials: [
     {
@@ -29,9 +29,14 @@ export const personalInfo: PersonalInfo = {
       icon: React.createElement(FaLinkedin)
     },
     {
-      name: "Twitter",
-      url: "https://twitter.com/ivanleskov",
+      name: "X (Twitter)",
+      url: "https://x.com/TacitusXI",
       icon: React.createElement(FaTwitter)
+    },
+    {
+      name: "Medium",
+      url: "https://medium.com/@ivanlieskov",
+      icon: React.createElement(FaMedium)
     }
   ]
 };
@@ -416,7 +421,7 @@ export const languages: Language[] = [
 export const githubInfo = {
   username: "TacitusXI",
   profileUrl: "https://github.com/TacitusXI",
-  bio: "Blockchain developer | Solidity",
+  bio: "Security researcher | Blockchain security expert",
   featuredRepos: [
     {
       name: "NFT-Smart-Contracts",

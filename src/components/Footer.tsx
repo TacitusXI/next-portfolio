@@ -1,175 +1,518 @@
 'use client';
 
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect, useRef } from 'react';
+import styled, { keyframes, css } from 'styled-components';
 import Link from 'next/link';
 import { personalInfo, githubInfo } from '@/data/content';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
+// Golden ratio constant
+const PHI = 1.618;
+
+// Keyframe animations
+const glowPulse = keyframes`
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(58, 134, 255, 0.3),
+                0 0 40px rgba(58, 134, 255, 0.1),
+                inset 0 0 20px rgba(58, 134, 255, 0.05);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(58, 134, 255, 0.5),
+                0 0 60px rgba(58, 134, 255, 0.2),
+                inset 0 0 30px rgba(58, 134, 255, 0.1);
+  }
+`;
+
+const dataStream = keyframes`
+  0% { transform: translateY(100vh) scaleY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) scaleY(1); opacity: 0; }
+`;
+
+const holographicShimmer = keyframes`
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+`;
+
+const neuralPulse = keyframes`
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+`;
+
+const quantumFlicker = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+`;
+
+// Styled components with golden ratio proportions
 const FooterContainer = styled.footer`
-  background: rgba(10, 10, 15, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 3rem 2rem 2rem;
+  background: linear-gradient(135deg, 
+    rgba(5, 5, 15, 0.98) 0%,
+    rgba(10, 10, 25, 0.95) 50%,
+    rgba(15, 15, 35, 0.98) 100%
+  );
+  border-top: 2px solid transparent;
+  background-clip: padding-box;
   position: relative;
+  padding: ${4 * PHI}rem 2rem ${2.5 * PHI}rem;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      rgba(58, 134, 255, 0.5) 25%,
+      rgba(0, 198, 255, 0.8) 50%,
+      rgba(58, 134, 255, 0.5) 75%,
+      transparent 100%
+    );
+    animation: ${holographicShimmer} 3s ease-in-out infinite;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(58, 134, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(0, 198, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(255, 0, 150, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+`;
+
+const DataStreamOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+`;
+
+const DataLine = styled.div<{ delay: number; left: number }>`
+  position: absolute;
+  left: ${props => props.left}%;
+  width: 1px;
+  height: 100px;
+  background: linear-gradient(to bottom, 
+    transparent 0%,
+    rgba(58, 134, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: ${dataStream} ${8 + Math.random() * 4}s ease-in-out infinite;
+  animation-delay: ${props => props.delay}s;
 `;
 
 const FooterContent = styled.div`
-  max-width: 1200px;
+  max-width: ${77 * PHI}rem;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
+  grid-template-columns: ${PHI}fr 1fr 1fr;
+  gap: ${2.5 * PHI}rem;
+  position: relative;
+  z-index: 3;
   
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(2, 1fr);
+  /* iPad Pro and large tablets - 3 columns in one beautiful row */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: ${1.8 * PHI}rem;
+    max-width: 95%;
   }
   
-  @media (max-width: 576px) {
+  /* Standard tablets - 3 compact columns in one row */
+  @media (max-width: 768px) and (min-width: 481px) {
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: ${1.5 * PHI}rem;
+    max-width: 98%;
+  }
+  
+  /* Mobile phones */
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
+    gap: ${1.5 * PHI}rem;
+    max-width: 100%;
+  }
+`;
+
+const PrimarySection = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${1.5 * PHI}rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: ${PHI * 0.5}rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  backdrop-filter: blur(10px);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+      rgba(58, 134, 255, 0.05) 0%,
+      transparent 50%,
+      rgba(0, 198, 255, 0.05) 100%
+    );
+    border-radius: ${PHI * 0.5}rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &:hover::before {
+    opacity: 1;
+  }
+  
+  /* Tablet optimizations - compact for one row */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    padding: ${PHI * 0.8}rem;
+    text-align: center;
+  }
+`;
+
+const Logo = styled.div`
+  font-size: ${PHI * 1.2}rem;
+  font-weight: 700;
+  margin-bottom: ${PHI}rem;
+  color: white;
+  position: relative;
+  letter-spacing: 0.5px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+      #3a86ff 0%,
+      #00c6ff 100%
+    );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  &:hover::before {
+    opacity: 1;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      #3a86ff 0%,
+      #00c6ff 100%
+    );
+    border-radius: 1px;
+    transition: width 0.6s ease;
+  }
+  
+  &:hover::after {
+    width: 100%;
+  }
+`;
+
+const Description = styled.p`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: ${PHI * 0.6}rem;
+  line-height: ${PHI};
+  margin-bottom: ${PHI}rem;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+`;
+
+const SecurityBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 127, 0.1);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  border-radius: ${PHI * 0.3}rem;
+  color: #00ff7f;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: ${PHI}rem;
+  animation: ${glowPulse} 3s ease-in-out infinite;
+  
+  &::before {
+    content: '🔒';
+    font-size: 1rem;
+  }
+`;
+
+const SocialContainer = styled.div`
+  display: flex;
+  gap: ${PHI * 0.5}rem;
+  margin-top: auto;
+`;
+
+const SocialLink = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ${PHI * 2.2}rem;
+  height: ${PHI * 2.2}rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      rgba(58, 134, 255, 0.4) 50%,
+      transparent 100%
+    );
+    transition: left 0.5s ease;
+  }
+  
+  &:hover {
+    background: rgba(58, 134, 255, 0.2);
+    color: #3a86ff;
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 30px rgba(58, 134, 255, 0.3);
+    
+    &::before {
+      left: 100%;
+    }
+  }
+  
+  svg {
+    width: ${PHI}rem;
+    height: ${PHI}rem;
+    z-index: 1;
   }
 `;
 
 const FooterSection = styled.div`
   display: flex;
   flex-direction: column;
-`;
-
-const Logo = styled.div`
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(45deg, #3a86ff, #00c6ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-`;
-
-const Description = styled.p`
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-`;
-
-const SocialContainer = styled.div`
-  display: flex;
-  gap: 0.8rem;
-`;
-
-const SocialLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.7);
-  transition: all 0.3s ease;
+  position: relative;
   
-  &:hover {
-    background: rgba(58, 134, 255, 0.2);
-    color: #3a86ff;
-    transform: translateY(-3px);
-  }
-  
-  svg {
-    width: 18px;
-    height: 18px;
+  /* Tablet optimizations - compact for one row */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    padding: ${PHI * 0.8}rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: ${PHI * 0.3}rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
   }
 `;
+
 
 const SectionTitle = styled.h3`
   color: white;
-  font-size: 1.1rem;
+  font-size: ${PHI * 0.7}rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin-bottom: ${PHI}rem;
   position: relative;
+  padding-left: 1rem;
   
-  &:after {
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: ${PHI}rem;
+    background: linear-gradient(to bottom, #3a86ff, #00c6ff);
+    border-radius: 2px;
+    animation: ${neuralPulse} 2s ease-in-out infinite;
+  }
+  
+  &::after {
     content: '';
     position: absolute;
     left: 0;
     bottom: -0.5rem;
-    width: 40px;
-    height: 2px;
+    width: 60px;
+    height: 1px;
     background: linear-gradient(90deg, #3a86ff, transparent);
+    animation: ${holographicShimmer} 2s ease-in-out infinite;
+  }
+  
+  /* Tablet optimizations - compact for one row */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    font-size: ${PHI * 0.75}rem;
+    text-align: center;
+    padding-left: 0;
+    margin-bottom: ${PHI * 0.8}rem;
+    
+    &::before {
+      display: none;
+    }
+    
+    &::after {
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+    }
   }
 `;
 
 const LinksContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: ${PHI * 0.5}rem;
+  
+  /* Tablet optimizations - perfectly aligned */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    gap: ${PHI * 0.3}rem;
+    align-items: stretch;
+    width: 100%;
+  }
 `;
 
 const FooterLink = styled.a`
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
+  font-size: ${PHI * 0.55}rem;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  padding: 0.5rem 0;
+  position: relative;
+  text-decoration: none;
+  
+  &::before {
+    content: '▸';
+    margin-right: 0.5rem;
+    color: rgba(58, 134, 255, 0.5);
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+  }
   
   &:hover {
     color: #3a86ff;
-    transform: translateX(3px);
+    transform: translateX(8px);
+    
+    &::before {
+      color: #3a86ff;
+      transform: scale(1.2);
+    }
   }
   
-  svg {
-    width: 14px;
-    height: 14px;
-    margin-right: 0.5rem;
-    opacity: 0.5;
+  /* Tablet optimizations - perfectly aligned */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    padding: ${PHI * 0.35}rem ${PHI * 0.5}rem;
+    font-size: ${PHI * 0.6}rem;
+    min-height: 40px;
+    justify-content: center;
+    text-align: center;
+    border-radius: ${PHI * 0.2}rem;
+    background: rgba(255, 255, 255, 0.01);
+    
+    &:hover {
+      transform: translateY(-2px);
+      background: rgba(58, 134, 255, 0.05);
+    }
+    
+    &::before {
+      display: none;
+    }
   }
 `;
 
 const NextLink = styled(Link)`
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
+  font-size: ${PHI * 0.55}rem;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  padding: 0.5rem 0;
+  position: relative;
   text-decoration: none;
+  
+  &::before {
+    content: '▸';
+    margin-right: 0.5rem;
+    color: rgba(58, 134, 255, 0.5);
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+  }
   
   &:hover {
     color: #3a86ff;
-    transform: translateX(3px);
+    transform: translateX(8px);
+    
+    &::before {
+      color: #3a86ff;
+      transform: scale(1.2);
+    }
   }
   
-  svg {
-    width: 14px;
-    height: 14px;
-    margin-right: 0.5rem;
-    opacity: 0.5;
+  /* Tablet optimizations - perfectly aligned */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    padding: ${PHI * 0.35}rem ${PHI * 0.5}rem;
+    font-size: ${PHI * 0.6}rem;
+    min-height: 40px;
+    justify-content: center;
+    text-align: center;
+    border-radius: ${PHI * 0.2}rem;
+    background: rgba(255, 255, 255, 0.01);
+    
+    &:hover {
+      transform: translateY(-2px);
+      background: rgba(58, 134, 255, 0.05);
+    }
+    
+    &::before {
+      display: none;
+    }
   }
 `;
 
-const ContactInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const ContactItem = styled.div`
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  
-  svg {
-    width: 18px;
-    height: 18px;
-    margin-right: 0.8rem;
-    color: rgba(58, 134, 255, 0.7);
-  }
-`;
 
 const BottomBar = styled.div`
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: ${PHI * 2}rem;
+  padding-top: ${PHI}rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  z-index: 3;
+  
+  /* Tablet optimizations */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    flex-direction: column;
+    gap: ${PHI}rem;
+    align-items: center;
+    text-align: center;
+    padding-top: ${1.5 * PHI}rem;
+  }
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -180,127 +523,282 @@ const BottomBar = styled.div`
 
 const Copyright = styled.p`
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
+  font-size: ${PHI * 0.5}rem;
+  font-weight: 300;
+  line-height: 1.4;
+  
+  /* Tablet optimizations - better readability */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    font-size: ${PHI * 0.55}rem;
+    line-height: 1.5;
+    text-align: center;
+    max-width: 80%;
+    margin: 0 auto;
+  }
 `;
 
 const BottomLinks = styled.div`
   display: flex;
-  gap: 1.5rem;
+  gap: ${PHI}rem;
+  
+  /* Tablet optimizations */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    gap: ${1.5 * PHI}rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 `;
 
 const BottomLink = styled.a`
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  transition: color 0.2s ease;
+  font-size: ${PHI * 0.5}rem;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #3a86ff;
+    transition: width 0.3s ease;
+  }
   
   &:hover {
     color: #3a86ff;
+    
+    &::after {
+      width: 100%;
+    }
+  }
+  
+  /* Tablet optimizations */
+  @media (max-width: 1024px) and (min-width: 481px) {
+    font-size: ${PHI * 0.55}rem;
+    padding: 0.5rem 0.8rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: ${PHI * 0.2}rem;
+    
+    &:hover {
+      background: rgba(58, 134, 255, 0.1);
+      transform: translateY(-2px);
+    }
   }
 `;
 
-const BackToTop = styled.button`
-  position: absolute;
-  right: 2rem;
-  bottom: 6rem;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background: rgba(58, 134, 255, 0.15);
-  border: 1px solid rgba(58, 134, 255, 0.3);
-  color: #3a86ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: rgba(58, 134, 255, 0.25);
-    transform: translateY(-5px);
-  }
-  
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-  
-  @media (max-width: 768px) {
-    right: 1rem;
-    bottom: 5rem;
-  }
-`;
 
-const ModalOverlay = styled(motion.div)`
+const PolicyModal = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.85);
-  z-index: 1000;
+  backdrop-filter: blur(15px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  backdrop-filter: blur(5px);
-`;
-
-const ModalContent = styled(motion.div)`
-  width: 85%;
-  max-width: 800px;
-  max-height: 90vh;
-  background: rgba(15, 15, 25, 0.95);
-  border-radius: 12px;
-  overflow: auto;
-  position: relative;
-  border: 1px solid rgba(58, 134, 255, 0.3);
-  box-shadow: 0 0 30px rgba(58, 134, 255, 0.2);
-  padding: 2rem;
+  z-index: 10000;
+  padding: 0;
+  overflow: hidden;
   
+  /* Mobile optimizations - full screen approach */
   @media (max-width: 768px) {
-    padding: 1.5rem;
-    width: 95%;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem 0.5rem;
+    box-sizing: border-box;
+  }
+  
+  /* Tablet optimizations - ensure centering */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-sizing: border-box;
   }
 `;
 
-const PolicyTitle = styled.h2`
-  font-size: 1.8rem;
-  color: white;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(58, 134, 255, 0.3);
-  padding-bottom: 0.75rem;
-`;
-
-const PolicyContent = styled.div`
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.95rem;
-  line-height: 1.7;
+const PolicyContent = styled(motion.div)`
+  background: linear-gradient(135deg, 
+    rgba(8, 8, 20, 0.98) 0%,
+    rgba(15, 15, 30, 0.98) 100%
+  );
+  border-radius: ${PHI * 0.6}rem;
+  border: 2px solid rgba(58, 134, 255, 0.4);
+  padding: ${PHI * 1.5}rem;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 
+    0 25px 80px rgba(58, 134, 255, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  margin: 0 auto;
+  
+  /* Desktop */
+  @media (min-width: 1025px) {
+    width: 700px;
+    max-width: 700px;
+    max-height: 80vh;
+    padding: ${PHI * 2}rem;
+  }
+  
+  /* Tablet - perfectly centered */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    padding: ${PHI * 1.8}rem;
+    margin: 0 auto;
+  }
+  
+  /* Mobile - full safe area */
+  @media (max-width: 768px) {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100vh - 2rem);
+    padding: ${PHI}rem;
+    margin: 0;
+    border-radius: ${PHI * 0.4}rem;
+    
+    /* Handle iPhone safe areas */
+    padding-top: max(${PHI}rem, env(safe-area-inset-top, 1rem));
+    padding-bottom: max(${PHI}rem, env(safe-area-inset-bottom, 1rem));
+    padding-left: max(${PHI}rem, env(safe-area-inset-left, 1rem));
+    padding-right: max(${PHI}rem, env(safe-area-inset-right, 1rem));
+  }
+  
+  h2 {
+    font-size: ${PHI * 1.2}rem;
+    font-weight: 700;
+    margin-bottom: ${PHI * 1.3}rem;
+    text-align: center;
+    position: relative;
+    letter-spacing: 0.5px;
+    
+    /* Clean bright text */
+    color: #ffffff;
+    
+    /* Simple elegant underline */
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        #3a86ff 50%, 
+        transparent 100%
+      );
+      border-radius: 1px;
+    }
+    
+    @media (max-width: 768px) {
+      font-size: ${PHI * 1}rem;
+      margin-bottom: ${PHI}rem;
+      
+      &::after {
+        width: 60px;
+        bottom: -0.6rem;
+      }
+    }
+  }
   
   h3 {
-    font-size: 1.3rem;
-    color: white;
-    margin: 1.5rem 0 0.75rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: ${PHI * 0.8}rem;
+    font-weight: 600;
+    margin: ${PHI * 1.2}rem 0 ${PHI * 0.8}rem;
+    position: relative;
+    padding-left: 1rem;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 1rem;
+      background: linear-gradient(to bottom, #3a86ff, #00c6ff);
+      border-radius: 2px;
+    }
+    
+    @media (max-width: 768px) {
+      font-size: ${PHI * 0.7}rem;
+      margin: ${PHI}rem 0 ${PHI * 0.6}rem;
+    }
   }
   
-  p {
-    margin-bottom: 1rem;
+  p, li {
+    color: rgba(255, 255, 255, 0.85);
+    line-height: ${PHI * 1.1};
+    margin-bottom: ${PHI * 0.8}rem;
+    font-size: ${PHI * 0.6}rem;
+    
+    @media (max-width: 768px) {
+      font-size: ${PHI * 0.55}rem;
+      line-height: ${PHI};
+      margin-bottom: ${PHI * 0.6}rem;
+    }
   }
   
   ul {
-    margin-bottom: 1rem;
     padding-left: 1.5rem;
+    margin-bottom: ${PHI}rem;
+    
+    @media (max-width: 768px) {
+      padding-left: 1rem;
+      margin-bottom: ${PHI * 0.8}rem;
+    }
   }
   
   li {
-    margin-bottom: 0.5rem;
+    margin-bottom: ${PHI * 0.5}rem;
+    position: relative;
+    
+    &::marker {
+      color: rgba(58, 134, 255, 0.7);
+    }
   }
   
   a {
     color: #3a86ff;
     text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
     
     &:hover {
+      color: #00c6ff;
       text-decoration: underline;
+    }
+  }
+  
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(58, 134, 255, 0.3);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(58, 134, 255, 0.5);
     }
   }
 `;
@@ -309,28 +807,85 @@ const CloseButton = styled.button`
   position: absolute;
   top: 1rem;
   right: 1rem;
-  width: 40px;
-  height: 40px;
+  width: ${PHI * 2.2}rem;
+  height: ${PHI * 2.2}rem;
   border-radius: 50%;
-  background: rgba(15, 15, 25, 0.8);
-  border: 1px solid rgba(58, 134, 255, 0.3);
+  background: rgba(58, 134, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(58, 134, 255, 0.4);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 10;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   
   &:hover {
-    background: rgba(58, 134, 255, 0.2);
-    transform: scale(1.1);
+    background: rgba(255, 69, 69, 0.2);
+    border-color: rgba(255, 69, 69, 0.5);
+    color: #ff4545;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 25px rgba(255, 69, 69, 0.3);
+  }
+  
+  &:active {
+    transform: scale(0.95) rotate(90deg);
+  }
+  
+  svg {
+    width: ${PHI * 0.8}rem;
+    height: ${PHI * 0.8}rem;
+    stroke-width: 2.5;
+  }
+  
+  @media (max-width: 768px) {
+    top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
+    right: max(0.5rem, env(safe-area-inset-right, 0.5rem));
+    width: ${PHI * 2.4}rem;
+    height: ${PHI * 2.4}rem;
+    border-width: 3px;
+    
+    svg {
+      width: ${PHI * 0.8}rem;
+      height: ${PHI * 0.8}rem;
+      stroke-width: 3;
+    }
   }
 `;
 
 export default function Footer() {
   const [activePolicy, setActivePolicy] = useState<string | null>(null);
+  const dataLinesRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Create animated data streams
+    if (dataLinesRef.current) {
+      const lines = Array.from({ length: 12 }, (_, i) => (
+        <DataLine
+          key={i}
+          delay={i * 0.5}
+          left={Math.random() * 100}
+        />
+      ));
+      
+      dataLinesRef.current.innerHTML = '';
+      lines.forEach(line => {
+        const div = document.createElement('div');
+        div.style.cssText = `
+          position: absolute;
+          left: ${Math.random() * 100}%;
+          width: 1px;
+          height: 100px;
+          background: linear-gradient(to bottom, transparent 0%, rgba(58, 134, 255, 0.6) 50%, transparent 100%);
+          animation: dataStream ${8 + Math.random() * 4}s ease-in-out infinite;
+          animation-delay: ${Math.random() * 2}s;
+        `;
+        dataLinesRef.current?.appendChild(div);
+      });
+    }
+  }, []);
   
   const scrollToTop = () => {
     window.scrollTo({
@@ -341,7 +896,7 @@ export default function Footer() {
   
   const openPolicyModal = (policy: string) => {
     setActivePolicy(policy);
-    document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    document.body.style.overflow = 'hidden';
   };
   
   const closePolicyModal = () => {
@@ -350,10 +905,14 @@ export default function Footer() {
   };
   
   return (
+    <>
     <FooterContainer>
+        <DataStreamOverlay ref={dataLinesRef} />
+        
       <FooterContent>
-        <FooterSection>
-          <Logo>Ivan Leskov</Logo>
+          <PrimarySection>
+            <Logo>TacitusXI</Logo>
+            <SecurityBadge>Security Researcher</SecurityBadge>
           <Description>
             {personalInfo.summary}
           </Description>
@@ -368,337 +927,151 @@ export default function Footer() {
                 <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
               </svg>
             </SocialLink>
-            <SocialLink href="https://twitter.com/" target="_blank" rel="noopener noreferrer">
+            <SocialLink href="https://x.com/TacitusXI" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+              </svg>
+            </SocialLink>
+            <SocialLink href="https://medium.com/@ivanlieskov" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M0 0v24h24V0H0zm19.938 5.686L18.651 6.92a.376.376 0 0 0-.143.362v9.067a.376.376 0 0 0 .143.361l1.257 1.234v.271h-6.322v-.27l1.302-1.265c.128-.128.128-.165.128-.36V8.99l-3.62 9.195h-.49L6.69 8.99v6.163a.85.85 0 0 0 .233.707l1.694 2.054v.271H3.815v-.27L5.51 15.86a.82.82 0 0 0 .218-.707V8.027a.624.624 0 0 0-.203-.527L4.019 5.686v-.270h4.674l3.613 7.923 3.176-7.924h4.456v.271z"/>
               </svg>
             </SocialLink>
           </SocialContainer>
-        </FooterSection>
+          </PrimarySection>
         
         <FooterSection>
-          <SectionTitle>Quick Links</SectionTitle>
+          <SectionTitle>Navigation</SectionTitle>
           <LinksContainer>
-            <NextLink href="/">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Home
-            </NextLink>
-            <NextLink href="#projects">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Projects
-            </NextLink>
-            <NextLink href="#skills">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Skills
-            </NextLink>
-            <NextLink href="#publications">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Publications
-            </NextLink>
-            <NextLink href="#contact">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Contact
-            </NextLink>
+            <FooterLink href="#home">Home</FooterLink>
+            <FooterLink href="#projects">Projects</FooterLink>
+            <FooterLink href="#experience">Experience</FooterLink>
+            <FooterLink href="#skills">Skills</FooterLink>
+            <NextLink href="/audit">Security Audits</NextLink>
+            <FooterLink href="#github">Research</FooterLink>
           </LinksContainer>
         </FooterSection>
         
         <FooterSection>
-          <SectionTitle>Services</SectionTitle>
+          <SectionTitle>Resources</SectionTitle>
           <LinksContainer>
-            <FooterLink href="#projects">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Blockchain Development
+            <FooterLink href="https://github.com/TacitusXI" target="_blank" rel="noopener noreferrer">
+              GitHub Repository
             </FooterLink>
-            <FooterLink href="#projects">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Smart Contract Development
+            <FooterLink href="/Ivan_Leskov_Web3_Solidity_Engineer.pdf" target="_blank">
+              Security Research CV
             </FooterLink>
-            <FooterLink href="#projects">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              DeFi Protocol Development
+            <FooterLink href="#" onClick={() => openPolicyModal('privacy')}>
+              Privacy Policy
             </FooterLink>
-            <FooterLink href="#projects">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              NFT Marketplace Development
-            </FooterLink>
-            <FooterLink href="#projects">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Blockchain Consulting
+            <FooterLink href="#" onClick={() => openPolicyModal('terms')}>
+              Terms of Service
             </FooterLink>
           </LinksContainer>
-        </FooterSection>
-        
-        <FooterSection>
-          <SectionTitle>Contact</SectionTitle>
-          <ContactInfo>
-            <ContactItem>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              {personalInfo.email}
-            </ContactItem>
-            <ContactItem>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              Available via Email
-            </ContactItem>
-            <ContactItem>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {personalInfo.location}
-            </ContactItem>
-          </ContactInfo>
         </FooterSection>
       </FooterContent>
       
-      <BottomBar>
-        <Copyright>© {new Date().getFullYear()} Ivan Leskov. All rights reserved.</Copyright>
+        <BottomBar>
+          <Copyright>
+            © 2024 TacitusXI. All rights reserved. Security researcher & blockchain security expert.
+          </Copyright>
         <BottomLinks>
-          <BottomLink 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              openPolicyModal('privacy');
-            }}
-          >
-            Privacy Policy
+            <BottomLink href="#" onClick={() => openPolicyModal('privacy')}>
+              Privacy
           </BottomLink>
-          <BottomLink 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              openPolicyModal('terms');
-            }}
-          >
-            Terms of Service
+            <BottomLink href="#" onClick={() => openPolicyModal('terms')}>
+              Terms
           </BottomLink>
-          <BottomLink 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              openPolicyModal('cookie');
-            }}
-          >
-            Cookie Policy
+            <BottomLink href="mailto:ivan.leskov@protonmail.com">
+              Contact
+          </BottomLink>
+            <BottomLink href="#" onClick={scrollToTop}>
+              ↑ Top
           </BottomLink>
         </BottomLinks>
       </BottomBar>
+      </FooterContainer>
       
-      <BackToTop onClick={scrollToTop}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-        </svg>
-      </BackToTop>
       
-      {/* Policy Modals */}
-      {activePolicy === 'privacy' && (
-        <ModalOverlay
+        <AnimatePresence>
+        {activePolicy && (
+          <PolicyModal
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={closePolicyModal}
         >
-          <ModalContent
+            <PolicyContent
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', damping: 25 }}
           >
-            <CloseButton onClick={closePolicyModal} aria-label="Close policy">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <CloseButton onClick={closePolicyModal}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </CloseButton>
-            <PolicyTitle>Privacy Policy</PolicyTitle>
-            <PolicyContent>
-              <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               
-              <h3>Introduction</h3>
-              <p>Welcome to Tacitvs's digital hub. I respect your privacy and am committed to protecting your personal data. This privacy policy explains how I collect, use, and safeguard your information when you visit my website.</p>
-              
-              <h3>Information I Collect</h3>
-              <p>When you visit my website, I may collect the following information:</p>
-              <ul>
-                <li>Usage data including IP address, browser type, pages visited, time and date of visit</li>
-                <li>Contact information you provide when using the contact form (name, email, message content)</li>
+              {activePolicy === 'privacy' && (
+                <div>
+                  <h2>Privacy Policy</h2>
+                  <p>Last updated: {new Date().toLocaleDateString()}</p>
+                  
+                  <h3>Information We Collect</h3>
+                  <p>This website collects minimal information to provide you with the best experience:</p>
+                  <ul>
+                    <li>Analytics data through Microsoft Clarity for improving user experience</li>
+                    <li>Basic browser information for compatibility purposes</li>
+                    <li>No personal information is stored or tracked without consent</li>
               </ul>
               
-              <h3>How I Use Your Information</h3>
-              <p>I use the information collected to:</p>
-              <ul>
-                <li>Respond to your inquiries and communication</li>
-                <li>Improve and optimize my website</li>
-                <li>Analyze usage patterns and trends</li>
+                  <h3>How We Use Information</h3>
+                  <p>Any collected information is used solely for:</p>
+                  <ul>
+                    <li>Improving website performance and user experience</li>
+                    <li>Understanding visitor patterns to enhance content</li>
+                    <li>Ensuring security and preventing abuse</li>
               </ul>
               
               <h3>Data Security</h3>
-              <p>I implement appropriate security measures to protect your personal information against unauthorized access or disclosure. However, no internet-based system can guarantee complete security.</p>
-              
-              <h3>Third-Party Links</h3>
-              <p>My website may contain links to third-party websites. I am not responsible for the privacy practices or content of these websites.</p>
-              
-              <h3>Your Rights</h3>
-              <p>Depending on your location, you may have rights regarding your personal data, including:</p>
-              <ul>
-                <li>Access to your personal data</li>
-                <li>Correction of inaccurate data</li>
-                <li>Deletion of your data</li>
-                <li>Restriction of processing</li>
-              </ul>
-              
-              <h3>Changes to This Policy</h3>
-              <p>I may update this privacy policy from time to time. Any changes will be posted on this page.</p>
-              
-              <h3>Contact Information</h3>
-              <p>If you have questions about this privacy policy, please contact me at {personalInfo.email}.</p>
-            </PolicyContent>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+                  <p>As a security researcher, I take data protection seriously. All data handling follows industry best practices and security standards.</p>
+                  
+                  <h3>Contact</h3>
+                  <p>For privacy-related questions, contact: <a href="mailto:ivan.leskov@protonmail.com">ivan.leskov@protonmail.com</a></p>
+                </div>
+              )}
       
       {activePolicy === 'terms' && (
-        <ModalOverlay
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={closePolicyModal}
-        >
-          <ModalContent
-            onClick={(e) => e.stopPropagation()}
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', damping: 25 }}
-          >
-            <CloseButton onClick={closePolicyModal} aria-label="Close policy">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </CloseButton>
-            <PolicyTitle>Terms of Service</PolicyTitle>
-            <PolicyContent>
-              <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              
-              <h3>Introduction</h3>
-              <p>Welcome to Tacitvs's digital hub. By accessing and using this website, you agree to be bound by these Terms of Service.</p>
-              
-              <h3>Intellectual Property</h3>
-              <p>All content on this website, including text, graphics, logos, images, and software, is the property of Ivan Leskov and is protected by intellectual property laws. You may not reproduce, distribute, or create derivative works without explicit permission.</p>
-              
-              <h3>User Conduct</h3>
-              <p>When using this website, you agree not to:</p>
-              <ul>
-                <li>Use the website in any unlawful manner</li>
-                <li>Attempt to gain unauthorized access to any part of the website</li>
-                <li>Use automated tools or processes to access or scrape content</li>
-                <li>Interfere with the proper functioning of the website</li>
+                <div>
+                  <h2>Terms of Service</h2>
+                  <p>Last updated: {new Date().toLocaleDateString()}</p>
+                  
+                  <h3>Acceptance of Terms</h3>
+                  <p>By accessing this website, you agree to these terms of service and privacy policy.</p>
+                  
+                  <h3>Use License</h3>
+                  <p>Permission is granted to temporarily access this website for personal, non-commercial use. This license does not include:</p>
+                  <ul>
+                    <li>Modifying or copying the materials</li>
+                    <li>Using materials for commercial purposes</li>
+                    <li>Attempting to reverse engineer any software</li>
+                    <li>Removing copyright or proprietary notations</li>
               </ul>
               
-              <h3>Disclaimer of Warranties</h3>
-              <p>This website is provided "as is" without any warranties, expressed or implied. I do not guarantee that the website will be error-free or uninterrupted.</p>
+                  <h3>Security Research</h3>
+                  <p>Information about security research and audits is provided for educational purposes. Always conduct security research responsibly and with proper authorization.</p>
               
               <h3>Limitation of Liability</h3>
-              <p>I will not be liable for any damages arising from the use or inability to use this website, including direct, indirect, incidental, or consequential damages.</p>
-              
-              <h3>External Links</h3>
-              <p>My website may contain links to external websites. I am not responsible for the content or practices of these websites.</p>
-              
-              <h3>Modifications</h3>
-              <p>I reserve the right to modify these Terms of Service at any time. Continued use of the website after changes constitutes acceptance of the updated terms.</p>
-              
-              <h3>Governing Law</h3>
-              <p>These Terms of Service shall be governed by and construed in accordance with the laws of Poland, without regard to its conflict of law principles.</p>
+                  <p>The information on this website is provided as-is. Ivan Leskov makes no warranties and shall not be liable for any damages arising from the use of this website.</p>
+                </div>
+              )}
             </PolicyContent>
-          </ModalContent>
-        </ModalOverlay>
+          </PolicyModal>
       )}
-      
-      {activePolicy === 'cookie' && (
-        <ModalOverlay
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={closePolicyModal}
-        >
-          <ModalContent
-            onClick={(e) => e.stopPropagation()}
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', damping: 25 }}
-          >
-            <CloseButton onClick={closePolicyModal} aria-label="Close policy">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </CloseButton>
-            <PolicyTitle>Cookie Policy</PolicyTitle>
-            <PolicyContent>
-              <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              
-              <h3>What Are Cookies</h3>
-              <p>Cookies are small text files that are placed on your device when you visit a website. They are widely used to make websites work more efficiently and provide information to the website owners.</p>
-              
-              <h3>How I Use Cookies</h3>
-              <p>My website uses cookies for the following purposes:</p>
-              <ul>
-                <li>Essential cookies: Required for the basic functionality of the website</li>
-                <li>Analytics cookies: Help me understand how visitors interact with the website</li>
-                <li>Preference cookies: Allow the website to remember your preferences</li>
-              </ul>
-              
-              <h3>Types of Cookies Used</h3>
-              <h4>Essential Cookies</h4>
-              <p>These cookies are necessary for the website to function properly. They enable core functionality such as security, network management, and accessibility.</p>
-              
-              <h4>Analytics Cookies</h4>
-              <p>I use analytics cookies, such as those provided by Google Analytics, to collect information about how visitors use my website. This helps me improve the website and user experience.</p>
-              
-              <h4>Third-Party Cookies</h4>
-              <p>Some cookies may be set by third-party services used on my website, such as social media plugins or embedded content.</p>
-              
-              <h3>Managing Cookies</h3>
-              <p>You can control and manage cookies in various ways. Most web browsers allow you to:</p>
-              <ul>
-                <li>View and delete cookies</li>
-                <li>Block third-party cookies</li>
-                <li>Block cookies from particular websites</li>
-                <li>Block all cookies</li>
-                <li>Delete all cookies when you close your browser</li>
-              </ul>
-              
-              <p>Please note that blocking cookies may impact your experience on this and other websites, as certain features may not function properly.</p>
-              
-              <h3>Changes to This Cookie Policy</h3>
-              <p>I may update this Cookie Policy from time to time. Any changes will be posted on this page.</p>
-            </PolicyContent>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-    </FooterContainer>
+      </AnimatePresence>
+    </>
   );
 } 
