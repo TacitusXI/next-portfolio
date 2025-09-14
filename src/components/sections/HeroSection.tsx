@@ -107,21 +107,89 @@ const BulletContent = styled.span`
   }
 `;
 
-const TypedText = styled.span`
-  color: white;
+const HackerText = styled.span`
+  color: #00ff00;
   position: relative;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(72, 191, 255, 0.3);
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  display: inline-block;
+  letter-spacing: 1px;
   
-  &::after {
-    content: '|';
-    animation: blink 1s infinite;
-    color: white;
+  &::before {
+    content: attr(data-glitch);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: rgba(0, 255, 0, 0.8);
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
   }
   
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+  @keyframes terminal-flicker {
+    0%, 100% { 
+      opacity: 1;
+      text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    }
+    50% { 
+      opacity: 0.8;
+      text-shadow: 0 0 8px rgba(0, 255, 0, 0.7);
+    }
+  }
+  
+  @keyframes data-corruption {
+    0% { 
+      clip: rect(0, 0, 0, 0);
+    }
+    5% { 
+      clip: rect(0, 9999px, 2px, 0);
+      transform: skew(-2deg);
+    }
+    10% { 
+      clip: rect(2px, 9999px, 4px, 0);
+      transform: skew(1deg);
+    }
+    15% { 
+      clip: rect(4px, 9999px, 6px, 0);
+      transform: skew(-1deg);
+    }
+    20% { 
+      clip: rect(6px, 9999px, 8px, 0);
+      transform: skew(0deg);
+    }
+    25% { 
+      clip: rect(0, 0, 0, 0);
+      transform: skew(0deg);
+    }
+    100% { 
+      clip: rect(0, 0, 0, 0);
+      transform: skew(0deg);
+    }
+  }
+  
+  @keyframes matrix-shift {
+    0%, 90%, 100% {
+      transform: translate(0);
+      filter: brightness(1);
+    }
+    2% {
+      transform: translate(-1px, 0);
+      filter: brightness(1.2);
+    }
+    4% {
+      transform: translate(1px, 0);
+      filter: brightness(0.8);
+    }
+    6% {
+      transform: translate(0, -1px);
+      filter: brightness(1.1);
+    }
+    8% {
+      transform: translate(0, 1px);
+      filter: brightness(0.9);
+    }
   }
 `;
 
@@ -328,12 +396,23 @@ const StatItem = styled.div`
 `;
 
 export default function HeroSection() {
-  const [typedText, setTypedText] = useState('');
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [currentCharIndex, setCurrentCharIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typeDelay, setTypeDelay] = useState(150);
+  const [isCorrupting, setIsCorrupting] = useState(false);
+  const [corruptedText, setCorruptedText] = useState('');
   const [githubContributions, setGithubContributions] = useState(0);
+  
+  const phrases = [
+    'Security Researcher',
+    'Solidity Engineer', 
+    'Technical Reviewer'
+  ];
+  
+  const generateCorruptedText = (text: string) => {
+    const glitchChars = ['█', '▓', '▒', '░', '¿', '¡', '@', '#', '$', '%', '&', '*'];
+    return text.split('').map(char => 
+      Math.random() < 0.3 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : char
+    ).join('');
+  };
   
   const { setBackgroundType, setIntensity, setColorScheme } = useBackground();
   const [ref, inView] = useInView({
@@ -409,42 +488,49 @@ export default function HeroSection() {
   }, []);
   
   useEffect(() => {
-    const phrases = [
-      'Security Researcher',
-      'Solidity Engineer',
-      'Technical Reviewer'
-    ];
-    
-    const timer = setTimeout(() => {
-      // Logic for typing effect
-      if (!isDeleting) {
-        // Typing
-        if (currentCharIndex < phrases[currentPhraseIndex].length) {
-          setTypedText(phrases[currentPhraseIndex].substring(0, currentCharIndex + 1));
-          setCurrentCharIndex(currentCharIndex + 1);
-          setTypeDelay(100);
-        } else {
-          // Start deleting after a pause
-          setIsDeleting(true);
-          setTypeDelay(800);
+    const hackInterval = setInterval(() => {
+      const currentText = phrases[currentPhraseIndex];
+      
+      // Start corruption
+      setIsCorrupting(true);
+      
+      // Phase 1: Corrupt current text
+      let corruptionCount = 0;
+      const corruptionInterval = setInterval(() => {
+        setCorruptedText(generateCorruptedText(currentText));
+        corruptionCount++;
+        
+        if (corruptionCount >= 8) {
+          clearInterval(corruptionInterval);
+          
+          // Phase 2: Switch to next phrase and gradually fix corruption
+          const nextIndex = (currentPhraseIndex + 1) % phrases.length;
+          const nextText = phrases[nextIndex];
+          setCurrentPhraseIndex(nextIndex);
+          
+          let fixCount = 0;
+          const fixInterval = setInterval(() => {
+            const progress = fixCount / 6;
+            const fixedText = nextText.split('').map((char, i) => 
+              Math.random() < progress ? char : generateCorruptedText(char).charAt(0)
+            ).join('');
+            
+            setCorruptedText(fixedText);
+            fixCount++;
+            
+            if (fixCount >= 6) {
+              clearInterval(fixInterval);
+              setCorruptedText('');
+              setIsCorrupting(false);
+            }
+          }, 80);
         }
-      } else {
-        // Deleting
-        if (currentCharIndex > 0) {
-          setTypedText(phrases[currentPhraseIndex].substring(0, currentCharIndex - 1));
-          setCurrentCharIndex(currentCharIndex - 1);
-          setTypeDelay(50);
-        } else {
-          // Move to next phrase
-          setIsDeleting(false);
-          setCurrentPhraseIndex((currentPhraseIndex + 1) % phrases.length);
-          setTypeDelay(300);
-        }
-      }
-    }, typeDelay);
+      }, 60);
+      
+    }, 4000); // Change every 4 seconds
     
-    return () => clearTimeout(timer);
-  }, [currentCharIndex, currentPhraseIndex, isDeleting, typeDelay]);
+    return () => clearInterval(hackInterval);
+  }, [currentPhraseIndex, phrases]);
   
   useEffect(() => {
     if (inView) {
@@ -490,7 +576,17 @@ export default function HeroSection() {
             variants={animationVariants}
             className="enhanced-text"
           >
-            I&apos;m a Blockchain <TypedText>{typedText}</TypedText>
+            I&apos;m a Blockchain <HackerText 
+              data-glitch={corruptedText}
+              style={{
+                animation: isCorrupting 
+                  ? 'terminal-flicker 0.1s infinite, data-corruption 0.6s linear, matrix-shift 0.6s linear'
+                  : 'terminal-flicker 3s infinite',
+                filter: isCorrupting ? 'brightness(1.3) contrast(1.2)' : 'none'
+              }}
+            >
+              {isCorrupting && corruptedText ? corruptedText : phrases[currentPhraseIndex]}
+            </HackerText>
             <br />
             <div style={{ 
               display: 'block', 
