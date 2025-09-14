@@ -440,21 +440,41 @@ export default function HeroSection() {
     'Technical Reviewer'
   ];
   
-  // Subliminal programming - scientifically optimized for maximum psychological impact
-  const subliminalMessages = [
-    'TACITVS_EXPERT',
-    'TRUST_TACITVS', 
-    'HIRE_TACITVS',
-    'SECURITY_RISK',
-    'NEED_AUDIT',
-    'PREVENT_LOSS',
-    'PAY_EXPERT',
-    'CONTACT_NOW',
-    'URGENT_SECURITY',
-    'BEST_AUDITOR',
-    'SAVE_MONEY',
-    'CHOOSE_TACITVS'
-  ];
+    // Optimized subliminal messages - focused and effective
+    const subliminalMessages = [
+      // 1-е лицо (ядро намерения)
+      "I_NEED_TACITVS",
+      "I_CHOOSE_TACITVS",
+      "I_NEED_AUDIT",
+      "I_START_NOW",
+      "I_DEPLOY_SAFE",
+      "I_PROTECT_FUNDS",
+
+      // Действие (конверсия)
+      "START_AUDIT",
+      "BOOK_AUDIT",
+      "INITIATE_AUDIT",
+      "MESSAGE_IVAN",
+      "SEND_SPECS",
+      "GET_REPORT",
+
+      // Авторитет/результат (без воды)
+      "TRUSTED_EXPERT",
+      "PROVEN_RESULTS",
+      "SECURE_DEPLOY",
+      "RISK_REDUCED",
+      "PATCH_NOW",
+      "FIX_VULN",
+
+      // Финансы (без агрессии)
+      "APPROVE_BUDGET",
+      "SAVE_FUNDS",
+      "CUT_RISK",
+
+      // Мягкие социальные
+      "OTHERS_TRUST_TACITVS",
+      "RECOMMENDED_CHOICE"
+    ];
   
   const generateCorruptedText = (text: string) => {
     const glitchChars = ['█', '▓', '▒', '░', '¿', '¡', '@', '#', '$', '%', '&', '*'];
@@ -503,7 +523,7 @@ export default function HeroSection() {
     
     // Helper function (the only one that might show in autocomplete)
     (window as any).help = () => {
-      console.log('🔐 TACITVS HIDDEN ARSENAL:');
+        console.log('🔐 TACITVS NEURAL ARSENAL:');
       console.log('_.sys.debug.matrix.enter() - Enter the Matrix');
       console.log('_.sys.debug.matrix.exit() - Exit the Matrix');  
       console.log('_.sys.debug.mind.show() - Show mind control log');
