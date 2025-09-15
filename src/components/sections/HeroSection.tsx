@@ -124,6 +124,12 @@ const HackerText = styled.span`
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
+  min-width: 280px;
+  text-align: left;
+  
+  @media (max-width: 768px) {
+    min-width: 220px;
+  }
   
   &::before {
     content: attr(data-glitch);
@@ -746,11 +752,7 @@ export default function HeroSection() {
                   ? 'terminal-flicker 0.1s infinite, data-corruption 0.6s linear, matrix-shift 0.6s linear'
                   : 'terminal-flicker 3s infinite',
                 filter: isCorrupting ? 'brightness(1.3) contrast(1.2)' : 'none',
-                position: 'relative',
-                // Fixed width based on longest phrase to prevent jumping
-                minWidth: window.innerWidth <= 768 ? '220px' : '280px',
-                display: 'inline-block',
-                textAlign: 'left'
+                position: 'relative'
               }}
             >
               {showSubliminal ? (
