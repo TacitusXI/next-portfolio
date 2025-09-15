@@ -102,7 +102,7 @@ const Layout = ({ children }: LayoutProps) => {
   const stations = [
     // Comment out TacitusFM for now - will use all other radios
     // { name: "TacitusFM", url: tacitusPlaylist[currentTrackIndex], isPlaylist: true },
-    { name: "DarkSynth", url: "https://stream.nightride.fm/darksynth.m4a", isPlaylist: false, description: "Horror synth & cyberpunk" },
+    { name: "DarkSynth", url: "https://stream.nightride.fm/darksynth.m4a", isPlaylist: false, description: "Premium darksynth & cyberpunk metal" },
     { name: "NightrideFM", url: "https://stream.nightride.fm/nightride.m4a", isPlaylist: false, description: "Classic synthwave & outrun" },
     { name: "Nightwave Plaza", url: "https://radio.plaza.one/mp3", isPlaylist: false, description: "Lo-fi vaporwave & future funk" },
     { name: "DataWave", url: "https://stream.nightride.fm/datawave.m4a", isPlaylist: false, description: "Glitchy synthwave & IDM" },
