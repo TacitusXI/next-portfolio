@@ -115,6 +115,15 @@ const HackerText = styled.span`
   text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
   display: inline-block;
   letter-spacing: 1px;
+  /* Prevent mobile layout jumping */
+  min-height: 1.2em;
+  vertical-align: top;
+  contain: layout style;
+  will-change: opacity, filter, text-shadow;
+  /* Fixed width to prevent text jumping */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
   
   &::before {
     content: attr(data-glitch);
@@ -126,6 +135,9 @@ const HackerText = styled.span`
     color: rgba(0, 255, 0, 0.8);
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
+    /* Prevent layout shifts */
+    contain: layout style;
+    will-change: clip;
   }
   
   @keyframes terminal-flicker {
@@ -142,53 +154,54 @@ const HackerText = styled.span`
   @keyframes data-corruption {
     0% { 
       clip: rect(0, 0, 0, 0);
+      opacity: 1;
     }
     5% { 
       clip: rect(0, 9999px, 2px, 0);
-      transform: skew(-2deg);
+      opacity: 0.9;
     }
     10% { 
       clip: rect(2px, 9999px, 4px, 0);
-      transform: skew(1deg);
+      opacity: 0.8;
     }
     15% { 
       clip: rect(4px, 9999px, 6px, 0);
-      transform: skew(-1deg);
+      opacity: 0.7;
     }
     20% { 
       clip: rect(6px, 9999px, 8px, 0);
-      transform: skew(0deg);
+      opacity: 0.8;
     }
     25% { 
       clip: rect(0, 0, 0, 0);
-      transform: skew(0deg);
+      opacity: 1;
     }
     100% { 
       clip: rect(0, 0, 0, 0);
-      transform: skew(0deg);
+      opacity: 1;
     }
   }
   
   @keyframes matrix-shift {
     0%, 90%, 100% {
-      transform: translate(0);
       filter: brightness(1);
+      text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
     }
     2% {
-      transform: translate(-1px, 0);
       filter: brightness(1.2);
+      text-shadow: 1px 0 5px rgba(0, 255, 0, 0.7);
     }
     4% {
-      transform: translate(1px, 0);
       filter: brightness(0.8);
+      text-shadow: -1px 0 5px rgba(0, 255, 0, 0.3);
     }
     6% {
-      transform: translate(0, -1px);
       filter: brightness(1.1);
+      text-shadow: 0 1px 5px rgba(0, 255, 0, 0.6);
     }
     8% {
-      transform: translate(0, 1px);
       filter: brightness(0.9);
+      text-shadow: 0 -1px 5px rgba(0, 255, 0, 0.4);
     }
   }
 `;
@@ -202,21 +215,27 @@ const SubliminalText = styled.span`
   letter-spacing: inherit;
   text-shadow: 0 0 8px rgba(255, 0, 0, 0.8) !important;
   animation: subliminal-pulse 0.013s ease-out;
+  /* Prevent mobile layout jumping */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: inline-block;
+  contain: layout style;
+  will-change: opacity, filter;
   
   @keyframes subliminal-pulse {
     0% {
       opacity: 0;
-      transform: scale(0.8);
       filter: brightness(1);
     }
     50% {
       opacity: 1;
-      transform: scale(1.1);
       filter: brightness(1.2);
     }
     100% {
       opacity: 0;
-      transform: scale(0.9);
       filter: brightness(1);
     }
   }
@@ -477,10 +496,12 @@ export default function HeroSection() {
     ];
   
   const generateCorruptedText = (text: string) => {
-    const glitchChars = ['█', '▓', '▒', '░', '¿', '¡', '@', '#', '$', '%', '&', '*'];
-    return text.split('').map(char => 
-      Math.random() < 0.3 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : char
-    ).join('');
+    // Use only ASCII characters with same width in monospace fonts
+    const glitchChars = ['@', '#', '$', '%', '&', '*', '?', '!', '|', '~', '^', '+', '=', '<', '>', '/', '\\'];
+    return text.split('').map(char => {
+      if (char === ' ') return ' '; // Keep spaces as spaces
+      return Math.random() < 0.3 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : char;
+    }).join('');
   };
   
   const { setBackgroundType, setIntensity, setColorScheme } = useBackground();
@@ -725,7 +746,11 @@ export default function HeroSection() {
                   ? 'terminal-flicker 0.1s infinite, data-corruption 0.6s linear, matrix-shift 0.6s linear'
                   : 'terminal-flicker 3s infinite',
                 filter: isCorrupting ? 'brightness(1.3) contrast(1.2)' : 'none',
-                position: 'relative'
+                position: 'relative',
+                // Fixed width based on longest phrase to prevent jumping
+                minWidth: window.innerWidth <= 768 ? '220px' : '280px',
+                display: 'inline-block',
+                textAlign: 'left'
               }}
             >
               {showSubliminal ? (
