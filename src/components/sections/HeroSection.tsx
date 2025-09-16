@@ -474,7 +474,9 @@ export default function HeroSection() {
       "I_START_NOW",
       "I_DEPLOY_SAFE",
       "I_PROTECT_FUNDS",
-
+      "I_TRUST_EXPERT",
+      "I_WORK_WITH_TACITVS",
+    
       // Действие (конверсия)
       "START_AUDIT",
       "BOOK_AUDIT",
@@ -482,24 +484,31 @@ export default function HeroSection() {
       "MESSAGE_IVAN",
       "SEND_SPECS",
       "GET_REPORT",
-
-      // Авторитет/результат (без воды)
+    
+      // Авторитет / результат
       "TRUSTED_EXPERT",
       "PROVEN_RESULTS",
       "SECURE_DEPLOY",
       "RISK_REDUCED",
       "PATCH_NOW",
       "FIX_VULN",
-
-      // Финансы (без агрессии)
+    
+      // Финансы (профессионально, без давления)
       "APPROVE_BUDGET",
       "SAVE_FUNDS",
       "CUT_RISK",
-
+      "SCOPE_FIRST",
+      "RESERVE_SLOT",
+    
       // Мягкие социальные
       "OTHERS_TRUST_TACITVS",
-      "RECOMMENDED_CHOICE"
+      "RECOMMENDED_CHOICE",
+    
+      // Редкие жёсткие (используй редко)
+      "HIRE_TACITVS",
+      "WORK_WITH_TACITVS"
     ];
+    
   
   const generateCorruptedText = (text: string) => {
     // Use only ASCII characters with same width in monospace fonts
