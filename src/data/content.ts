@@ -311,7 +311,8 @@ export const projects: Project[] = [
     period: "2022 - 2023",
     description: "A collection of unique NFT mutant robots featuring an interactive frontend interface and marketplace. Each robot can be modified and reassembled to create entirely new configurations using interchangeable parts, offering over 999 trillion potential combinations for collectors and enthusiasts.",
     links: {
-      github: "https://github.com/TacitusXI/TechnoirClub-Marketplace"
+      github: "https://github.com/TacitusXI/TechnoirClub-Marketplace",
+      live: "https://technoir.on-fleek.app"
     },
     githubInfo: {
       stars: 2,
