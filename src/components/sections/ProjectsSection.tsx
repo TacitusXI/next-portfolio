@@ -272,6 +272,7 @@ export default function ProjectsSection() {
   const getProjectImage = (project: Project) => {
     // Map project titles to existing image files
     const imageMap: {[key: string]: string} = {
+      "Dark Forest": "./images/darkforest.webp",
       "TechnoirClub Marketplace": "./images/technoir-club.webp",
       "LeskoDEX": "./images/lesko-dex.webp",
       "LIQUID-DEX": "./images/liquid-dex.webp",

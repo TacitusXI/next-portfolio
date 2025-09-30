@@ -199,6 +199,29 @@ export const additionalExperiences: Experience[] = [
 
 export const projects: Project[] = [
   {
+    title: "Dark Forest",
+    period: "2024 - Present",
+    description: "A comprehensive library of blockchain security audits and exploit analysis by Tacitvs. Dark Forest serves as an educational platform featuring detailed writeups of historic blockchain hacks, security vulnerabilities, and comprehensive audit reports. The platform combines narrative storytelling with technical analysis to illuminate the shadows of the crypto ecosystem.",
+    links: {
+      github: "https://github.com/TacitusXI/dark-forest",
+      live: "https://dark-forest.tacitvs.eth.limo"
+    },
+    githubInfo: {
+      stars: 0,
+      forks: 0,
+      languages: [
+        { name: "JavaScript", percentage: 85.2 },
+        { name: "CSS", percentage: 12.8 },
+        { name: "HTML", percentage: 2.0 }
+      ],
+      topics: [
+        "blockchain-security", "smart-contract-audits", "exploit-analysis", 
+        "vulnerability-research", "defi-security", "audit-reports", "security-research",
+        "blockchain-audits", "crypto-security", "web3-security"
+      ]
+    }
+  },
+  {
     title: "Tacitus Swap",
     period: "2023 - Present",
     description: "A sophisticated fork of Uniswap with custom Tacitus implementations, featuring an enhanced user interface with modern design elements. The platform incorporates a distinctive digital rain animation for a cyberpunk aesthetic, while maintaining the robust trading functionality of the original DEX. Supports multiple chains and token swaps with optimized transaction processing.",
