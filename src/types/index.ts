@@ -30,6 +30,8 @@ export interface Project {
     forks: number;
     languages: Array<{ name: string; percentage: number }>;
     topics: string[];
+    createdAt?: string; // ISO date string (YYYY-MM-DD)
+    updatedAt?: string; // ISO date string (YYYY-MM-DD)
   };
 }
 

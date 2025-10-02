@@ -223,36 +223,38 @@ export const projects: Project[] = [
   },
   {
     title: "Tacitus Swap",
-    period: "2023 - Present",
+    period: "March 2025",
     description: "A sophisticated fork of Uniswap with custom Tacitus implementations, featuring an enhanced user interface with modern design elements. The platform incorporates a distinctive digital rain animation for a cyberpunk aesthetic, while maintaining the robust trading functionality of the original DEX. Supports multiple chains and token swaps with optimized transaction processing.",
     links: {
       github: "https://github.com/TacitusXI/tacitus-swap",
       live: "https://tacitus-swap.vercel.app/"
     },
     githubInfo: {
-      stars: 4,
+      stars: 1,
       forks: 1,
       languages: [
-        { name: "TypeScript", percentage: 78.5 },
-        { name: "JavaScript", percentage: 14.3 },
-        { name: "CSS", percentage: 5.7 },
-        { name: "Solidity", percentage: 1.5 }
+        { name: "TypeScript", percentage: 95.6 },
+        { name: "Swift", percentage: 1.6 },
+        { name: "Kotlin", percentage: 1.1 },
+        { name: "JavaScript", percentage: 1.1 }
       ],
       topics: [
         "defi", "uniswap", "dex", "ethereum", "web3", 
         "smart-contracts", "amm", "liquidity-pool", "decentralized-exchange"
-      ]
+      ],
+      createdAt: "2025-03-28",
+      updatedAt: "2025-05-05"
     }
   },
   {
     title: "DeFi IL Hedge Bot",
-    period: "2024 - Present",
+    period: "February 2025",
     description: "A Python-based trading bot and backtesting framework that hedges impermanent loss in Uniswap V2 ETH/USDC liquidity pools using Binance perpetual contracts. The bot collects historical data, calculates LP position value, determines position sensitivity to ETH price changes, and executes hedging orders.",
     links: {
       github: "https://github.com/TacitusXI/defi-il-hedge-bot"
     },
     githubInfo: {
-      stars: 1,
+      stars: 3,
       forks: 0,
       languages: [
         { name: "Python", percentage: 100.0 }
@@ -261,62 +263,67 @@ export const projects: Project[] = [
         "python", "algorithmic-trading", "hedging", "backtesting", 
         "tradingbot", "binance", "ccxt", "crypto-trading", "defi", 
         "uniswap", "the-graph", "uniswap-v2", "liquidity-provisioning", "impermanent-loss"
-      ]
+      ],
+      createdAt: "2025-02-09",
+      updatedAt: "2025-02-10"
     }
   },
   {
     title: "Ledger Signer",
-    period: "2024 - Present",
+    period: "March 2025",
     description: "A utility tool for Ledger hardware wallet integration that enables secure transaction signing with enhanced verification and multi-chain support. The signer provides a seamless interface for dApp interactions while maintaining the security benefits of hardware-based key storage.",
     links: {
       github: "https://github.com/TacitusXI/ledger-signer"
     },
     githubInfo: {
-      stars: 2,
+      stars: 1,
       forks: 0,
       languages: [
-        { name: "TypeScript", percentage: 80.5 },
-        { name: "JavaScript", percentage: 15.5 },
-        { name: "HTML", percentage: 4.0 }
+        { name: "TypeScript", percentage: 100.0 }
       ],
       topics: [
         "ledger", "hardware-wallet", "signer", "ethereum", "web3", 
         "blockchain", "cryptocurrency", "security", "multi-chain", "transaction-signing"
-      ]
+      ],
+      createdAt: "2025-03-15",
+      updatedAt: "2025-03-17"
     }
   },
   {
     title: "LeskoDEX",
-    period: "2021 - 2023",
+    period: "April 2022",
     description: "LeskoDEX is a decentralized exchange (DEX) featuring a decentralized order book and a custom ERC-20 ESKO token. Users can seamlessly connect via Metamask to trade the ETH/ESKO pair. The platform includes an integrated charting tool for comprehensive technical analysis. Demo mode showcases full functionality with mock data for easy exploration without blockchain connection.",
     links: {
       github: "https://github.com/TacitusXI/LeskoDEX",
       live: "https://lesko-dex.tacitvs.eth.limo"
     },
     githubInfo: {
-      stars: 3,
+      stars: 2,
       forks: 0,
       languages: [
-        { name: "Solidity", percentage: 65.3 },
-        { name: "JavaScript", percentage: 25.2 },
-        { name: "CSS", percentage: 9.5 }
+        { name: "JavaScript", percentage: 85.5 },
+        { name: "Solidity", percentage: 10.9 },
+        { name: "CSS", percentage: 2.1 },
+        { name: "HTML", percentage: 1.3 }
       ],
       topics: [
-        "dex", "defi", "erc20-token", "decentralized-exchange", 
-        "ethereum", "trading", "metamask", "web3"
-      ]
+        "crypto", "defi", "ethereum", "smart-contracts", "solidity",
+        "dapp", "erc-20", "cryptocurrency-exchanges"
+      ],
+      createdAt: "2022-04-28",
+      updatedAt: "2025-10-02"
     }
   },
   {
     title: "TechnoirClub Marketplace",
-    period: "2022 - 2023",
+    period: "August 2022",
     description: "A collection of unique NFT mutant robots featuring an interactive frontend interface and marketplace. Each robot can be modified and reassembled to create entirely new configurations using interchangeable parts, offering over 999 trillion potential combinations for collectors and enthusiasts.",
     links: {
       github: "https://github.com/TacitusXI/TechnoirClub-Marketplace",
       live: "https://technoir.on-fleek.app"
     },
     githubInfo: {
-      stars: 2,
+      stars: 3,
       forks: 0,
       languages: [
         { name: "HTML", percentage: 64.8 },
@@ -325,21 +332,23 @@ export const projects: Project[] = [
         { name: "CSS", percentage: 5.9 }
       ],
       topics: [
-        "coverage-testing", "solidity", "ethereum-contract", "ethereum-dapp", 
-        "nft", "smart-contract", "nft-marketplace", "nft-collection"
-      ]
+        "nft-marketplace", "nft-collection", "ethereum-dapp", "smart-contract",
+        "solidity", "nft", "hardhat"
+      ],
+      createdAt: "2022-08-25",
+      updatedAt: "2025-10-02"
     }
   },
   {
     title: "LIQUID-DEX",
-    period: "2023 - 2024",
+    period: "January 2024",
     description: "LIQUID Decentralized Exchange: Built on the Stacks ecosystem for STX/LIQ trading, utilizing the LIQUID SIP010 token and developed in Clarity for enhanced security. Users can connect, trade, and manage liquidity with advanced wallet integration and comprehensive trading features.",
     links: {
       github: "https://github.com/TacitusXI/LIQUID-DEX",
       live: "https://stacks-dex.vercel.app/"
     },
     githubInfo: {
-      stars: 1,
+      stars: 2,
       forks: 0,
       languages: [
         { name: "TypeScript", percentage: 75.3 },
@@ -350,7 +359,9 @@ export const projects: Project[] = [
       topics: [
         "smart-contracts", "swap", "dex", "stacks", "clarity", 
         "clarinet", "stx", "defi", "liquidity-pool"
-      ]
+      ],
+      createdAt: "2024-01-24",
+      updatedAt: "2025-02-10"
     }
   }
 ];

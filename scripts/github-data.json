@@ -1,0 +1,276 @@
+[
+  {
+    "title": "Tacitus Swap",
+    "githubUrl": "https://github.com/TacitusXI/tacitus-swap",
+    "data": {
+      "stars": 1,
+      "forks": 1,
+      "watchers": 1,
+      "createdAt": "2025-03-28T21:58:04Z",
+      "updatedAt": "2025-05-05T19:44:37Z",
+      "pushedAt": "2025-05-05T19:44:33Z",
+      "createdYear": 2025,
+      "languages": [
+        {
+          "name": "TypeScript",
+          "percentage": 95.6
+        },
+        {
+          "name": "Swift",
+          "percentage": 1.6
+        },
+        {
+          "name": "Kotlin",
+          "percentage": 1.1
+        },
+        {
+          "name": "JavaScript",
+          "percentage": 1.1
+        },
+        {
+          "name": "Objective-C",
+          "percentage": 0.2
+        },
+        {
+          "name": "Shell",
+          "percentage": 0.2
+        },
+        {
+          "name": "HTML",
+          "percentage": 0.1
+        },
+        {
+          "name": "Python",
+          "percentage": 0.1
+        },
+        {
+          "name": "Java",
+          "percentage": 0.1
+        },
+        {
+          "name": "Ruby",
+          "percentage": 0
+        },
+        {
+          "name": "MDX",
+          "percentage": 0
+        },
+        {
+          "name": "Prolog",
+          "percentage": 0
+        }
+      ],
+      "topics": [],
+      "description": null,
+      "homepage": "https://tacitus-swap-web.vercel.app"
+    }
+  },
+  {
+    "title": "DeFi IL Hedge Bot",
+    "githubUrl": "https://github.com/TacitusXI/defi-il-hedge-bot",
+    "data": {
+      "stars": 3,
+      "forks": 0,
+      "watchers": 3,
+      "createdAt": "2025-02-09T19:17:01Z",
+      "updatedAt": "2025-09-14T04:06:33Z",
+      "pushedAt": "2025-02-10T13:20:12Z",
+      "createdYear": 2025,
+      "languages": [
+        {
+          "name": "Python",
+          "percentage": 100
+        }
+      ],
+      "topics": [
+        "algorithmic-trading",
+        "backtesting",
+        "binance",
+        "ccxt",
+        "crypto-trading",
+        "defi",
+        "hedging",
+        "impermanent-loss",
+        "liquidity-provisioning",
+        "python",
+        "the-graph",
+        "tradingbot",
+        "uniswap",
+        "uniswap-v2"
+      ],
+      "description": "A Python-based trading bot and backtesting framework that hedges impermanent loss in Uniswap V2 ETH/USDC liquidity pools using Binance perpetual contracts. ",
+      "homepage": ""
+    }
+  },
+  {
+    "title": "Ledger Signer",
+    "githubUrl": "https://github.com/TacitusXI/ledger-signer",
+    "data": {
+      "stars": 1,
+      "forks": 0,
+      "watchers": 1,
+      "createdAt": "2025-03-15T18:02:58Z",
+      "updatedAt": "2025-05-09T19:02:29Z",
+      "pushedAt": "2025-03-17T14:22:38Z",
+      "createdYear": 2025,
+      "languages": [
+        {
+          "name": "TypeScript",
+          "percentage": 100
+        }
+      ],
+      "topics": [],
+      "description": "Ledger Signer provides a simple yet robust interface to interact with Ledger devices using TypeScript. It supports secure message signing, dynamic user input, comprehensive error handling, and includes utilities for logging and CLI prompting.",
+      "homepage": ""
+    }
+  },
+  {
+    "title": "LeskoDEX",
+    "githubUrl": "https://github.com/TacitusXI/LeskoDEX",
+    "data": {
+      "stars": 2,
+      "forks": 0,
+      "watchers": 2,
+      "createdAt": "2022-04-28T21:40:26Z",
+      "updatedAt": "2025-10-02T10:21:03Z",
+      "pushedAt": "2025-10-02T10:20:59Z",
+      "createdYear": 2022,
+      "languages": [
+        {
+          "name": "JavaScript",
+          "percentage": 85.5
+        },
+        {
+          "name": "Solidity",
+          "percentage": 10.9
+        },
+        {
+          "name": "CSS",
+          "percentage": 2.1
+        },
+        {
+          "name": "HTML",
+          "percentage": 1.3
+        },
+        {
+          "name": "Shell",
+          "percentage": 0.2
+        }
+      ],
+      "topics": [
+        "crypto",
+        "cryptocurrency",
+        "cryptocurrency-exchanges",
+        "cryptography",
+        "currency",
+        "dapp",
+        "defi",
+        "erc-20",
+        "eth",
+        "ethereum",
+        "smart-contracts",
+        "solidity",
+        "solidity-dapps",
+        "solidity-language",
+        "token"
+      ],
+      "description": "LeskoDEX is a DEX with a decentralized orderbook and a custom ERC-20 ESKO token. Each user can connect to the DEX via Metamask and trade the ETH/ESKO pair. A custom chart for technical analysis is available.",
+      "homepage": ""
+    }
+  },
+  {
+    "title": "TechnoirClub Marketplace",
+    "githubUrl": "https://github.com/TacitusXI/TechnoirClub-Marketplace",
+    "data": {
+      "stars": 3,
+      "forks": 0,
+      "watchers": 3,
+      "createdAt": "2022-08-25T15:17:15Z",
+      "updatedAt": "2025-10-02T11:20:16Z",
+      "pushedAt": "2025-10-02T11:20:13Z",
+      "createdYear": 2022,
+      "languages": [
+        {
+          "name": "HTML",
+          "percentage": 64.8
+        },
+        {
+          "name": "JavaScript",
+          "percentage": 19.5
+        },
+        {
+          "name": "Solidity",
+          "percentage": 9.8
+        },
+        {
+          "name": "CSS",
+          "percentage": 5.9
+        }
+      ],
+      "topics": [
+        "coverage-testing",
+        "docgen",
+        "ethereum-contract",
+        "ethereum-dapp",
+        "hardhat",
+        "nft",
+        "nft-collection",
+        "nft-game",
+        "nft-generator",
+        "nft-marketplace",
+        "nfts",
+        "slither",
+        "smart-contract",
+        "solhint",
+        "solidity",
+        "solidity-language"
+      ],
+      "description": "A collection of NFT mutant robots with their frontend and marketplace. Robots can be modified and create new robots from their parts. Over 999 trillion combinations of different robots available!",
+      "homepage": ""
+    }
+  },
+  {
+    "title": "LIQUID-DEX",
+    "githubUrl": "https://github.com/TacitusXI/LIQUID-DEX",
+    "data": {
+      "stars": 2,
+      "forks": 0,
+      "watchers": 2,
+      "createdAt": "2024-01-24T11:49:11Z",
+      "updatedAt": "2025-05-09T19:02:08Z",
+      "pushedAt": "2025-02-10T13:17:02Z",
+      "createdYear": 2024,
+      "languages": [
+        {
+          "name": "TypeScript",
+          "percentage": 75.3
+        },
+        {
+          "name": "Clarity",
+          "percentage": 20.3
+        },
+        {
+          "name": "JavaScript",
+          "percentage": 3.8
+        },
+        {
+          "name": "CSS",
+          "percentage": 0.6
+        }
+      ],
+      "topics": [
+        "clarinet",
+        "clarity",
+        "defi",
+        "dex",
+        "liquidity-pool",
+        "smart-contracts",
+        "stacks",
+        "stx",
+        "swap"
+      ],
+      "description": "LIQUID Decentralized Exchange: A pioneering platform for seamless STX/LIQ trading, featuring the LIQUID (LIQ) SIP010 token. Connect, trade, and manage liquidity with advanced wallet integration and robust trading functionalities.",
+      "homepage": "https://stacks-dex.vercel.app"
+    }
+  }
+]
