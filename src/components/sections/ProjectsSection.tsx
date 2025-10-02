@@ -144,10 +144,38 @@ const ProjectContent = styled.div`
   padding: 1.5rem;
 `;
 
+const ProjectHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+`;
+
 const ProjectTitle = styled.h3`
   font-size: 1.4rem;
-  margin-bottom: 0.75rem;
   color: white;
+  flex: 1;
+`;
+
+const ProjectDate = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(153, 69, 255, 0.8);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  background: rgba(153, 69, 255, 0.1);
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(153, 69, 255, 0.2);
+  
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
 `;
 
 const ProjectDescription = styled.p`
@@ -367,7 +395,18 @@ export default function ProjectsSection() {
               >
                 <ProjectImage style={{ backgroundImage: `url(${getProjectImage(project)})` }} />
                 <ProjectContent>
-                  <ProjectTitle>{project.title}</ProjectTitle>
+                  <ProjectHeader>
+                    <ProjectTitle>{project.title}</ProjectTitle>
+                    <ProjectDate>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      {project.period}
+                    </ProjectDate>
+                  </ProjectHeader>
                   <ProjectDescription>{project.description}</ProjectDescription>
                   
                   <TechStackContainer>
