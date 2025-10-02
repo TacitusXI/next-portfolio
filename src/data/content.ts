@@ -288,9 +288,10 @@ export const projects: Project[] = [
   {
     title: "LeskoDEX",
     period: "2021 - 2023",
-    description: "LeskoDEX is a decentralized exchange (DEX) featuring a decentralized order book and a custom ERC-20 ESKO token. Users can seamlessly connect via Metamask to trade the ETH/ESKO pair. The platform includes an integrated charting tool for comprehensive technical analysis.",
+    description: "LeskoDEX is a decentralized exchange (DEX) featuring a decentralized order book and a custom ERC-20 ESKO token. Users can seamlessly connect via Metamask to trade the ETH/ESKO pair. The platform includes an integrated charting tool for comprehensive technical analysis. Demo mode showcases full functionality with mock data for easy exploration without blockchain connection.",
     links: {
-      github: "https://github.com/TacitusXI/LeskoDEX"
+      github: "https://github.com/TacitusXI/LeskoDEX",
+      live: "https://lesko-dex.tacitvs.eth.limo"
     },
     githubInfo: {
       stars: 3,
