@@ -24,6 +24,7 @@ export interface Project {
   links: {
     github: string;
     live?: string;
+    githubV1?: string; // For projects with multiple versions (e.g., Hardhat v1 and Foundry v2)
   };
   githubInfo?: {
     stars: number;

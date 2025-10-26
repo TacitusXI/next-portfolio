@@ -201,7 +201,7 @@ export const projects: Project[] = [
   {
     title: "Dark Forest",
     period: "2024 - Present",
-    description: "A comprehensive library of blockchain security audits and exploit analysis by Tacitvs. Dark Forest serves as an educational platform featuring detailed writeups of historic blockchain hacks, security vulnerabilities, and comprehensive audit reports. The platform combines narrative storytelling with technical analysis to illuminate the shadows of the crypto ecosystem.",
+    description: "A comprehensive library of blockchain security audits and exploit analysis. Features detailed writeups of historic blockchain hacks, security vulnerabilities, and audit reports combining narrative storytelling with technical analysis.",
     links: {
       github: "https://github.com/TacitusXI/dark-forest",
       live: "https://dark-forest.tacitvs.eth.limo"
@@ -224,7 +224,7 @@ export const projects: Project[] = [
   {
     title: "Tacitus Swap",
     period: "March 2025",
-    description: "A sophisticated fork of Uniswap with custom Tacitus implementations, featuring an enhanced user interface with modern design elements. The platform incorporates a distinctive digital rain animation for a cyberpunk aesthetic, while maintaining the robust trading functionality of the original DEX. Supports multiple chains and token swaps with optimized transaction processing.",
+    description: "A sophisticated fork of Uniswap with custom implementations and enhanced UI featuring cyberpunk aesthetics. Supports multiple chains and token swaps with optimized transaction processing.",
     links: {
       github: "https://github.com/TacitusXI/tacitus-swap",
       live: "https://tacitus-swap.vercel.app/"
@@ -249,7 +249,7 @@ export const projects: Project[] = [
   {
     title: "DeFi IL Hedge Bot",
     period: "February 2025",
-    description: "A Python-based trading bot and backtesting framework that hedges impermanent loss in Uniswap V2 ETH/USDC liquidity pools using Binance perpetual contracts. The bot collects historical data, calculates LP position value, determines position sensitivity to ETH price changes, and executes hedging orders.",
+    description: "A Python-based trading bot that hedges impermanent loss in Uniswap V2 liquidity pools using Binance perpetual contracts. Features backtesting framework with historical data analysis and automated hedging execution.",
     links: {
       github: "https://github.com/TacitusXI/defi-il-hedge-bot"
     },
@@ -271,7 +271,7 @@ export const projects: Project[] = [
   {
     title: "Ledger Signer",
     period: "March 2025",
-    description: "A utility tool for Ledger hardware wallet integration that enables secure transaction signing with enhanced verification and multi-chain support. The signer provides a seamless interface for dApp interactions while maintaining the security benefits of hardware-based key storage.",
+    description: "A utility tool for Ledger hardware wallet integration enabling secure transaction signing with multi-chain support. Provides seamless dApp interactions while maintaining hardware-based security.",
     links: {
       github: "https://github.com/TacitusXI/ledger-signer"
     },
@@ -292,7 +292,7 @@ export const projects: Project[] = [
   {
     title: "LeskoDEX",
     period: "April 2022",
-    description: "LeskoDEX is a decentralized exchange (DEX) featuring a decentralized order book and a custom ERC-20 ESKO token. Users can seamlessly connect via Metamask to trade the ETH/ESKO pair. The platform includes an integrated charting tool for comprehensive technical analysis. Demo mode showcases full functionality with mock data for easy exploration without blockchain connection.",
+    description: "A decentralized exchange featuring an order book system and custom ERC-20 ESKO token for ETH/ESKO trading. Includes integrated charting tools and demo mode for exploring functionality without blockchain connection.",
     links: {
       github: "https://github.com/TacitusXI/LeskoDEX",
       live: "https://lesko-dex.tacitvs.eth.limo"
@@ -317,10 +317,10 @@ export const projects: Project[] = [
   {
     title: "TechnoirClub Marketplace",
     period: "August 2022",
-    description: "A collection of unique NFT mutant robots featuring an interactive frontend interface and marketplace. Each robot can be modified and reassembled to create entirely new configurations using interchangeable parts, offering over 999 trillion potential combinations for collectors and enthusiasts.",
+    description: "A unique NFT collection of mutant robots with interactive marketplace. Features modifiable and reassemblable robots using interchangeable parts with over 999 trillion potential combinations.",
     links: {
       github: "https://github.com/TacitusXI/TechnoirClub-Marketplace",
-      live: "https://technoir.on-fleek.app"
+      live: "https://technoir.tacitvs.eth.limo"
     },
     githubInfo: {
       stars: 3,
@@ -342,7 +342,7 @@ export const projects: Project[] = [
   {
     title: "LIQUID-DEX",
     period: "January 2024",
-    description: "LIQUID Decentralized Exchange: Built on the Stacks ecosystem for STX/LIQ trading, utilizing the LIQUID SIP010 token and developed in Clarity for enhanced security. Users can connect, trade, and manage liquidity with advanced wallet integration and comprehensive trading features.",
+    description: "A decentralized exchange built on the Stacks ecosystem for STX/LIQ trading using Clarity smart contracts. Features advanced wallet integration and liquidity management with the LIQUID SIP010 token.",
     links: {
       github: "https://github.com/TacitusXI/LIQUID-DEX",
       live: "https://stacks-dex.vercel.app/"
@@ -362,6 +362,32 @@ export const projects: Project[] = [
       ],
       createdAt: "2024-01-24",
       updatedAt: "2025-02-10"
+    }
+  },
+  {
+    title: "Lottery",
+    period: "2022 - 2025",
+    description: "A provably fair decentralized lottery powered by Chainlink VRF and Automation. Showcases evolution from Hardhat (2022) to Foundry (2025) with 100% test coverage and multi-network deployment support.",
+    links: {
+      github: "https://github.com/TacitusXI/Lottery.v2",
+      githubV1: "https://github.com/TacitusXI/Lottery"
+    },
+    githubInfo: {
+      stars: 0,
+      forks: 0,
+      languages: [
+        { name: "Solidity", percentage: 91.8 },
+        { name: "TypeScript", percentage: 7.5 },
+        { name: "Python", percentage: 0.4 },
+        { name: "Julia", percentage: 0.1 }
+      ],
+      topics: [
+        "solidity", "foundry", "chainlink-vrf", "chainlink-automation", 
+        "smart-contracts", "lottery", "defi", "hardhat", "ethereum", 
+        "polygon", "testing", "gas-optimization", "verifiable-randomness"
+      ],
+      createdAt: "2022-05-15",
+      updatedAt: "2025-10-26"
     }
   }
 ];

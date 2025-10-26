@@ -365,7 +365,22 @@ const Projects: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <FaGithub /> GitHub
+                      <FaGithub /> {project.links.githubV1 ? 'v2 (Foundry)' : 'GitHub'}
+                    </ProjectLink>
+                  </motion.div>
+                )}
+                
+                {project.links.githubV1 && (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <ProjectLink 
+                      href={project.links.githubV1}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FaGithub /> v1 (Hardhat)
                     </ProjectLink>
                   </motion.div>
                 )}
